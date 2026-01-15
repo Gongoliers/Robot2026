@@ -89,7 +89,10 @@ public class ShooterTester {
 
     motorValues = new MotorValues();
     velocityAccumulator = new ArrayList<AngularVelocity>();
-
+    velocityTolerance = RotationsPerSecond.of(1);
+    returnTimes = new ArrayList<Time>();
+    framesWithinTolerance = 0;
+    framesSinceDisturbance = 0;
   }
 
   private void setVoltage(Voltage volts) {
@@ -135,6 +138,8 @@ public class ShooterTester {
       })
     ))
     .andThen(Commands.runOnce(() -> {
+      shooter.setSetpoint(RotationsPerSecond.of(0.0));
+
       double maxVelRotationsPerSec = Double.NEGATIVE_INFINITY;
       double minVelRotationsPerSec = Double.POSITIVE_INFINITY;
 

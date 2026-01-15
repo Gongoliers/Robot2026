@@ -64,6 +64,8 @@ public class RobotContainer {
   private void configureBindings() {
     driverController.a().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
     driverController.b().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    driverController.x().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    driverController.y().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     driverController.leftTrigger().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(80)));
     driverController.rightTrigger().whileTrue(shooterTester.runTests(RotationsPerSecond.of(80)));
