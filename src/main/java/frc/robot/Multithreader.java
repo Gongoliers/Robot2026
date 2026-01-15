@@ -1,6 +1,9 @@
 package frc.robot;
 
 import frc.lib.Multithreaded;
+
+import static edu.wpi.first.units.Units.Seconds;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +14,7 @@ public class Multithreader extends Thread {
   private static Multithreader instance = null;
 
   /** Target interval between calls of fastPeriodic in nanoseconds */
-  private final long nanoTime = (long) (RobotConstants.FAST_PERIODIC_DURATION * 1000000000);
+  private final long nanoTime = (long) (RobotConstants.FAST_PERIODIC_DURATION.in(Seconds) * 1000000000);
 
   /** Set of objects with fastPeriodic method to be called */
   private Set<Multithreaded> multithreadeds = new HashSet<Multithreaded>();

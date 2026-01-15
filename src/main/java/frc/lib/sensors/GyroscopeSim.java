@@ -35,6 +35,6 @@ public class GyroscopeSim implements Gyroscope {
 
   @Override
   public void periodic() {
-    yaw = yaw.plus(yawVelocity.get().times(Seconds.of(RobotConstants.PERIODIC_DURATION)));
+    yaw = yaw.plus(yawVelocity.get().times(RobotConstants.PERIODIC_DURATION));
   }
 }
