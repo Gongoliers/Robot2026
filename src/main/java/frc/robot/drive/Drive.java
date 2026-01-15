@@ -29,7 +29,6 @@ public class Drive extends Subsystem {
 
   private boolean hasSetPerspective = false;
 
-
   public Drive(SwerveOutput swerve) {
     this.swerve = swerve;
     this.state = new SwerveDrivetrain.SwerveDriveState();
