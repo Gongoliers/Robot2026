@@ -4,10 +4,14 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.shooter.Shooter;
+import frc.robot.shooter.ShooterTester;
 
 /** Robot container */
 public class RobotContainer {
@@ -26,6 +30,9 @@ public class RobotContainer {
 
   /** Shooter */
   private final Shooter shooter;
+
+  /** Shooter tester */
+  private final ShooterTester shooterTester;
 
   /**
    * Gets robot container instance
@@ -47,13 +54,20 @@ public class RobotContainer {
 
     multithreader = Multithreader.getInstance();
     shooter = Shooter.getInstance();
+    shooterTester = ShooterTester.getInstance();
 
     multithreader.start();
 
     configureBindings();
   }
 
-  private void configureBindings() {}
+  private void configureBindings() {
+    driverController.a().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    driverController.b().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kForward));
+
+    driverController.leftTrigger().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(80)));
+    driverController.rightTrigger().whileTrue(shooterTester.runTests(RotationsPerSecond.of(80)));
+  }
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
