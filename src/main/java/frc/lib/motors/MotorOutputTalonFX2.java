@@ -106,8 +106,7 @@ public class MotorOutputTalonFX2 implements MotorOutput {
         statorCurrent,
         supplyCurrent);
 
-    values.position.mut_replace(
-        position.getValueAsDouble() + positionOffset.in(Rotations), Rotations);
+    values.position.mut_replace(position.getValueAsDouble() + positionOffset.in(Rotations), Rotations);
     values.velocity.mut_replace(velocity.getValueAsDouble(), RotationsPerSecond);
     values.acceleration.mut_replace(acceleration.getValueAsDouble(), RotationsPerSecondPerSecond);
     values.motorVoltage.mut_replace(motorVoltage.getValueAsDouble(), Volts);

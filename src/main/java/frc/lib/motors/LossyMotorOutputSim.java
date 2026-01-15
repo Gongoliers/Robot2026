@@ -6,9 +6,7 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.units.measure.*;
 import java.util.function.Function;
 
-/**
- * This class is a decorator around a simulated motor output that adds static friction and gravity.
- */
+/** This class is a decorator around a simulated motor output that adds static friction and gravity. */
 public class LossyMotorOutputSim implements MotorOutput {
 
   private final MotorOutput sim;
