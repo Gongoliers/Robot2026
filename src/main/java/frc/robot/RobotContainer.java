@@ -74,18 +74,7 @@ public class RobotContainer {
   }
 
   private void configureDefaultCommands() {
-    drive.setDefaultCommand(drive.drive(
-      () -> {
-        LinearVelocity maxVelocity = MetersPerSecond.of(2);
-        AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.5);
-
-        var x = MathUtil.applyDeadband(-driverController.getLeftY(), 0.1);
-        var y = MathUtil.applyDeadband(-driverController.getLeftX(), 0.1);
-        var omega = MathUtil.applyDeadband(-driverController.getRightX(), 0.1);
-
-        return new ChassisSpeeds(
-          maxVelocity.times(x), maxVelocity.times(y), maxAngularVelocity.times(omega));
-      }));
+    drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
   }
 
   private void configureBindings() {

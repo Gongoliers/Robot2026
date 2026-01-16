@@ -4,15 +4,20 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
@@ -75,6 +80,18 @@ public class Drive extends Subsystem {
         }
       );
     }
+  }
+
+  public ChassisSpeeds speedsFromController(CommandXboxController controller) {
+    LinearVelocity maxVelocity = MetersPerSecond.of(2);
+    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.5);
+
+    var x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
+    var y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
+    var omega = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
+
+    return new ChassisSpeeds(
+      maxVelocity.times(x), maxVelocity.times(y), maxAngularVelocity.times(omega));
   }
 
   public Pose2d getPose() {
