@@ -21,6 +21,8 @@ import java.util.function.Supplier;
 
 public class Drive extends Subsystem {
 
+  private static Drive instance = null;
+
   private final SwerveOutput swerve;
 
   private SwerveDrivetrain.SwerveDriveState state;
@@ -29,8 +31,16 @@ public class Drive extends Subsystem {
 
   private boolean hasSetPerspective = false;
 
-  public Drive(SwerveOutput swerve) {
-    this.swerve = swerve;
+  public static Drive getInstance() {
+    if (instance == null) {
+      instance = new Drive();
+    }
+
+    return instance;
+  }
+
+  private Drive() {
+    this.swerve = DriveFactory.createSwerve();
     this.state = new SwerveDrivetrain.SwerveDriveState();
     this.field = new Field2d();
   }
@@ -101,6 +111,6 @@ public class Drive extends Subsystem {
         .withVelocityX(fieldSpeeds.vxMetersPerSecond)
         .withVelocityY(fieldSpeeds.vyMetersPerSecond)
         .withRotationalRate(fieldSpeeds.omegaRadiansPerSecond));
-    });
+    }, this);
   }
 }
