@@ -6,6 +6,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -36,6 +37,8 @@ public class Drive extends Subsystem {
 
   private boolean hasSetPerspective = false;
 
+  private PIDController yawPID;
+
   public static Drive getInstance() {
     if (instance == null) {
       instance = new Drive();
@@ -45,9 +48,12 @@ public class Drive extends Subsystem {
   }
 
   private Drive() {
-    this.swerve = DriveFactory.createSwerve();
-    this.state = new SwerveDrivetrain.SwerveDriveState();
-    this.field = new Field2d();
+    swerve = DriveFactory.createSwerve();
+    state = new SwerveDrivetrain.SwerveDriveState();
+    field = new Field2d();
+
+    yawPID = new PIDController(6, 0.0, 0.0);
+    yawPID.enableContinuousInput(-0.5, 0.5);
   }
 
   @Override
@@ -86,12 +92,40 @@ public class Drive extends Subsystem {
     LinearVelocity maxVelocity = MetersPerSecond.of(2);
     AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.5);
 
-    var x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
-    var y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
-    var omega = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
+    double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
+    double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
+    double omega = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
 
     return new ChassisSpeeds(
       maxVelocity.times(x), maxVelocity.times(y), maxAngularVelocity.times(omega));
+  }
+
+  /**
+   * Takes a ChassisSpeeds object as input, and a target chassis rotation, and changes the angular velocity of
+   * the ChassisSpeeds object to turn the robot towards the target rotation
+   * 
+   * @param speeds ChassisSpeeds object to modify
+   * @param rotation Target chassis rotation
+   * @return Modified ChassisSpeeds object
+   */
+  public ChassisSpeeds turnTowards(ChassisSpeeds speeds, Rotation2d rotation) {
+    AngularVelocity angularVelocity = RotationsPerSecond.of(yawPID.calculate(state.Pose.getRotation().getRotations(), rotation.getRotations()));
+
+    return new ChassisSpeeds(
+      speeds.vxMetersPerSecond,
+      speeds.vyMetersPerSecond,
+      angularVelocity.in(RadiansPerSecond));
+  }
+
+  public ChassisSpeeds turnTowardsController(ChassisSpeeds speeds, CommandXboxController controller) {
+    double x = MathUtil.applyDeadband(-controller.getRightY(), 0.1);
+    double y = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
+    Rotation2d targetRotation = state.Pose.getRotation();
+    if (!(x == 0 && y == 0)) {
+      targetRotation = new Rotation2d(x, y);
+    }
+
+    return turnTowards(speeds, targetRotation);
   }
 
   public Pose2d getPose() {
