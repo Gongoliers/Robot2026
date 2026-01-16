@@ -4,13 +4,18 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Telemetry;
+import frc.robot.drive.Drive;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
 
@@ -28,6 +33,9 @@ public class RobotContainer {
 
   /** Multithreader */
   private final Multithreader multithreader;
+
+  /** Drive */
+  private final Drive drive;
 
   /** Shooter */
   private final Shooter shooter;
@@ -54,13 +62,30 @@ public class RobotContainer {
     operatorController = new CommandXboxController(1);
 
     multithreader = Multithreader.getInstance();
+    drive = Drive.getInstance();
     shooter = Shooter.getInstance();
     shooterTester = ShooterTester.getInstance();
 
     multithreader.start();
 
     Telemetry.initializeTabs(shooter);
+    configureDefaultCommands();
     configureBindings();
+  }
+
+  private void configureDefaultCommands() {
+    drive.setDefaultCommand(drive.drive(
+      () -> {
+        LinearVelocity maxVelocity = MetersPerSecond.of(2);
+        AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.5);
+
+        var x = MathUtil.applyDeadband(-driverController.getLeftY(), 0.1);
+        var y = MathUtil.applyDeadband(-driverController.getLeftX(), 0.1);
+        var omega = MathUtil.applyDeadband(-driverController.getRightX(), 0.1);
+
+        return new ChassisSpeeds(
+          maxVelocity.times(x), maxVelocity.times(y), maxAngularVelocity.times(omega));
+      }));
   }
 
   private void configureBindings() {
