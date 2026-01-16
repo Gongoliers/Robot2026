@@ -43,7 +43,7 @@ public class ShooterTester {
   private MotorValues motorValues;
 
   /** List of angular velocities measured during testing */
-  private ArrayList<AngularVelocity> velocityAccumulator;
+  private ArrayList<Double> velocityAccumulator;
 
   /** How close velocity should be to target velocity to be considered at that velocity */
   private AngularVelocity velocityTolerance;
@@ -88,7 +88,7 @@ public class ShooterTester {
     routine = new SysIdRoutine(config, mechanism);
 
     motorValues = new MotorValues();
-    velocityAccumulator = new ArrayList<AngularVelocity>();
+    velocityAccumulator = new ArrayList<Double>();
     velocityTolerance = RotationsPerSecond.of(1);
     returnTimes = new ArrayList<Time>();
     framesWithinTolerance = 0;
@@ -126,7 +126,7 @@ public class ShooterTester {
 
   public Command findVelocityVariance(AngularVelocity testVelocity) {
     return Commands.runOnce(() -> {
-      velocityAccumulator = new ArrayList<AngularVelocity>();
+      velocityAccumulator = new ArrayList<Double>();
       shooter.setSetpoint(testVelocity);
     })
     .andThen(Commands.waitSeconds(1)) // Let the motor spin up
@@ -134,7 +134,7 @@ public class ShooterTester {
       Commands.waitSeconds(5),
       Commands.run(() -> {
         motorValues = shooter.getValues();
-        velocityAccumulator.add(motorValues.velocity);
+        velocityAccumulator.add(motorValues.velocity.in(RotationsPerSecond));
       })
     ))
     .andThen(Commands.runOnce(() -> {
@@ -143,20 +143,22 @@ public class ShooterTester {
       double maxVelRotationsPerSec = Double.NEGATIVE_INFINITY;
       double minVelRotationsPerSec = Double.POSITIVE_INFINITY;
 
-      for (AngularVelocity velocity : velocityAccumulator) {
-        maxVelRotationsPerSec = Math.max(velocity.in(RotationsPerSecond), maxVelRotationsPerSec);
-        minVelRotationsPerSec = Math.min(velocity.in(RotationsPerSecond), minVelRotationsPerSec);
+      for (double velocityRotationsPerSec : velocityAccumulator) {
+        maxVelRotationsPerSec = Math.max(velocityRotationsPerSec, maxVelRotationsPerSec);
+        minVelRotationsPerSec = Math.min(velocityRotationsPerSec, minVelRotationsPerSec);
       }
     
       double center = (maxVelRotationsPerSec + minVelRotationsPerSec)/2;
       double maxError = maxVelRotationsPerSec - center;
 
-      velocityTolerance = RotationsPerSecond.of(maxError*1.25);
+      velocityTolerance = RotationsPerSecond.of(maxError*1.5);
     }));
   }
 
   public Command runTests(AngularVelocity testVelocity) {
     return Commands.run(() -> {
+      shooter.setSetpoint(testVelocity);
+
       motorValues = shooter.getValues();
 
       boolean inTolerance = MathUtil.isNear(testVelocity.in(RotationsPerSecond), motorValues.velocity.in(RotationsPerSecond), velocityTolerance.in(RotationsPerSecond));
@@ -177,7 +179,7 @@ public class ShooterTester {
 
       // If the shooter has been in tolerance for 0.4s
       if (framesWithinTolerance > 20) {
-        if (framesSinceDisturbance > 1) { // If this is a recovery from a long disturbance and not just a long period within tolerance, log this
+        if (framesSinceDisturbance > 3) { // If this is a recovery from a long disturbance and not just a long period within tolerance, log this
           double secondsSinceDisturbance = (framesSinceDisturbance - 20) * 0.02;
           returnTimes.add(Seconds.of(secondsSinceDisturbance));
           System.out.println("Returned in "+secondsSinceDisturbance+"s");
