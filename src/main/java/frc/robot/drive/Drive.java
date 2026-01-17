@@ -9,6 +9,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -92,8 +94,8 @@ public class Drive extends Subsystem {
     LinearVelocity maxVelocity = MetersPerSecond.of(2);
     AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.5);
 
-    double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
-    double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
+    double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.2);
+    double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.2);
     double omega = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
 
     return new ChassisSpeeds(
@@ -111,6 +113,8 @@ public class Drive extends Subsystem {
   public ChassisSpeeds turnTowards(ChassisSpeeds speeds, Rotation2d rotation) {
     AngularVelocity angularVelocity = RotationsPerSecond.of(yawPID.calculate(state.Pose.getRotation().getRotations(), rotation.getRotations()));
 
+    SmartDashboard.putNumber("error", Math.abs(rotation.getRotations()-state.Pose.getRotation().getRotations()));
+
     return new ChassisSpeeds(
       speeds.vxMetersPerSecond,
       speeds.vyMetersPerSecond,
@@ -123,9 +127,16 @@ public class Drive extends Subsystem {
     Rotation2d targetRotation = state.Pose.getRotation();
     if (!(x == 0 && y == 0)) {
       targetRotation = new Rotation2d(x, y);
+      SmartDashboard.putNumber("targetRotation", targetRotation.getRotations());
     }
 
     return turnTowards(speeds, targetRotation);
+  }
+
+  public ChassisSpeeds turnTorwardsTranslation(ChassisSpeeds speeds, Translation2d translation) {
+    Translation2d robotRelative = translation.minus(state.Pose.getTranslation());
+    
+    return turnTowards(speeds, robotRelative.getAngle());
   }
 
   public Pose2d getPose() {
