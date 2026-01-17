@@ -133,9 +133,9 @@ public class Drive extends Subsystem {
     return turnTowards(speeds, targetRotation);
   }
 
-  public ChassisSpeeds turnTorwardsTranslation(ChassisSpeeds speeds, Translation2d translation) {
+  public ChassisSpeeds turnTowardsTranslation(ChassisSpeeds speeds, Translation2d translation) {
     Translation2d robotRelative = translation.minus(state.Pose.getTranslation());
-    
+
     return turnTowards(speeds, robotRelative.getAngle());
   }
 

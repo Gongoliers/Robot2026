@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -163,12 +164,20 @@ public class ShooterTester {
 
       boolean inTolerance = MathUtil.isNear(testVelocity.in(RotationsPerSecond), motorValues.velocity.in(RotationsPerSecond), velocityTolerance.in(RotationsPerSecond));
 
+      SmartDashboard.putNumber("Upper bound", testVelocity.plus(velocityTolerance).in(RotationsPerSecond));
+      SmartDashboard.putNumber("Lower bound", testVelocity.minus(velocityTolerance).in(RotationsPerSecond));
+      SmartDashboard.putBoolean("Within tolerance", inTolerance);
+
       if (framesSinceDisturbance > 0) { // If frames since disturbance has started counting, continue
         framesSinceDisturbance += 1;
       }
 
       if (inTolerance) {
         framesWithinTolerance += 1;
+
+        if (framesSinceDisturbance < 4) { // if it's a tiny fake disturbance ignore it
+          framesSinceDisturbance = 0;
+        }
       } else {
         framesWithinTolerance = 0;
 
@@ -179,7 +188,7 @@ public class ShooterTester {
 
       // If the shooter has been in tolerance for 0.4s
       if (framesWithinTolerance > 20) {
-        if (framesSinceDisturbance > 3) { // If this is a recovery from a long disturbance and not just a long period within tolerance, log this
+        if (framesSinceDisturbance > 3) { // this is needed i forgot why
           double secondsSinceDisturbance = (framesSinceDisturbance - 20) * 0.02;
           returnTimes.add(Seconds.of(secondsSinceDisturbance));
           System.out.println("Returned in "+secondsSinceDisturbance+"s");

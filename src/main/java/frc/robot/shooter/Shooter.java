@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import frc.lib.MultithreadedSubsystem;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.configs.MechanismConfig;
@@ -58,13 +60,13 @@ public class Shooter extends MultithreadedSubsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(0.11669)
-          .kA(0.013372)
-          .kS(0.037532)
+          .kV(0.1159)
+          .kA(0.0045513)
+          .kS(0.031658)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0.03)
+          .kP(1)
           .kI(0.0)
           .kD(0.0)
           .build())
@@ -102,6 +104,7 @@ public class Shooter extends MultithreadedSubsystem {
     voltageOut = Volts.mutable(0);
 
     feedback = config.feedbackControllerConfig().createPIDController();
+    feedback.setTolerance(2.5);
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
   }
 
@@ -129,9 +132,19 @@ public class Shooter extends MultithreadedSubsystem {
   public void fastPeriodic() {
     motorOutput.updateValues(motorValues, RobotConstants.FAST_PERIODIC_DURATION);
 
+    double setpointVelRotationsPerSec = setpointVelocity.in(RotationsPerSecond);
+    double velRotationsPerSec = motorValues.velocity.in(RotationsPerSecond);
+
     if (!voltageSet) {
-      double feedbackVolts = feedback.calculate(motorValues.velocity.in(RotationsPerSecond), setpointVelocity.in(RotationsPerSecond));
-      double feedforwardVolts = feedforward.calculate(setpointVelocity.in(RotationsPerSecond));
+      double feedbackVolts = 0.0;
+      if (Math.abs(setpointVelRotationsPerSec) > 1 && !MathUtil.isNear(setpointVelRotationsPerSec, velRotationsPerSec, feedback.getErrorTolerance())) {
+        feedbackVolts = feedback.calculate(velRotationsPerSec, setpointVelRotationsPerSec);
+      }
+      double feedforwardVolts = feedforward.calculate(setpointVelRotationsPerSec);
+
+      SmartDashboard.putNumber("ff volts", feedforwardVolts);
+      SmartDashboard.putNumber("fb volts", feedbackVolts);
+      SmartDashboard.putNumber("total volts", feedforwardVolts + feedbackVolts);
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
     }

@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -68,7 +69,7 @@ public class RobotContainer {
 
     multithreader.start();
 
-    Telemetry.initializeTabs(drive, shooter);
+    Telemetry.initializeTabs(shooter);
     configureDefaultCommands();
     configureBindings();
   }
@@ -83,7 +84,11 @@ public class RobotContainer {
     driverController.x().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     driverController.y().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    driverController.leftTrigger().whileTrue(drive.drive(() -> drive.turnTowardsController(drive.speedsFromController(driverController), driverController)));
+    //driverController.leftTrigger().whileTrue(drive.drive(() -> drive.turnTowardsController(drive.speedsFromController(driverController), driverController)));
+    //driverController.rightTrigger().whileTrue(drive.drive(() -> drive.turnTowardsTranslation(drive.speedsFromController(driverController), new Translation2d(0,0))));
+
+    driverController.leftTrigger().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(100)));
+    driverController.rightTrigger().whileTrue(shooterTester.runTests(RotationsPerSecond.of(100)));
   }
 
   public Command getAutonomousCommand() {
