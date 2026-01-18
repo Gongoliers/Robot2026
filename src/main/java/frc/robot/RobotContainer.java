@@ -6,6 +6,9 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -44,6 +47,8 @@ public class RobotContainer {
   /** Shooter tester */
   private final ShooterTester shooterTester;
 
+  private final TalonFX intake; // test intake
+
   /**
    * Gets robot container instance
    * 
@@ -67,6 +72,8 @@ public class RobotContainer {
     shooter = Shooter.getInstance();
     shooterTester = ShooterTester.getInstance();
 
+    intake = new TalonFX(30);
+
     multithreader.start();
 
     Telemetry.initializeTabs(shooter);
@@ -79,16 +86,19 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driverController.a().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    driverController.b().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    driverController.x().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    driverController.y().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    //driverController.a().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    //driverController.b().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    //driverController.x().onTrue(shooterTester.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    //driverController.y().onTrue(shooterTester.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    //driverController.leftTrigger().whileTrue(drive.drive(() -> drive.turnTowardsController(drive.speedsFromController(driverController), driverController)));
+    driverController.a().onTrue(Commands.runOnce(() -> intake.setControl(new VoltageOut(5))));
+    driverController.b().onTrue(Commands.runOnce(() -> intake.setControl(new VoltageOut(0))));
+
+    driverController.leftTrigger().whileTrue(drive.drive(() -> drive.turnTowardsController(drive.speedsFromController(driverController), driverController)));
     //driverController.rightTrigger().whileTrue(drive.drive(() -> drive.turnTowardsTranslation(drive.speedsFromController(driverController), new Translation2d(0,0))));
 
-    driverController.leftTrigger().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(100)));
-    driverController.rightTrigger().whileTrue(shooterTester.runTests(RotationsPerSecond.of(100)));
+    //driverController.leftTrigger().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(100)));
+    //driverController.rightTrigger().whileTrue(shooterTester.runTests(RotationsPerSecond.of(100)));
   }
 
   public Command getAutonomousCommand() {
