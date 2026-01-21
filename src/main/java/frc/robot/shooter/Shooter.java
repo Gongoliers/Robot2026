@@ -169,66 +169,6 @@ public class Shooter extends MultithreadedSubsystem {
     setpointVelocity.mut_replace(velocitySetpoint);
   }
 
-  public void setKP(double kP) {
-    config = MechanismBuilder.edit(config)
-      .feedbackControllerConfig(
-        FeedbackControllerBuilder.edit(config.feedbackControllerConfig())
-          .kP(kP)
-          .build())
-      .build();
-
-    feedback.setP(kP);
-  }
-
-  public void setKI(double kI) {
-    config = MechanismBuilder.edit(config)
-      .feedbackControllerConfig(
-        FeedbackControllerBuilder.edit(config.feedbackControllerConfig())
-          .kI(kI)
-          .build())
-      .build();
-
-    feedback.setI(kI);
-  }
-
-  public void setKD(double kD) {
-    config = MechanismBuilder.edit(config)
-      .feedbackControllerConfig(
-        FeedbackControllerBuilder.edit(config.feedbackControllerConfig())
-          .kD(kD)
-          .build())
-      .build();
-    
-    feedback.setD(kD);
-  }
-
-  public void setKV(double kV) {
-    config = MechanismBuilder.edit(config)
-      .feedforwardControllerConfig(
-        FeedforwardControllerBuilder.edit(config.feedforwardControllerConfig())
-          .kV(kV)
-          .build())
-      .build();
-  }
-
-  public void setKA(double kA) {
-    config = MechanismBuilder.edit(config)
-      .feedforwardControllerConfig(
-        FeedforwardControllerBuilder.edit(config.feedforwardControllerConfig())
-          .kA(kA)
-          .build())
-      .build();
-  }
-
-  public void setKS(double kS) {
-    config = MechanismBuilder.edit(config)
-      .feedforwardControllerConfig(
-        FeedforwardControllerBuilder.edit(config.feedforwardControllerConfig())
-          .kS(kS)
-          .build())
-      .build();
-  }
-
   public AngularVelocity getSetpoint() {
     return setpointVelocity;
   }
