@@ -143,26 +143,6 @@ public class Drive extends Subsystem {
     return state.Pose;
   }
 
-  public SysIdRoutine createDriveRoutine() {
-    return DriveFactory.createDriveRoutine(swerve, this);
-  }
-
-  public SysIdRoutine createSteerRoutine() {
-    return DriveFactory.createSteerRoutine(swerve, this);
-  }
-
-  public SysIdRoutine createRotationRoutine() {
-    return DriveFactory.createRotationRoutine(swerve, this);
-  }
-
-  public Command sysIdQuasistatic(SysIdRoutine routine, SysIdRoutine.Direction direction) {
-    return routine.quasistatic(direction);
-  }
-
-  public Command sysIdDynamic(SysIdRoutine routine, SysIdRoutine.Direction direction) {
-    return routine.dynamic(direction);
-  }
-
   public Command drive(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
     SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
 
