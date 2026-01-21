@@ -2,7 +2,7 @@ package frc.robot;
 
 import frc.lib.Multithreaded;
 
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 
 import java.util.HashSet;
 import java.util.Set;

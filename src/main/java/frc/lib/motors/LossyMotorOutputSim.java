@@ -1,7 +1,6 @@
 package frc.lib.motors;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.*;
 import java.util.function.Function;

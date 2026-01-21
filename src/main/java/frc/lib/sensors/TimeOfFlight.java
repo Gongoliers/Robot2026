@@ -1,6 +1,6 @@
 package frc.lib.sensors;
 
-import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Distance;
 

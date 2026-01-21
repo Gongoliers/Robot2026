@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
