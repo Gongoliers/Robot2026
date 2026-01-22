@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.motors.MotorValues;
 
-/** Class with methods to get sysid routine commands */
+/** Class with methods to run sysid and test the shooter */
 public class ShooterTester {
   
   /** Shooter tester instance */
