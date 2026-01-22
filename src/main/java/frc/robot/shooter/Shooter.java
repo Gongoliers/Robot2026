@@ -94,7 +94,7 @@ public class Shooter extends MultithreadedSubsystem {
     return instance;
   }
 
-  /** Sooter subsystem constructor */
+  /** Shooter subsystem constructor */
   private Shooter() {
     motorOutput = ShooterFactory.createShooterMotor(config);
     motorOutput.configure();
