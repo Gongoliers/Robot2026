@@ -30,6 +30,7 @@ public class RobotConstants {
   public enum Subsystem {
     SWERVE,
     SHOOTER,
+    AZIMUTH,
   }
 
   /** Enabled subsystems */

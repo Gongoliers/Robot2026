@@ -1,0 +1,158 @@
+package frc.robot.azimuth;
+
+import static edu.wpi.first.units.Units.*;
+
+import java.util.function.Supplier;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.MutAngle;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.MultithreadedSubsystem;
+import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
+import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
+import frc.lib.configs.MechanismConfig;
+import frc.lib.configs.MechanismConfig.MechanismBuilder;
+import frc.lib.configs.MotorConfig.MotorBuilder;
+import frc.lib.motors.MotorOutput;
+import frc.lib.motors.MotorValues;
+import frc.robot.RobotConstants;
+import frc.robot.shooter.ShooterFactory;
+
+/** Azimuth (turret yaw control) subsystem */
+public class Azimuth extends MultithreadedSubsystem {
+  
+  /** Azimuth subsystem singleton */
+  private static Azimuth instance = null;
+
+  /** Azimuth motor output */
+  private final MotorOutput motorOutput;
+
+  /** Azimuth motor output values */
+  private MotorValues motorValues = new MotorValues();
+
+  /** Target position */
+  private final MutAngle setpoint;
+
+  /** True if a manual voltage is set by runAtVoltage command */
+  private boolean voltageSet;
+  
+  /** Output voltage */
+  private final MutVoltage voltageOut;
+  
+  /** Feedback controller */
+  private PIDController feedback;
+
+  /** Feedforward controller */
+  private SimpleMotorFeedforward feedforward;
+
+  /** Shooter mechanism configuration that provides default values for motor control configuration and motor configuration */
+  private MechanismConfig config =
+    MechanismBuilder.defaults()
+      .feedforwardControllerConfig(
+        FeedforwardControllerBuilder.defaults()
+          .kV(0.0)
+          .kA(0.0)
+          .kS(0.0)
+          .build())
+      .feedbackControllerConfig(
+        FeedbackControllerBuilder.defaults()
+          .kP(0.0)
+          .kI(0.0)
+          .kD(0.0)
+          .build())
+      .motorConfig(
+        MotorBuilder.defaults()
+          .ccwPositive(false)
+          .rotorToSensorRatio(1)
+          .sensorToMechRatio(1)
+          .neutralBrake(true)
+          .statorCurrentLimit(240)
+          .supplyCurrentLimit(120)
+          .build())
+      .build();
+
+  /**
+   * Gets azimuth subsystem instance
+   * 
+   * @return azimuth subsystem instance
+   */
+  public static Azimuth getInstance() {
+    if (instance == null) {
+      instance = new Azimuth();
+    }
+
+    return instance;
+  }
+
+  /** Azimuth subsystem constructor */
+  private Azimuth() {
+    motorOutput = ShooterFactory.createShooterMotor(config);
+    motorOutput.configure();
+
+    setpoint = Rotations.mutable(0);
+    voltageSet = false;
+    voltageOut = Volts.mutable(0);
+
+    feedback = config.feedbackControllerConfig().createPIDController();
+    feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
+  }
+
+  @Override
+  public void initializeTab() {
+
+  }
+
+  @Override
+  public void periodic() {}
+
+  @Override
+  public void fastPeriodic() {
+    motorOutput.updateValues(motorValues, RobotConstants.FAST_PERIODIC_DURATION);
+
+    double setpointRotations = setpoint.in(Rotations);
+    double positionRotations = motorValues.position.in(Rotations);
+
+    if (!voltageSet) {
+      double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
+      double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
+
+      voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
+    }
+
+    motorOutput.setVoltage(voltageOut);
+  }
+
+  /**
+     * Returns a command that allows for temporary manual voltage control of the azimuth motor
+     * 
+     * @param voltageSupplier supplies a manual motor voltage to run at while the command is running
+     * @return a command that allows for temporary manual voltage control of the azimuth motor
+     */
+  public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
+    return Commands.run(() -> {
+      voltageSet = true;
+      voltageOut.mut_replace(voltageSupplier.get());
+    }).finallyDo(() -> voltageSet = false);
+  }
+
+  public void setSetpoint(Angle setpointPosition) {
+    setpoint.mut_replace(setpointPosition);
+  }
+
+  public Angle getSetpoint() {
+    return setpoint;
+  }
+
+  public MechanismConfig getConfig() {
+    return config;
+  }
+
+  public MotorValues getValues() {
+    return motorValues;
+  }
+}
