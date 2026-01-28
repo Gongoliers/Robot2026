@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.Telemetry;
+import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
@@ -39,6 +40,9 @@ public class RobotContainer {
   /** Shooter tester */
   private final ShooterTester shooterTester;
 
+  /** Azimuth */
+  private final Azimuth azimuth;
+
   /**
    * Gets robot container instance
    * 
@@ -61,6 +65,7 @@ public class RobotContainer {
     drive = Drive.getInstance();
     shooter = Shooter.getInstance();
     shooterTester = ShooterTester.getInstance();
+    azimuth = Azimuth.getInstance();
 
     multithreader.start();
 
