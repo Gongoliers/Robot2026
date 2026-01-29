@@ -124,6 +124,19 @@ public class ShooterTester {
     );
   }
 
+  /**
+   * Returns a command that runs quasistatic and dynamic sysid forwards and backwards
+   * 
+   * @return a command that runs quasistatic and dynamic sysid forwards and backwards
+   */
+  public Command runFullSysId() {
+    return new runFullSysId(
+      this::sysIdQuasistatic, 
+      this::sysIdDynamic, 
+      () -> shooter.getValues().velocity.abs(RotationsPerSecond) < 0.1,
+      shooter);
+  }
+
   public Command findVelocityVariance(AngularVelocity testVelocity) {
     return Commands.runOnce(() -> {
       velocityAccumulator = new ArrayList<Double>();
