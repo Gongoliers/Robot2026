@@ -10,6 +10,10 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
@@ -103,7 +107,19 @@ public class Azimuth extends MultithreadedSubsystem {
 
   @Override
   public void initializeTab() {
+    ShuffleboardTab tab = Shuffleboard.getTab("Azimuth");
 
+    ShuffleboardLayout stateTab = tab.getLayout("Current state", BuiltInLayouts.kList);
+
+    stateTab.addDouble("Motor voltage (V)", () -> motorValues.motorVoltage.in(Volts));
+    stateTab.addDouble("Supply voltage (V)", () -> motorValues.supplyVoltage.in(Volts));
+    stateTab.addDouble("Stator current (A)", () -> motorValues.statorCurrent.in(Amps));
+    stateTab.addDouble("Supply current (A)", () -> motorValues.supplyCurrent.in(Amps));
+    stateTab.addDouble("Position (rot)", () -> motorValues.position.in(Rotations));
+    stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
+    stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
+
+    tab.addDouble("Setpoint (rot)", () -> setpoint.in(Rotations));
   }
 
   @Override
