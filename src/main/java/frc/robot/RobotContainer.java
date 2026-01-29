@@ -6,12 +6,15 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
+import frc.robot.azimuth.AzimuthTester;
 import frc.robot.drive.Drive;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
@@ -43,6 +46,9 @@ public class RobotContainer {
   /** Azimuth */
   private final Azimuth azimuth;
 
+  /** Azimuth tester */
+  private final AzimuthTester azimuthTester;
+
   /**
    * Gets robot container instance
    * 
@@ -66,6 +72,7 @@ public class RobotContainer {
     shooter = Shooter.getInstance();
     shooterTester = ShooterTester.getInstance();
     azimuth = Azimuth.getInstance();
+    azimuthTester = AzimuthTester.getInstance();
 
     multithreader.start();
 
@@ -79,8 +86,22 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driverController.leftTrigger().whileTrue(drive.drive(() -> drive.turnTowardsController(drive.speedsFromController(driverController), driverController)));
-    driverController.rightTrigger().whileTrue(drive.drive(() -> drive.turnTowardsTranslation(drive.speedsFromController(driverController), new Translation2d(0,0))));
+    operatorController.a().onTrue(azimuthTester.runFullSysId());
+    operatorController.b().onTrue(Commands.runOnce(() -> azimuth.resetPosition(Rotations.of(0.0))));
+
+    operatorController.leftBumper().onTrue(Commands.runOnce(() -> azimuth.setSetpoint(Rotations.of(0.125))));
+    operatorController.rightBumper().onTrue(Commands.runOnce(() -> azimuth.setSetpoint(Rotations.of(-0.125))));
+    operatorController.povLeft().whileTrue(azimuth.runAtVoltage(() -> Volts.of(1)));
+    operatorController.povRight().whileTrue(azimuth.runAtVoltage(() -> Volts.of(-1)));
+
+    operatorController.leftTrigger().whileTrue(Commands.run(() -> {
+      double x = -operatorController.getRightY();
+      double y = -operatorController.getRightX();
+
+      if (Math.hypot(x, y) > 0.75) {
+        azimuth.setSetpoint(Rotations.of(new Rotation2d(x, y).getRotations()));
+      }
+    }));
   }
 
   public Command getAutonomousCommand() {

@@ -51,8 +51,8 @@ public class AzimuthTester {
     voltageOut = Volts.mutable(0.0);
 
     config = new SysIdRoutine.Config(
-      Volts.per(Second).of(1),
-      Volts.of(5),
+      Volts.per(Second).of(0.75),
+      Volts.of(4),
       Seconds.of(5));
 
     mechanism = new SysIdRoutine.Mechanism(
