@@ -2,13 +2,11 @@ package frc.robot.azimuth;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
