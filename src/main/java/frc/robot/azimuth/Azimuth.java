@@ -21,7 +21,6 @@ import frc.lib.configs.MotorConfig.MotorBuilder;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
 import frc.robot.RobotConstants;
-import frc.robot.shooter.ShooterFactory;
 
 /** Azimuth (turret yaw control) subsystem */
 public class Azimuth extends MultithreadedSubsystem {
@@ -69,7 +68,7 @@ public class Azimuth extends MultithreadedSubsystem {
         MotorBuilder.defaults()
           .ccwPositive(false)
           .rotorToSensorRatio(1)
-          .sensorToMechRatio(1)
+          .sensorToMechRatio(25)
           .neutralBrake(true)
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
@@ -91,7 +90,7 @@ public class Azimuth extends MultithreadedSubsystem {
 
   /** Azimuth subsystem constructor */
   private Azimuth() {
-    motorOutput = ShooterFactory.createShooterMotor(config);
+    motorOutput = AzimuthFactory.createAzimuthMotor(config);
     motorOutput.configure();
 
     setpoint = Rotations.mutable(0);
