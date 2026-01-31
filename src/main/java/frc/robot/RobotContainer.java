@@ -102,6 +102,8 @@ public class RobotContainer {
         azimuth.setSetpoint(Rotations.of(new Rotation2d(x, y).getRotations()));
       }
     }));
+
+    driverController.leftTrigger().whileTrue(azimuth.turnToTarget(new Translation2d(11.91539, 4.034663)));
   }
 
   public Command getAutonomousCommand() {
