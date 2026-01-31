@@ -6,6 +6,11 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutVoltage;
@@ -24,7 +29,9 @@ import frc.lib.configs.MechanismConfig.MechanismBuilder;
 import frc.lib.configs.MotorConfig.MotorBuilder;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
+import frc.robot.LimelightHelpers;
 import frc.robot.RobotConstants;
+import frc.robot.LimelightHelpers.PoseEstimate;
 
 /** Azimuth (turret yaw control) subsystem */
 public class Azimuth extends MultithreadedSubsystem {
@@ -104,6 +111,8 @@ public class Azimuth extends MultithreadedSubsystem {
 
     feedback = config.feedbackControllerConfig().createPIDController();
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
+
+    LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", 0.146, -0.219075, 0.5, 0, 0, 0);
   }
 
   @Override
@@ -154,6 +163,23 @@ public class Azimuth extends MultithreadedSubsystem {
       voltageSet = true;
       voltageOut.mut_replace(voltageSupplier.get());
     }).finallyDo(() -> voltageSet = false);
+  }
+
+  public Command turnToTarget(Translation2d target) {
+    return Commands.run(() -> {
+      PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
+
+      if (poseEstimate.tagCount > 1) {
+        Angle yaw = poseEstimate.pose.getRotation().getMeasure();
+
+        Translation2d translationToTarget = target.minus(poseEstimate.pose.getTranslation());
+        Angle yawToTarget = new Rotation2d(translationToTarget.getX(), translationToTarget.getY()).getMeasure();
+
+        Angle yawError = yawToTarget.minus(yaw);
+
+        setSetpoint(motorValues.position.plus(yawError));
+      }
+    });
   }
 
   public void setSetpoint(Angle setpointPosition) {
