@@ -1,4 +1,4 @@
-package frc.robot.azimuth;
+package frc.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -11,14 +11,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
 
-/** Class with methods to run sysid with azimuth */
-public class AzimuthTester {
+/** Class with methods to run sysid with hood */
+public class HoodTester {
   
-  /** Azimuth tester instance */
-  private static AzimuthTester instance = null;
+  /** Hood tester instance */
+  private static HoodTester instance = null;
 
-  /** Azimuth subsystem reference */
-  private final Azimuth azimuth;
+  /** Hood subsystem reference */
+  private final Hood hood;
 
   /** Sysid config */
   private final SysIdRoutine.Config config;
@@ -29,36 +29,36 @@ public class AzimuthTester {
   /** Sysid routine */
   private final SysIdRoutine routine;
 
-  /** Voltage out variable used for manual azimuth control */
+  /** Voltage out variable used for manual hood control */
   private final MutVoltage voltageOut;
 
   /**
-   * Gets azimuth tester instance
+   * Gets hood tester instance
    * 
-   * @return azimuth tester instance
+   * @return hood tester instance
    */
-  public static AzimuthTester getInstance() {
+  public static HoodTester getInstance() {
     if (instance == null) {
-      instance = new AzimuthTester();
+      instance = new HoodTester();
     }
 
     return instance;
   }
 
-  private AzimuthTester() {
-    azimuth = Azimuth.getInstance();
+  private HoodTester() {
+    hood = Hood.getInstance();
 
     voltageOut = Volts.mutable(0.0);
 
     config = new SysIdRoutine.Config(
       Volts.per(Second).of(0.75),
-      Volts.of(4),
-      Seconds.of(5));
+      Volts.of(2),
+      Seconds.of(2));
 
     mechanism = new SysIdRoutine.Mechanism(
-      this::setVoltage, 
+      this::setVoltage,
       this::logMotors, 
-      azimuth);
+      hood);
 
     routine = new SysIdRoutine(config, mechanism);
   }
@@ -68,7 +68,7 @@ public class AzimuthTester {
   }
 
   private void logMotors(SysIdRoutineLog log) {
-    MotorValues motorValues = azimuth.getValues();
+    MotorValues motorValues = hood.getValues();
 
     log.motor("drive")
       .voltage(motorValues.motorVoltage)
@@ -80,14 +80,14 @@ public class AzimuthTester {
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      azimuth.runAtVoltage(() -> voltageOut),
+      hood.runAtVoltage(() -> voltageOut),
       routine.quasistatic(direction)
     );
   }
 
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      azimuth.runAtVoltage(() -> voltageOut),
+      hood.runAtVoltage(() -> voltageOut),
       routine.dynamic(direction)
     );
   }
@@ -100,8 +100,9 @@ public class AzimuthTester {
   public Command runFullSysId() {
     return new runFullSysId(
       this::sysIdQuasistatic, 
-      this::sysIdDynamic, 
-      () -> azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.1,
-      azimuth);
+      this::sysIdDynamic,
+      () -> true,
+      Seconds.of(0.25),
+      hood);
   }
 }
