@@ -17,6 +17,7 @@ import frc.robot.azimuth.Azimuth;
 import frc.robot.azimuth.AzimuthTester;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
+import frc.robot.hood.HoodTester;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
 
@@ -53,6 +54,9 @@ public class RobotContainer {
   /** Hood */
   private final Hood hood;
 
+  /** Hood tester */
+  private final HoodTester hoodTester;
+
   /**
    * Gets robot container instance
    * 
@@ -78,6 +82,7 @@ public class RobotContainer {
     azimuth = Azimuth.getInstance();
     azimuthTester = AzimuthTester.getInstance();
     hood = Hood.getInstance();
+    hoodTester = HoodTester.getInstance();
 
     multithreader.start();
 
