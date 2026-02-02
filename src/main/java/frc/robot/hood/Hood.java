@@ -41,6 +41,12 @@ public class Hood extends MultithreadedSubsystem {
   /** Target position */
   private final MutAngle setpoint;
 
+  /** Minimum hood angle (for safety) */
+  private final Angle minPosition = Degrees.of(10);
+
+  /** Maximum hood angle (for safety) */
+  private final Angle maxPosition = Degrees.of(42);
+
   /** True if a manual voltage is set by runAtVoltage command */
   private boolean voltageSet;
 
@@ -58,16 +64,16 @@ public class Hood extends MultithreadedSubsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(7.216)
-          .kA(0.20182)
-          .kS(0.20099)
+          .kV(0.0)
+          .kA(0.0)
+          .kS(0.0)
           .kG(0.0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(45.336)
+          .kP(0.0)
           .kI(0.0)
-          .kD(5.2604)
+          .kD(0.0)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -97,9 +103,9 @@ public class Hood extends MultithreadedSubsystem {
   private Hood() {
     motorOutput = HoodFactory.createHoodMotor(config);
     motorOutput.configure();
-    motorOutput.setPosition(Rotations.of(0.0)); // TODO: figure out the actaual position of the COM in starting configuration
+    motorOutput.setPosition(maxPosition);
     
-    setpoint = Rotations.mutable(0.0);
+    setpoint = Rotations.mutable(maxPosition.in(Rotations));
     voltageSet = false;
     voltageOut = Volts.mutable(0.0);
 
@@ -153,12 +159,18 @@ public class Hood extends MultithreadedSubsystem {
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
     return Commands.run(() -> {
       voltageSet = true;
-      voltageOut.mut_replace(voltageSupplier.get()); // TODO: build in some safety so something like sysid can't send the thing flying away to space
+      if (motorValues.position.gte(minPosition) && motorValues.position.lte(maxPosition)) {
+        voltageOut.mut_replace(voltageSupplier.get());
+      } else {
+        voltageOut.mut_replace(Volts.of(0.0));
+      }
     }).finallyDo(() -> voltageSet = false);
   }
 
   public void setSetpoint(Angle setpointPosition) {
-    setpoint.mut_replace(setpointPosition);
+    if (setpointPosition.gte(minPosition) && setpointPosition.lte(maxPosition)){
+      setpoint.mut_replace(setpointPosition);
+    }
   }
 
   public Angle getSetpoint() {
