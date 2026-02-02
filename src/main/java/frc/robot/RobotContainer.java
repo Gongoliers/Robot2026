@@ -16,6 +16,7 @@ import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.azimuth.AzimuthTester;
 import frc.robot.drive.Drive;
+import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
 
@@ -49,6 +50,9 @@ public class RobotContainer {
   /** Azimuth tester */
   private final AzimuthTester azimuthTester;
 
+  /** Hood */
+  private final Hood hood;
+
   /**
    * Gets robot container instance
    * 
@@ -73,10 +77,11 @@ public class RobotContainer {
     shooterTester = ShooterTester.getInstance();
     azimuth = Azimuth.getInstance();
     azimuthTester = AzimuthTester.getInstance();
+    hood = Hood.getInstance();
 
     multithreader.start();
 
-    Telemetry.initializeTabs(drive, shooter, azimuth);
+    Telemetry.initializeTabs(drive, shooter, azimuth, hood);
     configureDefaultCommands();
     configureBindings();
   }

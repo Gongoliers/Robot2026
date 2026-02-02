@@ -31,6 +31,7 @@ public class RobotConstants {
     SWERVE,
     SHOOTER,
     AZIMUTH,
+    HOOD,
   }
 
   /** Enabled subsystems */

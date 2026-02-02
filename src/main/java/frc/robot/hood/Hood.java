@@ -1,11 +1,11 @@
-package frc.robot.azimuth;
+package frc.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutVoltage;
@@ -26,16 +26,16 @@ import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
 import frc.robot.RobotConstants;
 
-/** Azimuth (turret yaw control) subsystem */
-public class Azimuth extends MultithreadedSubsystem {
+/** Hood subsystem */
+public class Hood extends MultithreadedSubsystem {
   
-  /** Azimuth subsystem singleton */
-  private static Azimuth instance = null;
+  /** Hood subsystem singleton */
+  private static Hood instance = null;
 
-  /** Azimuth motor output */
+  /** Hood motor output */
   private final MotorOutput motorOutput;
 
-  /** Azimuth motor output values */
+  /** Hood motor output values */
   private MotorValues motorValues = new MotorValues();
 
   /** Target position */
@@ -43,17 +43,17 @@ public class Azimuth extends MultithreadedSubsystem {
 
   /** True if a manual voltage is set by runAtVoltage command */
   private boolean voltageSet;
-  
+
   /** Output voltage */
   private final MutVoltage voltageOut;
-  
+
   /** Feedback controller */
-  private PIDController feedback;
+  private final PIDController feedback;
 
   /** Feedforward controller */
-  private SimpleMotorFeedforward feedforward;
+  private final ArmFeedforward feedforward;
 
-  /** Shooter mechanism configuration that provides default values for motor control configuration and motor configuration */
+  /** Hood mechanism configuration that provides default values for motor control configuration and motor configuration */
   private MechanismConfig config =
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
@@ -61,6 +61,7 @@ public class Azimuth extends MultithreadedSubsystem {
           .kV(7.216)
           .kA(0.20182)
           .kS(0.20099)
+          .kG(0.0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
@@ -72,7 +73,7 @@ public class Azimuth extends MultithreadedSubsystem {
         MotorBuilder.defaults()
           .ccwPositive(false)
           .rotorToSensorRatio(1)
-          .sensorToMechRatio(5*14)
+          .sensorToMechRatio(4*2*18)
           .neutralBrake(true)
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
@@ -80,35 +81,35 @@ public class Azimuth extends MultithreadedSubsystem {
       .build();
 
   /**
-   * Gets azimuth subsystem instance
+   * Gets hood subsystem instance
    * 
-   * @return azimuth subsystem instance
+   * @return hood subsystem instance
    */
-  public static Azimuth getInstance() {
+  public static Hood getInstance() {
     if (instance == null) {
-      instance = new Azimuth();
+      instance = new Hood();
     }
 
     return instance;
   }
 
-  /** Azimuth subsystem constructor */
-  private Azimuth() {
-    motorOutput = AzimuthFactory.createAzimuthMotor(config);
+  /** Hood subsystem constructor */
+  private Hood() {
+    motorOutput = HoodFactory.createHoodMotor(config);
     motorOutput.configure();
-    motorOutput.setPosition(Rotations.of(0.0));
-
-    setpoint = Rotations.mutable(0);
+    motorOutput.setPosition(Rotations.of(0.0)); // TODO: figure out the actaual position of the COM in starting configuration
+    
+    setpoint = Rotations.mutable(0.0);
     voltageSet = false;
-    voltageOut = Volts.mutable(0);
+    voltageOut = Volts.mutable(0.0);
 
     feedback = config.feedbackControllerConfig().createPIDController();
-    feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
+    feedforward = config.feedforwardControllerConfig().createArmFeedforward();
   }
 
   @Override
   public void initializeTab() {
-    ShuffleboardTab tab = Shuffleboard.getTab("Azimuth");
+    ShuffleboardTab tab = Shuffleboard.getTab("Hood");
 
     ShuffleboardLayout stateTab = tab.getLayout("Current state", BuiltInLayouts.kList);
 
@@ -135,24 +136,24 @@ public class Azimuth extends MultithreadedSubsystem {
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
+      double feedforwardVolts = Math.cos(positionRotations)*feedforward.getKg() + feedforward.getKs();
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
     }
 
     motorOutput.setVoltage(voltageOut);
   }
-
+  
   /**
-   * Returns a command that allows for temporary manual voltage control of the azimuth motor
+   * Returns a command that allows for temporary manual voltage control of the hood motor
    * 
    * @param voltageSupplier supplies a manual motor voltage to run at while the command is running
-   * @return a command that allows for temporary manual voltage control of the azimuth motor
+   * @return a command that allows for temporary manual voltage control of the hood motor
    */
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
     return Commands.run(() -> {
       voltageSet = true;
-      voltageOut.mut_replace(voltageSupplier.get());
+      voltageOut.mut_replace(voltageSupplier.get()); // TODO: build in some safety so something like sysid can't send the thing flying away to space
     }).finallyDo(() -> voltageSet = false);
   }
 
