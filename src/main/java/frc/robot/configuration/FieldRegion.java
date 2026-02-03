@@ -6,18 +6,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static frc.robot.configuration.AndyMarkFieldMeasurements.*;
 import static frc.robot.configuration.Objective.*;
 
 public enum FieldRegion {
-    FIELD(ZERO, ZERO, LENGTH, WIDTH, NONE, NONE),
-    BLUE_OUTPOST_ZONE(ZERO, ZERO, BLUE_HUB_X, Y_MIDLINE, SCORING, PASSING),
-    BLUE_DEPOT_ZONE(ZERO, Y_MIDLINE, BLUE_HUB_X, WIDTH, SCORING, PASSING),
-    BOTTOM_NEUTRAL_ZONE(BLUE_HUB_X, ZERO, LENGTH.minus(BLUE_HUB_X), Y_MIDLINE, PASSING, PASSING),
-    TOP_NEUTRAL_ZONE(BLUE_HUB_X, Y_MIDLINE, LENGTH.minus(BLUE_HUB_X), WIDTH, PASSING, PASSING),
-    RED_DEPOT_ZONE(LENGTH.minus(BLUE_HUB_X), ZERO, LENGTH, Y_MIDLINE, PASSING, SCORING),
-    RED_OUTPOST_ZONE(LENGTH.minus(BLUE_HUB_X), Y_MIDLINE, LENGTH, WIDTH, PASSING, SCORING);
+    FIELD(ZERO, ZERO, SIZE_X, SIZE_Y, NONE, NONE),
+    BLUE_OUTPOST_ZONE(ZERO, ZERO, BLUE_HUB_X, MIDLINE_Y, SCORING, PASSING),
+    BLUE_DEPOT_ZONE(ZERO, MIDLINE_Y, BLUE_HUB_X, SIZE_Y, SCORING, PASSING),
+    BOTTOM_NEUTRAL_ZONE(BLUE_HUB_X, ZERO, SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, PASSING, PASSING),
+    TOP_NEUTRAL_ZONE(BLUE_HUB_X, MIDLINE_Y, SIZE_X.minus(BLUE_HUB_X), SIZE_Y, PASSING, PASSING),
+    RED_DEPOT_ZONE(SIZE_X.minus(BLUE_HUB_X), ZERO, SIZE_X, MIDLINE_Y, PASSING, SCORING),
+    RED_OUTPOST_ZONE(SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, SIZE_X, SIZE_Y, PASSING, SCORING);
 
     private final Translation2d lowerLeftCorner;
 
@@ -59,6 +60,10 @@ public enum FieldRegion {
 
     public static FieldRegion[] containing(Translation2d position) {
         return Arrays.stream(values()).filter(region -> region.contains(position)).toArray(FieldRegion[]::new);
+    }
+
+    public static Translation2d[] corners() {
+        return Arrays.stream(values()).flatMap(region -> Stream.of(region.lowerLeftCorner, region.upperRightCorner)).toArray(Translation2d[]::new);
     }
 
 }

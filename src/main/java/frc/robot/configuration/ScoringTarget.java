@@ -9,12 +9,12 @@ import java.util.Objects;
 import static frc.robot.configuration.AndyMarkFieldMeasurements.*;
 
 public enum ScoringTarget {
-    BLUE_HUB(BLUE_HUB_X, Y_MIDLINE, HUB_HEIGHT),
-    BLUE_OUTPOST_PASS(BLUE_TOWER_X, BLUE_OUTPOST_Y, HUB_HEIGHT),
-    BLUE_DEPOT_PASS(BLUE_TOWER_X, WIDTH.minus(RED_DEPOT_Y), HUB_HEIGHT),
-    RED_HUB(LENGTH.minus(BLUE_HUB_X), Y_MIDLINE, HUB_HEIGHT),
-    RED_OUTPOST_PASS(LENGTH.minus(BLUE_TOWER_X), WIDTH.minus(BLUE_OUTPOST_Y), HUB_HEIGHT),
-    RED_DEPOT_PASS(LENGTH.minus(BLUE_TOWER_X), RED_DEPOT_Y, HUB_HEIGHT);
+    BLUE_HUB(BLUE_HUB_X, MIDLINE_Y, HUB_HEIGHT_Z),
+    BLUE_OUTPOST_PASS(BLUE_TOWER_X, BLUE_OUTPOST_Y, HUB_HEIGHT_Z),
+    BLUE_DEPOT_PASS(BLUE_TOWER_X, SIZE_Y.minus(RED_DEPOT_Y), HUB_HEIGHT_Z),
+    RED_HUB(SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, HUB_HEIGHT_Z),
+    RED_OUTPOST_PASS(SIZE_X.minus(BLUE_TOWER_X), SIZE_Y.minus(BLUE_OUTPOST_Y), HUB_HEIGHT_Z),
+    RED_DEPOT_PASS(SIZE_X.minus(BLUE_TOWER_X), RED_DEPOT_Y, HUB_HEIGHT_Z);
 
     public static Translation3d[] positions() {
         return Arrays.stream(values()).map(ScoringTarget::position).toArray(Translation3d[]::new);
