@@ -4,19 +4,9 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.PosePublisher;
-import frc.robot.configuration.FieldRegion;
-import frc.robot.configuration.Objective;
-import frc.robot.configuration.ScoringTarget;
-import frc.robot.drive.Drive;
-
-import java.util.Arrays;
 
 public class Robot extends TimedRobot {
 
@@ -33,27 +23,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
-    // Get the robot's current pose to determine what action it should take
-    Pose2d pose = Drive.getInstance().getPose();
-
-    // Publish some helper information for debugging
-    // PosePublisher.publish("Scoring Targets", ScoringTarget.positions());
-    PosePublisher.publish("Corners", FieldRegion.allCorners());
-    PosePublisher.publish("Drive Pose", pose);
-
-    // Determine the region the robot is in
-    FieldRegion[] candidates = FieldRegion.containing(pose.getTranslation());
-    FieldRegion region = Arrays.stream(candidates).findFirst().orElse(FieldRegion.FIELD_FALLBACK);
-    SmartDashboard.putString("Region", region.name());
-
-    // Find the objective should be based on our alliance
-    DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
-    Objective objective = region.objective(alliance);
-
-    // Publish the action and the scoring target
-    SmartDashboard.putString("Action", objective.action().name());
-    PosePublisher.publish("Scoring Target", objective.target().position());
   }
 
   @Override

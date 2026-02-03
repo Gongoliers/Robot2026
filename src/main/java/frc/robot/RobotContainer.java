@@ -70,12 +70,10 @@ public class RobotContainer {
   }
 
   private void configureDefaultCommands() {
-    drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
+    drive.setDefaultCommand(drive.driveWithTurret(() -> drive.speedsFromController(driverController)));
   }
 
   private void configureBindings() {
-    driverController.leftTrigger().whileTrue(drive.drive(() -> drive.turnTowardsController(drive.speedsFromController(driverController), driverController)));
-    driverController.rightTrigger().whileTrue(drive.drive(() -> drive.turnTowardsTranslation(drive.speedsFromController(driverController), new Translation2d(0,0))));
   }
 
   public Command getAutonomousCommand() {

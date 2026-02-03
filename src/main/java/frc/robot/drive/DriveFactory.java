@@ -9,15 +9,11 @@ import frc.robot.RobotConstants;
 public class DriveFactory {
 
   public static SwerveOutput createSwerve() {
-    if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.SWERVE)) {
-      return new PhoenixSwerve(
-        TunerConstants.DrivetrainConstants,
-        TunerConstants.FrontLeft,
-        TunerConstants.FrontRight,
-        TunerConstants.BackLeft,
-        TunerConstants.BackRight);
-    }
-
-    return new IdealSwerveSim();
+    return new PhoenixSwerve(
+      TunerConstants.DrivetrainConstants,
+      TunerConstants.FrontLeft,
+      TunerConstants.FrontRight,
+      TunerConstants.BackLeft,
+      TunerConstants.BackRight);
   }
 }
