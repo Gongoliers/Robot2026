@@ -12,7 +12,7 @@ import static frc.robot.configuration.AndyMarkFieldMeasurements.*;
 import static frc.robot.configuration.Objective.*;
 
 public enum FieldRegion {
-    FIELD(ZERO, ZERO, SIZE_X, SIZE_Y, BLUE_SCORE, RED_SCORE),
+    FIELD_FALLBACK(ZERO, ZERO, SIZE_X, SIZE_Y, BLUE_SCORE, RED_SCORE),
     BLUE_OUTPOST_ZONE(ZERO, ZERO, BLUE_HUB_X, MIDLINE_Y, BLUE_SCORE, RED_DEPOT_PASS),
     BLUE_DEPOT_ZONE(ZERO, MIDLINE_Y, BLUE_HUB_X, SIZE_Y, BLUE_SCORE, RED_OUTPOST_PASS),
     BOTTOM_NEUTRAL_ZONE(BLUE_HUB_X, ZERO, SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, BLUE_OUTPOST_PASS, RED_DEPOT_PASS),
@@ -33,22 +33,18 @@ public enum FieldRegion {
     }
 
     FieldRegion(Distance x1, Distance y1, Distance x2, Distance y2, Objective blueObjective, Objective redObjective) {
-        this(new Translation2d(x1, y1), new Translation2d(x2, y2), alliance -> {
-            switch (alliance) {
-                case Blue -> {
-                    return blueObjective;
-                }
-                case Red -> {
-                    return redObjective;
-                }
-            }
-            // NOTE This is a fallback and should never be reached!
-            return BLUE_SCORE;
+        this(new Translation2d(x1, y1), new Translation2d(x2, y2), alliance -> switch (alliance) {
+            case Blue -> blueObjective;
+            case Red -> redObjective;
         });
     }
 
     public Stream<Translation2d> corners() {
         return Stream.of(bottomLeftCorner, topRightCorner);
+    }
+
+    public static Translation2d[] allCorners() {
+        return Arrays.stream(values()).flatMap(FieldRegion::corners).toArray(Translation2d[]::new);
     }
 
     public boolean contains(Translation2d position) {
@@ -59,16 +55,12 @@ public enum FieldRegion {
         return inX && inY;
     }
 
+    public static FieldRegion[] containing(Translation2d position) {
+        return Arrays.stream(values()).filter(region -> region != FIELD_FALLBACK && region.contains(position)).toArray(FieldRegion[]::new);
+    }
+
     public Objective objective(DriverStation.Alliance alliance) {
         return objective_.apply(alliance);
-    }
-
-    public static FieldRegion[] containing(Translation2d position) {
-        return Arrays.stream(values()).filter(region -> region.contains(position)).toArray(FieldRegion[]::new);
-    }
-
-    public static Translation2d[] allCorners() {
-        return Arrays.stream(values()).flatMap(FieldRegion::corners).toArray(Translation2d[]::new);
     }
 
 }

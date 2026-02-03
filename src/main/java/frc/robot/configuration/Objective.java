@@ -1,7 +1,6 @@
 package frc.robot.configuration;
 
 public enum Objective {
-    // TODO Add a fallback objective that does nothing!
     BLUE_SCORE(Action.SCORING, ScoringTarget.BLUE_HUB),
     RED_SCORE(Action.SCORING, ScoringTarget.RED_HUB),
     BLUE_OUTPOST_PASS(Action.PASSING, ScoringTarget.BLUE_OUTPOST_PASS),

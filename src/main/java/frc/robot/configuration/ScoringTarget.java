@@ -16,10 +16,6 @@ public enum ScoringTarget {
     RED_OUTPOST_PASS(SIZE_X.minus(BLUE_TOWER_X), SIZE_Y.minus(BLUE_OUTPOST_Y), HUB_HEIGHT_Z),
     RED_DEPOT_PASS(SIZE_X.minus(BLUE_TOWER_X), RED_DEPOT_Y, HUB_HEIGHT_Z);
 
-    public static Translation3d[] positions() {
-        return Arrays.stream(values()).map(ScoringTarget::position).toArray(Translation3d[]::new);
-    }
-
     private final Translation3d position_;
 
     ScoringTarget(Translation3d position) {
@@ -32,5 +28,9 @@ public enum ScoringTarget {
 
     public Translation3d position() {
         return position_;
+    }
+
+    public static Translation3d[] positions() {
+        return Arrays.stream(values()).map(ScoringTarget::position).toArray(Translation3d[]::new);
     }
 }

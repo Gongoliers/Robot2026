@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.PosePublisher;
 import frc.robot.configuration.FieldRegion;
 import frc.robot.configuration.Objective;
+import frc.robot.configuration.ScoringTarget;
 import frc.robot.drive.Drive;
 
 import java.util.Arrays;
@@ -37,13 +38,13 @@ public class Robot extends TimedRobot {
     Pose2d pose = Drive.getInstance().getPose();
 
     // Publish some helper information for debugging
+    // PosePublisher.publish("Scoring Targets", ScoringTarget.positions());
     PosePublisher.publish("Corners", FieldRegion.allCorners());
     PosePublisher.publish("Drive Pose", pose);
 
     // Determine the region the robot is in
     FieldRegion[] candidates = FieldRegion.containing(pose.getTranslation());
-    // FieldRegion.FIELD is reserved for when the robot is not in any other region
-    FieldRegion region = Arrays.stream(candidates).filter(candidate -> candidate != FieldRegion.FIELD).findFirst().orElse(FieldRegion.FIELD);
+    FieldRegion region = Arrays.stream(candidates).findFirst().orElse(FieldRegion.FIELD_FALLBACK);
     SmartDashboard.putString("Region", region.name());
 
     // Find the objective should be based on our alliance
