@@ -46,12 +46,6 @@ public class TurretDriveOptimizer {
         }
     }
 
-    private static Angle clamp(Angle angle, Angle min, Angle max) {
-        double clamped = MathUtil.clamp(angle.in(Radians), min.in(Radians), max.in(Radians));
-        SmartDashboard.putNumber("clamped", clamped);
-        return Radians.of(clamped);
-    }
-
     private static Angle wrap(Angle angle) {
         double offsetRotations = angle.in(Rotations) + 0.5;
         double wrappedRotations = offsetRotations % 1;
@@ -77,12 +71,12 @@ public class TurretDriveOptimizer {
             Angle unconstrainedOptimalTurretAngle = penalizedTurretAngle.plus(penalizedDriveAngle).div(costs.totalCosts());
 
             // The globally optimal turret angle might not be achievable with the desired bounds; snap to those bounds
-            Angle optimalTurretAngle = clamp(unconstrainedOptimalTurretAngle, bounds.min(), bounds.max());
+            Angle optimalTurretAngle = bounds.constrain(unconstrainedOptimalTurretAngle);
             // The drive angle will take up any remaining rotation
             Angle optimalDriveAngle = turretToTarget.minus(optimalTurretAngle);
 
             // Calculate the cost to achieve this combined turret and drive rotation
-            Angle turretDistance = wrap(optimalTurretAngle.minus(turret));
+            Angle turretDistance = bounds.distance(optimalTurretAngle, turret);
             Angle driveDistance = wrap(optimalDriveAngle.minus(drive));
             double turretCost = costs.turretCost() * Math.pow(turretDistance.in(Radians), 2);
             double swerveCost = costs.driveCost() * Math.pow(driveDistance.in(Radians), 2);

@@ -200,7 +200,7 @@ public class Drive extends Subsystem {
       Angle turretToTarget = target.position().toTranslation2d().minus(pose.getTranslation()).getAngle().getMeasure();
 
       // Calculate the optimal turret-drive rotation trade-off
-      var result = TurretDriveOptimizer.optimize(getPose().getRotation().getMeasure(), turretAngle, turretToTarget, TurretBounds.FULL, TurretDriveOptimizer.Costs.PREFER_TURRET);
+      var result = TurretDriveOptimizer.optimize(getPose().getRotation().getMeasure(), turretAngle, turretToTarget, TurretBounds.CONTINUOUS, TurretDriveOptimizer.Costs.PREFER_TURRET);
 
       // Rotate the drive to its setpoint
       swerve.setControl(request.withVelocityX(fieldSpeeds.vxMetersPerSecond).withVelocityY(fieldSpeeds.vyMetersPerSecond).withTargetRateFeedforward(fieldSpeeds.omegaRadiansPerSecond).withTargetDirection(new Rotation2d(result.drive())));
