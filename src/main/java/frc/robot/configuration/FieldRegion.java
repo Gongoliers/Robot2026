@@ -12,23 +12,23 @@ import static frc.robot.configuration.AndyMarkFieldMeasurements.*;
 import static frc.robot.configuration.Objective.*;
 
 public enum FieldRegion {
-    FIELD(ZERO, ZERO, SIZE_X, SIZE_Y, NONE, NONE),
-    BLUE_OUTPOST_ZONE(ZERO, ZERO, BLUE_HUB_X, MIDLINE_Y, SCORING, PASSING),
-    BLUE_DEPOT_ZONE(ZERO, MIDLINE_Y, BLUE_HUB_X, SIZE_Y, SCORING, PASSING),
-    BOTTOM_NEUTRAL_ZONE(BLUE_HUB_X, ZERO, SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, PASSING, PASSING),
-    TOP_NEUTRAL_ZONE(BLUE_HUB_X, MIDLINE_Y, SIZE_X.minus(BLUE_HUB_X), SIZE_Y, PASSING, PASSING),
-    RED_DEPOT_ZONE(SIZE_X.minus(BLUE_HUB_X), ZERO, SIZE_X, MIDLINE_Y, PASSING, SCORING),
-    RED_OUTPOST_ZONE(SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, SIZE_X, SIZE_Y, PASSING, SCORING);
+    FIELD(ZERO, ZERO, SIZE_X, SIZE_Y, BLUE_SCORE, RED_SCORE),
+    BLUE_OUTPOST_ZONE(ZERO, ZERO, BLUE_HUB_X, MIDLINE_Y, BLUE_SCORE, RED_DEPOT_PASS),
+    BLUE_DEPOT_ZONE(ZERO, MIDLINE_Y, BLUE_HUB_X, SIZE_Y, BLUE_SCORE, RED_OUTPOST_PASS),
+    BOTTOM_NEUTRAL_ZONE(BLUE_HUB_X, ZERO, SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, BLUE_OUTPOST_PASS, RED_DEPOT_PASS),
+    TOP_NEUTRAL_ZONE(BLUE_HUB_X, MIDLINE_Y, SIZE_X.minus(BLUE_HUB_X), SIZE_Y, BLUE_DEPOT_PASS, RED_OUTPOST_PASS),
+    RED_DEPOT_ZONE(SIZE_X.minus(BLUE_HUB_X), ZERO, SIZE_X, MIDLINE_Y, BLUE_OUTPOST_PASS, RED_SCORE),
+    RED_OUTPOST_ZONE(SIZE_X.minus(BLUE_HUB_X), MIDLINE_Y, SIZE_X, SIZE_Y, BLUE_DEPOT_PASS, RED_SCORE);
 
-    private final Translation2d lowerLeftCorner;
+    private final Translation2d bottomLeftCorner;
 
-    private final Translation2d upperRightCorner;
+    private final Translation2d topRightCorner;
 
     private final Function<DriverStation.Alliance, Objective> objective_;
 
-    FieldRegion(Translation2d lowerLeftCorner, Translation2d upperRightCorner, Function<DriverStation.Alliance, Objective> objective) {
-        this.lowerLeftCorner = lowerLeftCorner;
-        this.upperRightCorner = upperRightCorner;
+    FieldRegion(Translation2d bottomLeftCorner, Translation2d topRightCorner, Function<DriverStation.Alliance, Objective> objective) {
+        this.bottomLeftCorner = bottomLeftCorner;
+        this.topRightCorner = topRightCorner;
         this.objective_ = objective;
     }
 
@@ -42,15 +42,20 @@ public enum FieldRegion {
                     return redObjective;
                 }
             }
-            return Objective.NONE;
+            // NOTE This is a fallback and should never be reached!
+            return BLUE_SCORE;
         });
+    }
+
+    public Stream<Translation2d> corners() {
+        return Stream.of(bottomLeftCorner, topRightCorner);
     }
 
     public boolean contains(Translation2d position) {
         double x = position.getX();
         double y = position.getY();
-        boolean inX = lowerLeftCorner.getX() <= x && x <= upperRightCorner.getX();
-        boolean inY = lowerLeftCorner.getY() <= y && y <= upperRightCorner.getY();
+        boolean inX = bottomLeftCorner.getX() <= x && x <= topRightCorner.getX();
+        boolean inY = bottomLeftCorner.getY() <= y && y <= topRightCorner.getY();
         return inX && inY;
     }
 
@@ -62,8 +67,8 @@ public enum FieldRegion {
         return Arrays.stream(values()).filter(region -> region.contains(position)).toArray(FieldRegion[]::new);
     }
 
-    public static Translation2d[] corners() {
-        return Arrays.stream(values()).flatMap(region -> Stream.of(region.lowerLeftCorner, region.upperRightCorner)).toArray(Translation2d[]::new);
+    public static Translation2d[] allCorners() {
+        return Arrays.stream(values()).flatMap(FieldRegion::corners).toArray(Translation2d[]::new);
     }
 
 }
