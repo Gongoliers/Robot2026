@@ -165,10 +165,12 @@ public class Drive extends Subsystem {
     }, this);
   }
 
+  private final Transform2d poseToTurret = new Transform2d(Inches.of(10), Inches.of(10), Rotation2d.kZero);
+
   private Angle turretAngle = Degrees.of(0.0);
 
   public Command driveWithTurret(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
-    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(1, 0, 0);
+    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0);
 
     return run(() -> {
       ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
@@ -197,18 +199,19 @@ public class Drive extends Subsystem {
       PosePublisher.publish("Scoring Target", target.position());
 
       // Find the angle from the turret's current pose to the target pose
-      Angle turretToTarget = target.position().toTranslation2d().minus(pose.getTranslation()).getAngle().getMeasure();
+      Pose2d turretPose = pose.plus(poseToTurret);
+      Angle turretToTarget = target.position().toTranslation2d().minus(turretPose.getTranslation()).getAngle().getMeasure();
 
       // Calculate the optimal turret-drive rotation trade-off
-      var result = TurretDriveOptimizer.optimize(getPose().getRotation().getMeasure(), turretAngle, turretToTarget, TurretBounds.CONTINUOUS, TurretDriveOptimizer.Costs.PREFER_TURRET);
+      var result = TurretDriveOptimizer.optimize(getPose().getRotation().getMeasure(), turretAngle, turretToTarget, TurretBounds.CORNER_LEFT, TurretDriveOptimizer.Costs.PREFER_TURRET);
 
       // Rotate the drive to its setpoint
       swerve.setControl(request.withVelocityX(fieldSpeeds.vxMetersPerSecond).withVelocityY(fieldSpeeds.vyMetersPerSecond).withTargetRateFeedforward(fieldSpeeds.omegaRadiansPerSecond).withTargetDirection(new Rotation2d(result.drive())));
 
       // Simulate rotating the turret to its setpoint
       turretAngle = result.turret();
-      Pose2d turretPose = pose.plus(new Transform2d(new Translation2d(), new Rotation2d(turretAngle)));
-      PosePublisher.publish("Turret", turretPose);
+      Pose2d newTurretPose = pose.plus(poseToTurret).plus(new Transform2d(new Translation2d(), new Rotation2d(turretAngle)));
+      PosePublisher.publish("Turret", newTurretPose);
     });
   }
 }
