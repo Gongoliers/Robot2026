@@ -2,8 +2,6 @@ package frc.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
