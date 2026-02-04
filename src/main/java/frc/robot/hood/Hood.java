@@ -177,6 +177,24 @@ public class Hood extends MultithreadedSubsystem {
     return setpoint;
   }
 
+  /**
+   * Gets minimum safe hood angle
+   * 
+   * @return minimum safe hood angle
+   */
+  public Angle getMinPosition() {
+    return minPosition;
+  }
+
+  /**
+   * Gets maximum safe hood angle
+   * 
+   * @return maximum safe hood angle
+   */
+  public Angle getMaxPosition() {
+    return maxPosition;
+  }
+
   public void resetPosition(Angle newPosition) {
     motorOutput.setPosition(newPosition);
   }
