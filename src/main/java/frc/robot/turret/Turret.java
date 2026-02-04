@@ -55,6 +55,8 @@ public class Turret extends MultithreadedSubsystem {
     shooter = Shooter.getInstance();
 
     state = TurretState.STOW;
+
+    hubTarget = new Translation2d(0, 0);
   }
 
   @Override
