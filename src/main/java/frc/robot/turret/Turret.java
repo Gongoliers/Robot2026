@@ -73,9 +73,9 @@ public class Turret extends MultithreadedSubsystem {
   public void fastPeriodic() {
     switch (state) {
       case STOW:
-        azimuth.setSetpoint(Rotations.of(0.0));
-        hood.setSetpoint(hood.getMinPosition());
-        shooter.setSetpoint(RotationsPerSecond.of(0.0));
+        if (azimuth.getCurrentCommand() == null) {azimuth.setSetpoint(Rotations.of(0.0));};
+        if (hood.getCurrentCommand() == null) {hood.setSetpoint(hood.getMinPosition());};
+        if (shooter.getCurrentCommand() == null) {shooter.setSetpoint(RotationsPerSecond.of(0.0));};
         break;
       case SCORING:
         targetHub();
@@ -96,7 +96,7 @@ public class Turret extends MultithreadedSubsystem {
   public Command stow() {
     return Commands.run(() -> {
       state = TurretState.STOW;
-    }, this, azimuth, hood, shooter);
+    }, this);
   }
 
   /**
