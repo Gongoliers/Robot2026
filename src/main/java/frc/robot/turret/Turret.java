@@ -96,7 +96,7 @@ public class Turret extends MultithreadedSubsystem {
   public Command stow() {
     return Commands.run(() -> {
       state = TurretState.STOW;
-    }, this);
+    }, this, azimuth, hood, shooter);
   }
 
   /**
@@ -109,6 +109,6 @@ public class Turret extends MultithreadedSubsystem {
     return Commands.run(() -> {
       hubTarget = targetPosition;
       state = TurretState.SCORING;
-    }, this);
+    }, this, azimuth, hood, shooter);
   }
 }
