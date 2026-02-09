@@ -4,6 +4,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 /**
@@ -28,7 +30,16 @@ public class SwerveDriveSendable implements Sendable {
   public SwerveDriveSendable(
       Supplier<SwerveModuleState[]> statesSupplier, Supplier<Rotation2d> robotAngleSupplier) {
 
-    this.statesSupplier = statesSupplier;
+    this.statesSupplier = () -> {
+      SwerveModuleState[] states = statesSupplier.get();
+      if (states == null) {
+        states = new SwerveModuleState[4];
+        Arrays.fill(states, new SwerveModuleState());
+      }
+
+      return states;
+    };
+
     this.robotAngleSupplier = robotAngleSupplier;
   }
 
