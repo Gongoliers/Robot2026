@@ -77,7 +77,7 @@ public class Hood extends MultithreadedSubsystem {
           .build())
       .motorConfig(
         MotorBuilder.defaults()
-          .ccwPositive(false)
+          .ccwPositive(true)
           .rotorToSensorRatio(1)
           .sensorToMechRatio(4*2*18)
           .neutralBrake(true)
@@ -103,9 +103,9 @@ public class Hood extends MultithreadedSubsystem {
   private Hood() {
     motorOutput = HoodFactory.createHoodMotor(config);
     motorOutput.configure();
-    motorOutput.setPosition(maxPosition);
+    motorOutput.setPosition(minPosition);
     
-    setpoint = Rotations.mutable(maxPosition.in(Rotations));
+    setpoint = Rotations.mutable(minPosition.in(Rotations));
     voltageSet = false;
     voltageOut = Volts.mutable(0.0);
 
