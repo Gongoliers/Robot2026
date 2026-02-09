@@ -159,8 +159,11 @@ public class Hood extends MultithreadedSubsystem {
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
     return Commands.run(() -> {
       voltageSet = true;
-      if (motorValues.position.gte(minPosition) && motorValues.position.lte(maxPosition)) {
-        voltageOut.mut_replace(voltageSupplier.get());
+      Voltage voltageRequest = voltageSupplier.get();
+      if (motorValues.position.gte(minPosition) && voltageRequest.lte(Volts.of(0.0))) {
+        voltageOut.mut_replace(voltageRequest);
+      } else if (motorValues.position.lte(maxPosition) && voltageRequest.gte(Volts.of(0.0))) {
+        voltageOut.mut_replace(voltageRequest);
       } else {
         voltageOut.mut_replace(Volts.of(0.0));
       }
