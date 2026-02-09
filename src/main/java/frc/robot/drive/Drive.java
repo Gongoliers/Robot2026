@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -140,6 +141,10 @@ public class Drive extends Subsystem {
 
   public Pose2d getPose() {
     return state.Pose;
+  }
+
+  public SwerveDriveState getState() {
+    return state;
   }
 
   public Command drive(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
