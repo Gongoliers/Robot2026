@@ -60,13 +60,13 @@ public class Shooter extends MultithreadedSubsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(0.1159)
-          .kA(0.0045513)
-          .kS(0.031658)
+          .kV(0.12266)
+          .kA(0.015016)
+          .kS(0.28614)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(1)
+          .kP(0.12723)
           .kI(0.0)
           .kD(0.0)
           .build())

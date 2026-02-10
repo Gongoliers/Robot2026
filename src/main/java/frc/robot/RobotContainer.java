@@ -96,22 +96,11 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    operatorController.a().onTrue(azimuthTester.runFullSysId());
+    operatorController.a().onTrue(shooterTester.runFullSysId());
     operatorController.b().onTrue(Commands.runOnce(() -> azimuth.resetPosition(Rotations.of(0.0))));
 
-    operatorController.leftBumper().onTrue(Commands.runOnce(() -> azimuth.setSetpoint(Rotations.of(0.125))));
-    operatorController.rightBumper().onTrue(Commands.runOnce(() -> azimuth.setSetpoint(Rotations.of(-0.125))));
-    operatorController.povLeft().whileTrue(azimuth.runAtVoltage(() -> Volts.of(1)));
-    operatorController.povRight().whileTrue(azimuth.runAtVoltage(() -> Volts.of(-1)));
-
-    operatorController.leftTrigger().whileTrue(Commands.run(() -> {
-      double x = -operatorController.getRightY();
-      double y = -operatorController.getRightX();
-
-      if (Math.hypot(x, y) > 0.75) {
-        azimuth.setSetpoint(Rotations.of(new Rotation2d(x, y).getRotations()));
-      }
-    }));
+    operatorController.leftTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(-0.5)));
+    operatorController.rightTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(0.5)));
   }
 
   public Command getAutonomousCommand() {
