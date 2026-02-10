@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -21,9 +22,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.lib.PosePublisher;
+import frc.lib.PoseUtils;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
 import frc.lib.swerves.SwerveOutput;
+
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Drive extends Subsystem {
@@ -40,6 +46,10 @@ public class Drive extends Subsystem {
 
   private PIDController yawPID;
 
+  private final DriverAssistance driver;
+
+  private static final Distance DRIVER_TOLERANCE = Centimeters.of(5);
+
   public static Drive getInstance() {
     if (instance == null) {
       instance = new Drive();
@@ -55,6 +65,13 @@ public class Drive extends Subsystem {
 
     yawPID = new PIDController(6, 0.0, 0.0);
     yawPID.enableContinuousInput(-0.5, 0.5);
+
+    // TODO DriverAssistance API wart
+    driver = new DriverAssistance(
+      MetersPerSecond.per(Meter).of(4),
+      Meters.of(1),
+      Meters.of(10)
+    );
   }
 
   @Override
@@ -62,8 +79,8 @@ public class Drive extends Subsystem {
     ShuffleboardTab tab = Shuffleboard.getTab("Swerve");
 
     tab.add("Field", field);
-    tab.add("States", new SwerveDriveSendable(() -> state.ModuleStates, () -> this.getPose().getRotation()));
-    tab.add("Targets", new SwerveDriveSendable(() -> state.ModuleTargets, () -> this.getPose().getRotation()));
+    // tab.add("States", new SwerveDriveSendable(() -> state.ModuleStates, () -> this.getPose().getRotation()));
+    // tab.add("Targets", new SwerveDriveSendable(() -> state.ModuleTargets, () -> this.getPose().getRotation()));
   }
 
   @Override
@@ -145,13 +162,37 @@ public class Drive extends Subsystem {
   public Command drive(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
     SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
 
-    return Commands.run(() -> {
+    return run(() -> {
       ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
 
       swerve.setControl(request
         .withVelocityX(fieldSpeeds.vxMetersPerSecond)
         .withVelocityY(fieldSpeeds.vyMetersPerSecond)
         .withRotationalRate(fieldSpeeds.omegaRadiansPerSecond));
-    }, this);
+    });
+  }
+
+  public Command driveFacing(Supplier<ChassisSpeeds> fieldSpeedsSupplier, Supplier<Rotation2d> targetDirection) {
+    // TODO Perform configuration
+    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle();
+
+    return run(() -> {
+      ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
+
+      swerve.setControl(request
+        .withVelocityX(fieldSpeeds.vxMetersPerSecond)
+        .withVelocityY(fieldSpeeds.vyMetersPerSecond)
+        .withTargetDirection(targetDirection.get())
+        .withTargetRateFeedforward(fieldSpeeds.omegaRadiansPerSecond));
+    });
+  }
+
+  public Command driveFollowing(Supplier<Pose2d> pose) {
+    return driveFacing(() -> driver.createDriverAssistanceSpeeds(getPose(), pose.get()), () -> pose.get().getRotation());
+  }
+
+  public Command driveTo(Pose2d pose) {
+    BooleanSupplier atPose = () -> PoseUtils.errorMagnitude(getPose(), pose).lte(DRIVER_TOLERANCE);
+    return driveFollowing(() -> pose).until(atPose);
   }
 }

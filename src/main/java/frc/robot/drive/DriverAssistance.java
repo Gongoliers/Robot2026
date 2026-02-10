@@ -71,6 +71,10 @@ public class DriverAssistance {
 
     public ChassisSpeeds createDriverAssistanceSpeeds(Pose2d pose, Pose2d target) {
         Distance distance = PoseUtils.errorMagnitude(pose, target);
+        if (distance.in(Meters) < 0.01) {
+            return new ChassisSpeeds();
+        }
+
         Rotation2d direction = PoseUtils.errorDirection(pose, target);
         return createDriverAssistanceSpeeds(distance, direction);
     }
