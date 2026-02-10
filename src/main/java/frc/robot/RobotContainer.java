@@ -5,7 +5,11 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.scripting.Action.*;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -17,6 +21,8 @@ import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
+import frc.robot.scripting.Action;
+import frc.robot.scripting.ObjectiveActionMachine;
 import frc.robot.hood.HoodSysID;
 import frc.robot.intake.Intake;
 import frc.robot.intake.IntakePivotState;
@@ -32,6 +38,11 @@ import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
 import frc.robot.spindexer.SpindexerSysID;
 import frc.robot.turret.Turret;
+import frc.robot.turret.Turret;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
 
 /** Robot container */
 public class RobotContainer {
@@ -75,6 +86,8 @@ public class RobotContainer {
   /** Kicker */
   private final Kicker kicker;
 
+  private final List<SendableChooser<Action>> choosers;
+
   /**
    * Gets robot container instance
    * 
@@ -104,6 +117,20 @@ public class RobotContainer {
     spindexer = Spindexer.getInstance();
     kicker = Kicker.getInstance();
 
+    // TODO Create ActionSelector class
+    choosers = IntStream.rangeClosed(1, 8).mapToObj(n -> String.format("Action %d", n)).map(name -> {
+      SendableChooser<Action> chooser = new SendableChooser<>();
+      chooser.setDefaultOption("", Action.NONE);
+
+      for (Action action : Arrays.stream(values()).filter(action -> action != Action.NONE).toList()) {
+        chooser.addOption(action.name(), action);
+      }
+
+      SmartDashboard.putData(name, chooser);
+      return chooser;
+    }).toList();
+    SmartDashboard.putString("Action", "");
+
     multithreader.start();
 
     Telemetry.initializeTabs();
@@ -126,6 +153,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
+    return ObjectiveActionMachine.createCommand(actions, drive::driveTo, this::logAction);
   }
 }
