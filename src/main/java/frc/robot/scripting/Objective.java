@@ -7,17 +7,20 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Arrays;
 import java.util.function.Function;
 
-import static frc.robot.scripting.NamedPose.*;
-import static frc.robot.scripting.Action.*;
-
 public enum Objective {
     NONE,
-    INITIAL,
-    SCORE_HERE(SCORE_STATIONARY),
-    PASS_HERE(PASS),
-    GROUND_INTAKE(GROUND_PICKUP, INTAKE),
-    SCORE_SAFE(SAFE_SCORE, SCORE_STATIONARY),
-    CLIMB(NamedPose.CLIMB, Action.CLIMB);
+    INITIAL_LEFT,
+    INITIAL_RIGHT,
+    PASS_LEFT(NamedPose.NEUTRAL_LEFT_BACK, Action.PASS),
+    PASS_RIGHT(NamedPose.NEUTRAL_RIGHT_BACK, Action.PASS),
+    SCORE_NEAR_LEFT(NamedPose.NEAR_LEFT, Action.SCORE_LEFT),
+    SCORE_NEAR_RIGHT(NamedPose.NEAR_RIGHT, Action.SCORE_RIGHT),
+    SCORE_FAR_LEFT(NamedPose.FAR_LEFT, Action.SCORE_LEFT),
+    SCORE_FAR_RIGHT(NamedPose.FAR_RIGHT, Action.SCORE_RIGHT),
+    INTAKE_LEFT(NamedPose.NEUTRAL_LEFT, Action.INTAKE),
+    INTAKE_RIGHT(NamedPose.NEUTRAL_RIGHT, Action.INTAKE),
+    CLIMB_LEFT(NamedPose.CLIMB_LEFT, Action.CLIMB_LEFT),
+    CLIMB_RIGHT(NamedPose.CLIMB_RIGHT, Action.CLIMB_RIGHT);
 
     private final boolean hasPose;
 
@@ -31,24 +34,41 @@ public enum Objective {
         return action -> NONE;
     }
 
-    private static Function<Action, Objective> create(Objective onScore) {
+    private static Function<Action, Objective> create(Objective onScoreLeft, Objective onScoreRight, Objective onPass, Objective onIntake) {
         return action -> switch (action) {
-            case NONE -> Objective.NONE;
-            case SCORE_STATIONARY -> onScore;
-            case PASS -> PASS_HERE;
-            case INTAKE -> GROUND_INTAKE;
-            case CLIMB -> CLIMB;
+            case NONE -> NONE;
+            case SCORE_LEFT -> onScoreLeft;
+            case SCORE_RIGHT -> onScoreRight;
+            case PASS -> onPass;
+            case INTAKE -> onIntake;
+            case CLIMB_LEFT -> CLIMB_LEFT;
+            case CLIMB_RIGHT -> CLIMB_RIGHT;
         };
     }
 
     static {
+        // Terminal objectives: Don't process any more objectives after these
         NONE.next = none();
-        INITIAL.next = create(SCORE_HERE);
-        SCORE_HERE.next = create(SCORE_HERE);
-        PASS_HERE.next = create(SCORE_HERE);
-        GROUND_INTAKE.next = create(SCORE_SAFE);
-        SCORE_SAFE.next = create(SCORE_HERE);
-        CLIMB.next = none();
+        CLIMB_LEFT.next = none();
+        CLIMB_RIGHT.next = none();
+
+        // Initial objectives
+        INITIAL_LEFT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
+        INITIAL_RIGHT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+
+        // Score objectives
+        SCORE_NEAR_LEFT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
+        SCORE_NEAR_RIGHT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+        SCORE_FAR_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
+        SCORE_FAR_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+
+        // Pass objectives
+        PASS_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
+        PASS_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+
+        // Intake objectives
+        INTAKE_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
+        INTAKE_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
     }
 
     Objective(NamedPose pose, Action action) {
@@ -75,10 +95,10 @@ public enum Objective {
 
     public String explain() {
         if (!hasPose) {
-            return String.format("The robot will %s.", action_.name());
+            return String.format("%s: The robot will %s.", name(), action_.name());
         }
 
-        return String.format("The robot will drive to %s. Then, the robot will %s.", pose_.name(), action_.name());
+        return String.format("%s: The robot will drive to %s. Then, the robot will %s.", name(), pose_.name(), action_.name());
     }
 
     public static String explainAll(Objective[] objectives) {

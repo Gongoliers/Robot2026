@@ -66,6 +66,8 @@ public class RobotContainer {
 
   private final List<SendableChooser<Action>> choosers;
 
+  private final SendableChooser<Boolean> isLeftSide;
+
   /**
    * Gets robot container instance
    * 
@@ -106,6 +108,11 @@ public class RobotContainer {
       return chooser;
     }).toList();
     SmartDashboard.putString("Action", "");
+
+    isLeftSide = new SendableChooser<>();
+    isLeftSide.setDefaultOption("Left", true);
+    isLeftSide.addOption("Right", false);
+    SmartDashboard.putData("Is Left Side?", isLeftSide);
 
     multithreader.start();
 
@@ -148,6 +155,10 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
-    return ObjectiveActionMachine.createCommand(actions, drive::driveTo, this::logAction);
+    if (isLeftSide.getSelected()) {
+      return ObjectiveActionMachine.createLeftSideCommand(actions, drive::driveTo, this::logAction);
+    } else {
+      return ObjectiveActionMachine.createRightSideCommand(actions, drive::driveTo, this::logAction);
+    }
   }
 }
