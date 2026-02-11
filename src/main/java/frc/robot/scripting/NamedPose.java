@@ -8,10 +8,17 @@ import edu.wpi.first.units.measure.Distance;
 import static edu.wpi.first.units.Units.*;
 
 public enum NamedPose {
-    INITIAL(Meters.of(0), Meters.of(0), Degrees.of(0)),
-    GROUND_PICKUP(Meters.of(8), Meters.of(2), Degrees.of(45)),
-    SAFE_SCORE(Meters.of(2), Meters.of(2), Degrees.of(0)),
-    CLIMB(Meters.of(1), Meters.of(4), Degrees.of(-45));
+    // TODO Use actual field measurements
+    NEUTRAL_LEFT(Meters.of(8), Meters.of(6), Degrees.of(-45)),
+    NEUTRAL_RIGHT(Meters.of(8), Meters.of(2), Degrees.of(45)),
+    NEUTRAL_LEFT_BACK(Meters.of(8), Meters.of(6), Degrees.of(-135)),
+    NEUTRAL_RIGHT_BACK(Meters.of(8), Meters.of(2), Degrees.of(135)),
+    NEAR_LEFT(Meters.of(1), Meters.of(6), Degrees.of(-45)),
+    NEAR_RIGHT(Meters.of(1), Meters.of(2), Degrees.of(45)),
+    FAR_LEFT(Meters.of(2), Meters.of(6), Degrees.of(-30)),
+    FAR_RIGHT(Meters.of(2), Meters.of(2), Degrees.of(30)),
+    CLIMB_LEFT(Meters.of(1), Meters.of(4.5), Degrees.of(-180)),
+    CLIMB_RIGHT(Meters.of(1), Meters.of(3.5), Degrees.of(-180));
 
     private final Pose2d pose_;
 

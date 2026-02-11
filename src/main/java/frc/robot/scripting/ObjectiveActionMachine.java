@@ -20,10 +20,18 @@ public class ObjectiveActionMachine {
         return objectives.toArray(Objective[]::new);
     }
 
-    public static Command createCommand(Action[] actions, Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory) {
-        Objective[] objectives = walk(Objective.INITIAL, actions);
+    public static Command createCommand(Objective initial, Action[] actions, Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory) {
+        Objective[] objectives = walk(initial, actions);
         Command[] commands = Arrays.stream(objectives).map(o -> o.command(driveFactory, actionFactory)).toArray(Command[]::new);
         return Commands.print(Objective.explainAll(objectives)).andThen(Commands.sequence(commands));
+    }
+
+    public static Command createLeftSideCommand(Action[] actions, Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory) {
+        return createCommand(Objective.INITIAL_LEFT, actions, driveFactory, actionFactory);
+    }
+
+    public static Command createRightSideCommand(Action[] actions, Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory) {
+        return createCommand(Objective.INITIAL_RIGHT, actions, driveFactory, actionFactory);
     }
 
 }

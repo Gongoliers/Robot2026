@@ -2,8 +2,10 @@ package frc.robot.scripting;
 
 public enum Action {
     NONE,
-    SCORE_STATIONARY,
+    SCORE_LEFT,
+    SCORE_RIGHT,
     PASS,
     INTAKE,
-    CLIMB
+    CLIMB_LEFT,
+    CLIMB_RIGHT,
 }
