@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.*;
 
-public class MotorOutputDiscreteSim implements MotorOutput {
+public class DiscreteMotorOutputSim implements MotorOutput {
 
   /** Output voltage set by setVoltage method */
   private MutVoltage outputVoltage;
@@ -25,7 +25,7 @@ public class MotorOutputDiscreteSim implements MotorOutput {
 
   private Supplier<Current> supplyCurrentSupplier;
 
-  public MotorOutputDiscreteSim() {
+  public DiscreteMotorOutputSim() {
     outputVoltage = Volts.mutable(0);
 
     positionSupplier = () -> Rotations.of(0);
