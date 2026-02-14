@@ -24,6 +24,7 @@ import frc.lib.configs.MechanismConfig;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.MechanismConfig.MechanismBuilder;
 import frc.lib.configs.MotorConfig.MotorBuilder;
+import frc.lib.motors.DiscreteMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
 import frc.robot.RobotConstants;
@@ -106,6 +107,10 @@ public class Shooter extends MultithreadedSubsystem {
     feedback = config.feedbackControllerConfig().createPIDController();
     feedback.setTolerance(2.5);
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
+
+    if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
+      discreteSim.useVelocity(() -> setpointVelocity);
+    }
   }
 
   @Override
