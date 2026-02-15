@@ -2,6 +2,8 @@ package frc.robot.shooter;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 
 import edu.wpi.first.math.MathUtil;
@@ -45,6 +47,12 @@ public class ShooterTester {
 
   /** List of angular velocities measured during testing */
   private ArrayList<Double> velocityAccumulator;
+
+  /** Keeps track of max distance of velocity from setpoint velocity during a disturbance */
+  private double maxVelocityError;
+
+  /** Keeps track of the max velocity errors during each disturbance */
+  private ArrayList<Double> maxVelocityErrors;
 
   /** How close velocity should be to target velocity to be considered at that velocity */
   private AngularVelocity velocityTolerance;
@@ -90,6 +98,8 @@ public class ShooterTester {
 
     motorValues = new MotorValues();
     velocityAccumulator = new ArrayList<Double>();
+    maxVelocityError = 0;
+    maxVelocityErrors = new ArrayList<Double>();
     velocityTolerance = RotationsPerSecond.of(1);
     returnTimes = new ArrayList<Time>();
     framesWithinTolerance = 0;
@@ -170,6 +180,7 @@ public class ShooterTester {
   }
 
   public Command runTests(AngularVelocity testVelocity) {
+    NumberFormat niceFormat = new DecimalFormat("#0.00");
     return Commands.run(() -> {
       shooter.setSetpoint(testVelocity);
 
@@ -199,12 +210,18 @@ public class ShooterTester {
         }
       }
 
+      maxVelocityError = Math.max(maxVelocityError, testVelocity.minus(motorValues.velocity).abs(RotationsPerSecond));
+
       // If the shooter has been in tolerance for 0.4s
       if (framesWithinTolerance > 20) {
-        if (framesSinceDisturbance > 3) { // this is needed i forgot why
+        if (framesSinceDisturbance > 3) { // this is needed i forgot why lol
           double secondsSinceDisturbance = (framesSinceDisturbance - 20) * 0.02;
           returnTimes.add(Seconds.of(secondsSinceDisturbance));
-          System.out.println("Returned in "+secondsSinceDisturbance+"s");
+          System.out.println("Returned in "+niceFormat.format(secondsSinceDisturbance)+"s");
+
+          maxVelocityErrors.add(maxVelocityError);
+          System.out.println("Max velocity loss: "+niceFormat.format(maxVelocityError)+"rot/s ("+niceFormat.format(maxVelocityError/testVelocity.in(RotationsPerSecond)*100)+"%)");
+          maxVelocityError = 0.0;
         }
 
         framesSinceDisturbance = 0;
@@ -214,13 +231,20 @@ public class ShooterTester {
 
       System.out.println("Spun up in "+returnTimes.get(0).in(Seconds)+"s");
 
-      double avg = 0.0;
+      double timesAvg = 0.0;
       for (int i = 1; i < returnTimes.size(); i++) {
-        avg += returnTimes.get(i).in(Seconds);
+        timesAvg += returnTimes.get(i).in(Seconds);
       }
-      avg /= returnTimes.size()-1;
+      timesAvg /= returnTimes.size()-1;
 
-      System.out.println("Average return time: "+avg+"s");
+      double velocityErrorAvg = 0.0;
+      for (int i = 1; i < maxVelocityErrors.size(); i++) {
+        velocityErrorAvg += maxVelocityErrors.get(i);
+      }
+      velocityErrorAvg /= maxVelocityErrors.size()-1;
+
+      System.out.println("Average return time: "+niceFormat.format(timesAvg)+"s");
+      System.out.println("Average velocity loss: "+niceFormat.format(velocityErrorAvg)+"rot/s ("+niceFormat.format(velocityErrorAvg/testVelocity.in(RotationsPerSecond)*100)+"%)");
     });
   }
 }
