@@ -97,7 +97,11 @@ public class RobotContainer {
 
   private void configureBindings() {
     operatorController.a().onTrue(shooterTester.runFullSysId());
-    operatorController.b().onTrue(Commands.runOnce(() -> azimuth.resetPosition(Rotations.of(0.0))));
+    
+    operatorController.b().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(80)));
+    operatorController.rightBumper().whileTrue(shooterTester.runTests(RotationsPerSecond.of(80)));
+
+    operatorController.leftBumper().whileTrue(Commands.run(() ->shooter.setSetpoint(RotationsPerSecond.of(40))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
 
     operatorController.leftTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(-0.5)));
     operatorController.rightTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(0.5)));
