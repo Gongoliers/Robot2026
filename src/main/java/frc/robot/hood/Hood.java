@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.measure.Angle;
@@ -41,6 +42,9 @@ public class Hood extends MultithreadedSubsystem {
   /** Target position */
   private final MutAngle setpoint;
 
+  /** How close to be to setpoint before considered at that setpoint */
+  private final Angle posTolerance;
+
   /** Minimum hood angle (for safety) */
   private final Angle minPosition = Degrees.of(10);
 
@@ -64,16 +68,16 @@ public class Hood extends MultithreadedSubsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(0.0)
-          .kA(0.0)
-          .kS(0.0)
-          .kG(0.0)
+          .kV(9.0971)
+          .kA(0.30853)
+          .kS(0.45)
+          .kG(0.4)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0.0)
+          .kP(477.45)
           .kI(0.0)
-          .kD(0.0)
+          .kD(10)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -106,6 +110,7 @@ public class Hood extends MultithreadedSubsystem {
     motorOutput.setPosition(minPosition);
     
     setpoint = Rotations.mutable(minPosition.in(Rotations));
+    posTolerance = Rotations.of(0.005);
     voltageSet = false;
     voltageOut = Volts.mutable(0.0);
 
@@ -126,6 +131,7 @@ public class Hood extends MultithreadedSubsystem {
     stateTab.addDouble("Position (rot)", () -> motorValues.position.in(Rotations));
     stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
     stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
+    stateTab.addBoolean("At setpoint", this::atSetpoint);
 
     tab.addDouble("Setpoint (rot)", () -> setpoint.in(Rotations));
   }
@@ -142,7 +148,11 @@ public class Hood extends MultithreadedSubsystem {
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      double feedforwardVolts = Math.cos(positionRotations)*feedforward.getKg() + feedforward.getKs();
+      double feedforwardVolts = Math.cos(positionRotations)*feedforward.getKg();
+
+      if (!atSetpoint()) {
+        feedforwardVolts += Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
+      }
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
     }
@@ -168,6 +178,10 @@ public class Hood extends MultithreadedSubsystem {
         voltageOut.mut_replace(Volts.of(0.0));
       }
     }).finallyDo(() -> voltageSet = false);
+  }
+
+  public boolean atSetpoint() {
+    return MathUtil.isNear(setpoint.in(Rotations), motorValues.position.in(Rotations), posTolerance.in(Rotations));
   }
 
   public void setSetpoint(Angle setpointPosition) {

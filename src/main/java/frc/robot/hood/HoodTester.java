@@ -51,7 +51,7 @@ public class HoodTester {
     voltageOut = Volts.mutable(0.0);
 
     config = new SysIdRoutine.Config(
-      Volts.per(Second).of(0.75),
+      Volts.per(Second).of(1.25),
       Volts.of(2),
       Seconds.of(2));
 

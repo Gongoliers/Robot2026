@@ -11,7 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.azimuth.AzimuthTester;
@@ -98,13 +98,19 @@ public class RobotContainer {
   private void configureBindings() {
     operatorController.a().onTrue(shooterTester.runFullSysId());
     
-    operatorController.b().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(80)));
-    operatorController.rightBumper().whileTrue(shooterTester.runTests(RotationsPerSecond.of(80)));
+    operatorController.b().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(40)));
+    operatorController.rightBumper().whileTrue(shooterTester.runTests(RotationsPerSecond.of(40)));
 
-    operatorController.leftBumper().whileTrue(Commands.run(() ->shooter.setSetpoint(RotationsPerSecond.of(40))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
+    operatorController.leftBumper().whileTrue(Commands.run(() ->shooter.setSetpoint(RotationsPerSecond.of(31))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
 
     operatorController.leftTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(-0.5)));
     operatorController.rightTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(0.5)));
+
+    driverController.a().onTrue(hoodTester.runFullSysId());
+    
+    driverController.rightBumper().whileTrue(Commands.run(() -> hood.setSetpoint(Rotations.of(0.07))).finallyDo(() -> hood.setSetpoint(Rotations.of(0.04))));
+
+    driverController.rightTrigger().onTrue(Commands.runOnce(() -> hood.setSetpoint(hood.getMinPosition())));
   }
 
   public Command getAutonomousCommand() {
