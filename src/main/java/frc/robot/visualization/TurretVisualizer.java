@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.*;
 
 public class TurretVisualizer {
     /** Transform from the robot center to the turret center */
+    // TODO Update these measurements with measurements from CAD
     private static final Transform3d ROBOT_TO_TURRET = new Transform3d(Inches.of(10), Inches.of(10), Inches.of(0.0), Rotation3d.kZero);
 
     /** Length of the hood. Used for visualization. */
