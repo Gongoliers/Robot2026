@@ -3,14 +3,17 @@ package frc.robot.turret;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.Odometry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
 import frc.robot.azimuth.Azimuth;
+import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
+import frc.robot.visualization.TurretVisualizer;
 
 /** Turret subsystem */
 public class Turret extends MultithreadedSubsystem {
@@ -67,7 +70,12 @@ public class Turret extends MultithreadedSubsystem {
   }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    // NOTE: Since the azimuth setpoint is measured locally relative to the robot rotation,
+    // the robot rotation is needed to get the global azimuth rotation
+    // TODO: Refactor the Azimuth class to add getters for local rotation and global rotation
+    TurretVisualizer.update(Drive.getInstance().getPose(), azimuth.getSetpoint(), hood.getSetpoint());
+  }
 
   @Override
   public void fastPeriodic() {
