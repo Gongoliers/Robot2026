@@ -20,6 +20,7 @@ import frc.robot.hood.Hood;
 import frc.robot.hood.HoodTester;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
+import frc.robot.turret.Turret;
 
 /** Robot container */
 public class RobotContainer {
@@ -57,6 +58,9 @@ public class RobotContainer {
   /** Hood tester */
   private final HoodTester hoodTester;
 
+  /** Turret */
+  private final Turret turret;
+
   /**
    * Gets robot container instance
    * 
@@ -83,6 +87,7 @@ public class RobotContainer {
     azimuthTester = AzimuthTester.getInstance();
     hood = Hood.getInstance();
     hoodTester = HoodTester.getInstance();
+    turret = Turret.getInstance();
 
     multithreader.start();
 
