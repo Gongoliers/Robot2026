@@ -23,6 +23,7 @@ import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
 import frc.lib.configs.MechanismConfig;
 import frc.lib.configs.MechanismConfig.MechanismBuilder;
 import frc.lib.configs.MotorConfig.MotorBuilder;
+import frc.lib.motors.DiscreteMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
 import frc.robot.RobotConstants;
@@ -116,6 +117,10 @@ public class Hood extends MultithreadedSubsystem {
 
     feedback = config.feedbackControllerConfig().createPIDController();
     feedforward = config.feedforwardControllerConfig().createArmFeedforward();
+
+    if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
+      discreteSim.usePosition(() -> setpoint);
+    }
   }
 
   @Override
