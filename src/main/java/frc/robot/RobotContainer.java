@@ -91,7 +91,7 @@ public class RobotContainer {
 
     multithreader.start();
 
-    Telemetry.initializeTabs(drive, shooter, azimuth, hood);
+    Telemetry.initializeTabs();
     configureDefaultCommands();
     configureBindings();
   }
