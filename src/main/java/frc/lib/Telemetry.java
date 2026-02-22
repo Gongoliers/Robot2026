@@ -1,13 +1,13 @@
 package frc.lib;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Handles telemetry with Shuffleboard */
 public class Telemetry {
 
-  /** Set of subsytems to be utilized by initializeTabs */
-  private static Set<Subsystem> subsystemTabs = new HashSet<Subsystem>();
+  /** List of subsytems to be utilized by initializeTabs */
+  private static List<Subsystem> subsystemTabs = new ArrayList<Subsystem>();
 
   /** 
    * registers a Subsytem to have their initializeTab function called
