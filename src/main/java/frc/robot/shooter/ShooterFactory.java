@@ -9,14 +9,13 @@ import frc.lib.motors.LossyMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorOutputSim;
 import frc.lib.motors.MotorOutputTalonFX;
-import frc.robot.Robot;
-import frc.robot.RobotConstants;
+import frc.robot.HardwareManager;
 
 /** Creates shooter hardware abstractions */
 public class ShooterFactory {
   
   public static MotorOutput createShooterMotor(MechanismConfig config) {
-    if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.SHOOTER)) {
+    if (HardwareManager.isEnabled(HardwareManager.Hardware.SHOOTER)) {
       return new MotorOutputTalonFX(config.motorConfig(), new CAN(10));
     }
 

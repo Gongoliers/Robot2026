@@ -25,15 +25,4 @@ public class RobotConstants {
 
   /** Side lengths of robot chassis */
   public static final Distance CHASSIS_SIDE_LENGTH = Inches.of(24);
-
-  /** Subsystems */
-  public enum Subsystem {
-    SWERVE,
-    SHOOTER,
-    AZIMUTH,
-    HOOD,
-  }
-
-  /** Enabled subsystems */
-  public static final Set<Subsystem> ENABLED_SUBSYSTEMS = EnumSet.of(Subsystem.HOOD, Subsystem.SHOOTER);
 }
