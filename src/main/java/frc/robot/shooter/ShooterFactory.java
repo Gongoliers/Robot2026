@@ -15,7 +15,7 @@ import frc.robot.HardwareManager;
 public class ShooterFactory {
   
   public static MotorOutput createShooterMotor(MechanismConfig config) {
-    if (HardwareManager.isEnabled(HardwareManager.Hardware.SHOOTER)) {
+    if (HardwareManager.anyEnabled(HardwareManager.Hardware.TURRET, HardwareManager.Hardware.SHOOTER)) {
       return new MotorOutputTalonFX(config.motorConfig(), new CAN(10));
     }
 

@@ -80,12 +80,12 @@ public class RobotContainer {
     // Option 1. Disable hardware for non-functional subsystems
     HardwareManager.disable(CLIMB);
 
-    // Option 2. Enable only the subsystem being tested
-    HardwareManager.enableOnly(SWERVE);
+    // Option 2. Enable only the subsystems being tested
+    HardwareManager.enableOnly(SWERVE, TURRET);
 
     // NOTE: enableOnly is equivalent to the following:
     // HardwareManager.disableAll();
-    // HardwareManager.enable(SWERVE);
+    // HardwareManager.enable(SWERVE, TURRET);
 
     multithreader = Multithreader.getInstance();
     drive = Drive.getInstance();

@@ -16,7 +16,7 @@ import frc.robot.HardwareManager;
 public class HoodFactory {
   
   public static MotorOutput createHoodMotor(MechanismConfig config) {
-    if (HardwareManager.isEnabled(HardwareManager.Hardware.HOOD)) {
+    if (HardwareManager.anyEnabled(HardwareManager.Hardware.TURRET, HardwareManager.Hardware.HOOD)) {
       return new MotorOutputTalonFX(config.motorConfig(), new CAN(20));
     }
 

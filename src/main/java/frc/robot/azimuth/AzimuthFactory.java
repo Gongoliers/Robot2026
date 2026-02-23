@@ -15,7 +15,7 @@ import static edu.wpi.first.units.Units.*;
 public class AzimuthFactory {
 
   public static MotorOutput createAzimuthMotor(MechanismConfig config) {
-    if (HardwareManager.isEnabled(HardwareManager.Hardware.AZIMUTH)) {
+    if (HardwareManager.anyEnabled(HardwareManager.Hardware.TURRET, HardwareManager.Hardware.AZIMUTH)) {
       return new MotorOutputTalonFX(config.motorConfig(), new CAN(0));
     }
 

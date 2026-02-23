@@ -1,5 +1,6 @@
 package frc.robot;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -20,6 +21,7 @@ public class HardwareManager {
         SHOOTER,
         AZIMUTH,
         HOOD,
+        TURRET,
         CLIMB
     }
 
@@ -76,6 +78,16 @@ public class HardwareManager {
      */
     public static boolean isEnabled(Hardware hardware) {
         return Robot.isReal() && ENABLED_HARDWARE.contains(hardware);
+    }
+
+    /**
+     * Tests if any of these hardware are enabled.
+     *
+     * @param hardware The hardware to test.
+     * @return True if any of these hardware are enabled, false otherwise.
+     */
+    public static boolean anyEnabled(Hardware... hardware) {
+        return Arrays.stream(hardware).anyMatch(HardwareManager::isEnabled);
     }
 
 }
