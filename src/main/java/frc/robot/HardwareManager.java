@@ -54,7 +54,7 @@ public class HardwareManager {
      * @param hardware The hardware to enable.
      */
     public static void enable(Hardware... hardware) {
-        // Equivalent to Collections.addAll(ENABLED_HARDWARE, hardware);
+        // Equivalent to Collections.addAll(ENABLED_HARDWARE, hardware)
         for (Hardware h : hardware) {
             ENABLED_HARDWARE.add(h);
         }
