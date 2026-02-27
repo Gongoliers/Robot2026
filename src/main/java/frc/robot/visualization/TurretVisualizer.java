@@ -14,7 +14,7 @@ import static edu.wpi.first.units.Units.*;
 public class TurretVisualizer {
     /** Distances from the center of the turret to the robot's origin. */
     // TODO These were tuned by hand to get the turret visualization to line up; probably not accurate to CAD
-    private static final Translation3d ROBOT_TO_TURRET = new Translation3d(Inches.of(2.075), Inches.of(-3.9), Inches.of(14.939).plus(Meters.of(0.075)));
+    public static final Translation3d ROBOT_TO_TURRET = new Translation3d(Inches.of(2.075), Inches.of(-3.9), Inches.of(14.939).plus(Meters.of(0.075)));
 
     /** Length of the hood. Used for visualization. */
     private static final Distance HOOD_LENGTH = Inches.of(24);

@@ -8,10 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -29,10 +26,12 @@ import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
 import frc.lib.swerves.SwerveOutput;
 import frc.robot.TurretDriveOptimizer;
+import frc.robot.azimuth.Azimuth;
 import frc.robot.configuration.FieldRegion;
 import frc.robot.configuration.Objective;
 import frc.robot.configuration.ScoringTarget;
 import frc.robot.configuration.TurretBounds;
+import frc.robot.visualization.TurretVisualizer;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -170,10 +169,6 @@ public class Drive extends Subsystem {
     }, this);
   }
 
-  private final Transform2d poseToTurret = new Transform2d(Inches.of(10), Inches.of(10), Rotation2d.kZero);
-
-  private Angle turretAngle = Degrees.of(0.0);
-
   public Command driveWithTurret(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
     SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0);
 
@@ -204,19 +199,21 @@ public class Drive extends Subsystem {
       PosePublisher.publish("Scoring Target", target.position());
 
       // Find the angle from the turret's current pose to the target pose
-      Pose2d turretPose = pose.plus(poseToTurret);
-      Angle turretToTarget = target.position().toTranslation2d().minus(turretPose.getTranslation()).getAngle().getMeasure();
+      Angle turretSetpoint = Azimuth.getInstance().getSetpoint();
+      Translation3d turretPosition = TurretVisualizer.globalTurretPose(pose, turretSetpoint).getTranslation();
+      PosePublisher.publish("Turret Position", turretPosition);
+
+      Angle turretToTarget = target.position().toTranslation2d().minus(turretPosition.toTranslation2d()).getAngle().getMeasure();
+      SmartDashboard.putNumber("turretToTarget", turretToTarget.in(Degrees));
 
       // Calculate the optimal turret-drive rotation trade-off
-      var result = TurretDriveOptimizer.optimize(getPose().getRotation().getMeasure(), turretAngle, turretToTarget, TurretBounds.CORNER_LEFT, TurretDriveOptimizer.Costs.PREFER_TURRET);
+      var result = TurretDriveOptimizer.optimize(getPose().getRotation().getMeasure(), turretSetpoint, turretToTarget, TurretBounds.FULL, TurretDriveOptimizer.Costs.PREFER_TURRET);
 
       // Rotate the drive to its setpoint
       swerve.setControl(request.withVelocityX(fieldSpeeds.vxMetersPerSecond).withVelocityY(fieldSpeeds.vyMetersPerSecond).withTargetRateFeedforward(fieldSpeeds.omegaRadiansPerSecond).withTargetDirection(new Rotation2d(result.drive())));
 
-      // Simulate rotating the turret to its setpoint
-      turretAngle = result.turret();
-      Pose2d newTurretPose = pose.plus(poseToTurret).plus(new Transform2d(new Translation2d(), new Rotation2d(turretAngle)));
-      PosePublisher.publish("Turret", newTurretPose);
+      // Rotate the turret to its setpoint
+      Azimuth.getInstance().setSetpoint(result.turret());
     });
   }
 }
