@@ -41,11 +41,8 @@ public class Azimuth extends MultithreadedSubsystem {
   /** Target position */
   private final MutAngle setpoint;
 
-  /** Minimum azimuth rotation (for safety) */
-  private final Angle minPosition = Rotations.of(-0.5);
-
-  /** Maximum azimuth rotation (for safety) */
-  private final Angle maxPosition = Rotations.of(0.5);
+  /** The bounds representing the range of safe motion. */
+  public static final AzimuthBounds SAFE_BOUNDS = AzimuthBounds.FULL;
 
   /** True if a manual voltage is set by runAtVoltage command */
   private boolean voltageSet;
@@ -168,24 +165,6 @@ public class Azimuth extends MultithreadedSubsystem {
 
   public Angle getSetpoint() {
     return setpoint;
-  }
-
-  /**
-   * Gets minimum safe azimuth angle
-   * 
-   * @return minimum safe azimuth angle
-   */
-  public Angle getMinPosition() {
-    return minPosition;
-  }
-
-  /**
-   * Gets maximum safe azimuth angle
-   * 
-   * @return maximum safe azimuth angle
-   */
-  public Angle getMaxPosition() {
-    return maxPosition;
   }
 
   public void resetPosition(Angle newPosition) {
