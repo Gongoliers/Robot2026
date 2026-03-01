@@ -83,9 +83,9 @@ public class RobotContainer {
     shooterTester = ShooterTester.getInstance();
     azimuth = Azimuth.getInstance();
     azimuthTester = new SysIdTester(azimuth,
-            new SysIdRoutine.Config(Volts.per(Second).of(0.75), Volts.of(4), Seconds.of(5)),
             azimuth::setVoltage,
-            azimuth::getValues);
+            azimuth::getValues,
+            new SysIdRoutine.Config(Volts.per(Second).of(0.75), Volts.of(4), Seconds.of(5)));
     hood = Hood.getInstance();
     hoodTester = HoodTester.getInstance();
     turret = Turret.getInstance();

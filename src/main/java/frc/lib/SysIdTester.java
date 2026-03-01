@@ -38,19 +38,19 @@ public class SysIdTester {
      * Creates a tester instance for the subsystem.
      *
      * @param subsystem The subsystem to test.
-     * @param config The configuration for the SysId routine.
      * @param voltageConsumer A function that accepts a voltage.
      * @param motorValuesSupplier A function that returns motor values.
+     * @param config The configuration for the SysId routine.
      */
-    public SysIdTester(Subsystem subsystem, SysIdRoutine.Config config, Consumer<Voltage> voltageConsumer, Supplier<MotorValues> motorValuesSupplier) {
+    public SysIdTester(Subsystem subsystem, Consumer<Voltage> voltageConsumer, Supplier<MotorValues> motorValuesSupplier, SysIdRoutine.Config config) {
         this.subsystem = subsystem;
-
-        this.motorValuesSupplier = motorValuesSupplier;
 
         SysIdRoutine.Mechanism mechanism = new SysIdRoutine.Mechanism(
                 voltageConsumer,
                 this::logMotorValues,
                 this.subsystem);
+
+        this.motorValuesSupplier = motorValuesSupplier;
 
         this.routine = new SysIdRoutine(config, mechanism);
     }
