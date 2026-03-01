@@ -19,6 +19,16 @@ public class FieldSpan {
     private record AxisSpan(Distance min, Distance max) {
 
         /**
+         * The default X axis span.
+         */
+        private static final AxisSpan DEFAULT_X = new AxisSpan(AndyMarkFieldMeasurements.ZERO, AndyMarkFieldMeasurements.SIZE_X);
+
+        /**
+         * The default Y axis span.
+         */
+        private static final AxisSpan DEFAULT_Y = new AxisSpan(AndyMarkFieldMeasurements.ZERO, AndyMarkFieldMeasurements.SIZE_Y);
+
+        /**
          * Creates an axis span.
          *
          * @param min The minimum in this axis.
@@ -43,25 +53,43 @@ public class FieldSpan {
     /**
      * The span for the X axis.
      */
-    private AxisSpan x;
+    private AxisSpan x = AxisSpan.DEFAULT_X;
 
     /**
      * The span for the Y axis.
      */
-    private AxisSpan y;
-
-    /**
-     * Creates a new field span.
-     *
-     * @return a new field span.
-     */
-    public static FieldSpan create() {
-        return new FieldSpan();
-    }
+    private AxisSpan y = AxisSpan.DEFAULT_Y;
 
     // TODO Debating between the following terminology:
     // TODO (a) X: Left-Right Y: Bottom-Top (top-down convention)
     // TODO (b) X: Near-Far   Y: Left-Right (WPILib blue-wall convention)
+
+    /**
+     * A class providing static FieldSpan builder methods to allow creation.
+     */
+    public static class FieldSpanBuilder {
+        /**
+         * Assigns this field span's X axis.
+         *
+         * @param min The minimum (left) of this span's X axis.
+         * @param max The maximum (right) of this span's X axis.
+         * @return This field span.
+         */
+        public static FieldSpan withX(Distance min, Distance max) {
+            return new FieldSpan().withX(min, max);
+        }
+
+        /**
+         * Assigns this field span's Y axis.
+         *
+         * @param min The minimum (bottom) of this span's Y axis.
+         * @param max The maximum (top) of this span's Y axis.
+         * @return This field span.
+         */
+        public static FieldSpan withY(Distance min, Distance max) {
+            return new FieldSpan().withY(min, max);
+        }
+    }
 
     /**
      * Assigns this field span's X axis.
@@ -92,7 +120,7 @@ public class FieldSpan {
      *
      * @return the bottom left corner.
      */
-    public Translation2d bottomLeftCorner() {
+    public Translation2d bottomLeft() {
         return new Translation2d(x.min, y.min);
     }
 
@@ -101,7 +129,7 @@ public class FieldSpan {
      *
      * @return the top right corner.
      */
-    public Translation2d topRightCorner() {
+    public Translation2d topRight() {
         return new Translation2d(x.max, y.max);
     }
 
