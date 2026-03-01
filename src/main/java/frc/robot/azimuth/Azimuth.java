@@ -150,6 +150,16 @@ public class Azimuth extends MultithreadedSubsystem {
   }
 
   /**
+   * Sets the voltage to run this subsystem at.
+   *
+   * @param voltage The voltage.
+   */
+  public void setVoltage(Voltage voltage) {
+    voltageSet = true;
+    voltageOut.mut_replace(voltage);
+  }
+
+  /**
    * Returns a command that allows for temporary manual voltage control of the azimuth motor
    * 
    * @param voltageSupplier supplies a manual motor voltage to run at while the command is running
@@ -157,8 +167,7 @@ public class Azimuth extends MultithreadedSubsystem {
    */
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
     return Commands.run(() -> {
-      voltageSet = true;
-      voltageOut.mut_replace(voltageSupplier.get());
+      setVoltage(voltageSupplier.get());
     }).finallyDo(() -> voltageSet = false);
   }
 

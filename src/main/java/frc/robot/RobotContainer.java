@@ -6,15 +6,13 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.SysIdTester;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
-import frc.robot.azimuth.AzimuthTester;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodTester;
@@ -50,7 +48,7 @@ public class RobotContainer {
   private final Azimuth azimuth;
 
   /** Azimuth tester */
-  private final AzimuthTester azimuthTester;
+  private final SysIdTester azimuthTester;
 
   /** Hood */
   private final Hood hood;
@@ -84,7 +82,10 @@ public class RobotContainer {
     shooter = Shooter.getInstance();
     shooterTester = ShooterTester.getInstance();
     azimuth = Azimuth.getInstance();
-    azimuthTester = AzimuthTester.getInstance();
+    azimuthTester = new SysIdTester(azimuth,
+            new SysIdRoutine.Config(Volts.per(Second).of(0.75), Volts.of(4), Seconds.of(5)),
+            azimuth::setVoltage,
+            azimuth::getValues);
     hood = Hood.getInstance();
     hoodTester = HoodTester.getInstance();
     turret = Turret.getInstance();
