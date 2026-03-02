@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
-import frc.robot.azimuth.AzimuthTester;
+import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodTester;
@@ -49,9 +49,6 @@ public class RobotContainer {
   /** Azimuth */
   private final Azimuth azimuth;
 
-  /** Azimuth tester */
-  private final AzimuthTester azimuthTester;
-
   /** Hood */
   private final Hood hood;
 
@@ -84,7 +81,6 @@ public class RobotContainer {
     shooter = Shooter.getInstance();
     shooterTester = ShooterTester.getInstance();
     azimuth = Azimuth.getInstance();
-    azimuthTester = AzimuthTester.getInstance();
     hood = Hood.getInstance();
     hoodTester = HoodTester.getInstance();
     turret = Turret.getInstance();

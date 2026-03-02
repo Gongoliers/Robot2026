@@ -12,40 +12,24 @@ import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
 
 /** Class with methods to run sysid with azimuth */
-public class AzimuthTester {
+public class AzimuthSysID {
   
-  /** Azimuth tester instance */
-  private static AzimuthTester instance = null;
-
   /** Azimuth subsystem reference */
-  private final Azimuth azimuth;
+  private static final Azimuth azimuth;
 
   /** Sysid config */
-  private final SysIdRoutine.Config config;
+  private static final SysIdRoutine.Config config;
 
   /** Sysid mechanism */
-  private final SysIdRoutine.Mechanism mechanism;
+  private static final SysIdRoutine.Mechanism mechanism;
 
   /** Sysid routine */
-  private final SysIdRoutine routine;
+  private static final SysIdRoutine routine;
 
   /** Voltage out variable used for manual azimuth control */
-  private final MutVoltage voltageOut;
+  private static final MutVoltage voltageOut;
 
-  /**
-   * Gets azimuth tester instance
-   * 
-   * @return azimuth tester instance
-   */
-  public static AzimuthTester getInstance() {
-    if (instance == null) {
-      instance = new AzimuthTester();
-    }
-
-    return instance;
-  }
-
-  private AzimuthTester() {
+  static {
     azimuth = Azimuth.getInstance();
 
     voltageOut = Volts.mutable(0.0);
@@ -56,18 +40,18 @@ public class AzimuthTester {
       Seconds.of(5));
 
     mechanism = new SysIdRoutine.Mechanism(
-      this::setVoltage, 
-      this::logMotors, 
+      AzimuthSysID::setVoltage, 
+      AzimuthSysID::logMotors, 
       azimuth);
 
     routine = new SysIdRoutine(config, mechanism);
   }
 
-  private void setVoltage(Voltage volts) {
+  private static void setVoltage(Voltage volts) {
     voltageOut.mut_replace(volts);
   }
 
-  private void logMotors(SysIdRoutineLog log) {
+  private static void logMotors(SysIdRoutineLog log) {
     MotorValues motorValues = azimuth.getValues();
 
     log.motor("drive")
@@ -78,14 +62,14 @@ public class AzimuthTester {
       .angularAcceleration(motorValues.acceleration);
   }
 
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+  public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
       azimuth.runAtVoltage(() -> voltageOut),
       routine.quasistatic(direction)
     );
   }
 
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+  public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
       azimuth.runAtVoltage(() -> voltageOut),
       routine.dynamic(direction)
@@ -97,10 +81,10 @@ public class AzimuthTester {
    * 
    * @return a command that runs quasistatic and dynamic sysid forwards and backwards
    */
-  public Command runFullSysId() {
+  public static Command runFullSysId() {
     return new runFullSysId(
-      this::sysIdQuasistatic, 
-      this::sysIdDynamic, 
+      AzimuthSysID::sysIdQuasistatic, 
+      AzimuthSysID::sysIdDynamic, 
       () -> azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.1,
       azimuth);
   }
