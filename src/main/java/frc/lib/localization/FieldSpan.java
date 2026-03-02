@@ -1,8 +1,10 @@
-package frc.robot.configuration;
+package frc.lib.localization;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
+import frc.robot.configuration.AndyMarkFieldMeasurements;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -46,6 +48,16 @@ public class FieldSpan {
                 this.min = min;
                 this.max = max;
             }
+        }
+
+        /**
+         * Returns true if the value is within the span.
+         *
+         * @param value The value to test.
+         * @return True if the value is within the span.
+         */
+        public boolean contains(Distance value) {
+            return min.lte(value) && value.lte(max);
         }
 
     }
@@ -131,6 +143,37 @@ public class FieldSpan {
      */
     public Translation2d topRight() {
         return new Translation2d(x.max, y.max);
+    }
+
+    /**
+     * Gets the corners of this span.
+     *
+     * @return The corners of this span.
+     */
+    public Translation2d[] corners() {
+        return new Translation2d[]{bottomLeft(), topRight()};
+    }
+
+    /**
+     * Gets all the corners of all the spans.
+     * Useful for visualizing the spans during debugging.
+     *
+     * @return The corners of all the spans.
+     */
+    public static Translation2d[] allCorners(FieldSpan[] spans) {
+        return Arrays.stream(spans).map(FieldSpan::corners).flatMap(Arrays::stream).toArray(Translation2d[]::new);
+    }
+
+    /**
+     * Returns true if the span contains the position.
+     *
+     * @param position The position to test.
+     * @return True if the span contains the position.
+     */
+    public boolean contains(Translation2d position) {
+        boolean inX = x.contains(position.getMeasureX());
+        boolean inY = y.contains(position.getMeasureY());
+        return inX && inY;
     }
 
 }
