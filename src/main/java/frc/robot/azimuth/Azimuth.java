@@ -204,4 +204,13 @@ public class Azimuth extends MultithreadedSubsystem {
   public MotorValues getValues() {
     return motorValues;
   }
+
+  /**
+   * Gets the azimuth subsystem's position in the local frame.
+   *
+   * @return The position in the local frame.
+   */
+  public Angle localPosition() {
+    return motorValues.position;
+  }
 }
