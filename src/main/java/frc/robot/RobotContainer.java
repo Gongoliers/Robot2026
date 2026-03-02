@@ -6,19 +6,16 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
-import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodSysID;
 import frc.robot.shooter.Shooter;
+import frc.robot.shooter.ShooterSysID;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.turret.Turret;
 
@@ -93,7 +90,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    operatorController.a().onTrue(shooterTester.runFullSysId());
+    operatorController.a().onTrue(ShooterSysID.runFullSysId());
     
     operatorController.b().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(40)));
     operatorController.rightBumper().whileTrue(shooterTester.runTests(RotationsPerSecond.of(40)));
