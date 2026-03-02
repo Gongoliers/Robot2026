@@ -12,40 +12,24 @@ import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
 
 /** Class with methods to run sysid with hood */
-public class HoodTester {
-  
-  /** Hood tester instance */
-  private static HoodTester instance = null;
+public class HoodSysID {
 
   /** Hood subsystem reference */
-  private final Hood hood;
+  private static final Hood hood;
 
   /** Sysid config */
-  private final SysIdRoutine.Config config;
+  private static final SysIdRoutine.Config config;
 
   /** Sysid mechanism */
-  private final SysIdRoutine.Mechanism mechanism;
+  private static final SysIdRoutine.Mechanism mechanism;
 
   /** Sysid routine */
-  private final SysIdRoutine routine;
+  private static final SysIdRoutine routine;
 
   /** Voltage out variable used for manual hood control */
-  private final MutVoltage voltageOut;
+  private static final MutVoltage voltageOut;
 
-  /**
-   * Gets hood tester instance
-   * 
-   * @return hood tester instance
-   */
-  public static HoodTester getInstance() {
-    if (instance == null) {
-      instance = new HoodTester();
-    }
-
-    return instance;
-  }
-
-  private HoodTester() {
+  static {
     hood = Hood.getInstance();
 
     voltageOut = Volts.mutable(0.0);
@@ -56,18 +40,18 @@ public class HoodTester {
       Seconds.of(2));
 
     mechanism = new SysIdRoutine.Mechanism(
-      this::setVoltage,
-      this::logMotors, 
+      HoodSysID::setVoltage,
+      HoodSysID::logMotors, 
       hood);
 
     routine = new SysIdRoutine(config, mechanism);
   }
 
-  private void setVoltage(Voltage volts) {
+  private static void setVoltage(Voltage volts) {
     voltageOut.mut_replace(volts);
   }
 
-  private void logMotors(SysIdRoutineLog log) {
+  private static void logMotors(SysIdRoutineLog log) {
     MotorValues motorValues = hood.getValues();
 
     log.motor("drive")
@@ -78,14 +62,14 @@ public class HoodTester {
       .angularAcceleration(motorValues.acceleration);
   }
 
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+  public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
       hood.runAtVoltage(() -> voltageOut),
       routine.quasistatic(direction)
     );
   }
 
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+  public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
       hood.runAtVoltage(() -> voltageOut),
       routine.dynamic(direction)
@@ -97,10 +81,10 @@ public class HoodTester {
    * 
    * @return a command that runs quasistatic and dynamic sysid forwards and backwards
    */
-  public Command runFullSysId() {
+  public static Command runFullSysId() {
     return new runFullSysId(
-      this::sysIdQuasistatic, 
-      this::sysIdDynamic,
+      HoodSysID::sysIdQuasistatic, 
+      HoodSysID::sysIdDynamic,
       () -> true,
       Seconds.of(0.25),
       hood);

@@ -8,15 +8,10 @@ import java.util.ArrayList;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
 
 /** Class with methods to run sysid and test the shooter */
@@ -27,20 +22,6 @@ public class ShooterTester {
 
   /** Shooter subsystem reference */
   private final Shooter shooter;
-
-  /** Sysid config */
-  private final SysIdRoutine.Config config;
-
-  /** Sysid mechanism */
-  private final SysIdRoutine.Mechanism mechanism;
-
-  /** Sysid routine */
-  private final SysIdRoutine routine;
-
-  /** Voltage out variable used for manual shooter control */
-  private final MutVoltage voltageOut;
-
-  // Variables for shooter testing
 
   /** Shooter motor values */
   private MotorValues motorValues;
@@ -82,20 +63,6 @@ public class ShooterTester {
   private ShooterTester() {
     shooter = Shooter.getInstance();
 
-    voltageOut = Volts.mutable(0.0);
-
-    config = new SysIdRoutine.Config(
-      Volts.per(Second).of(1),
-      Volts.of(7),
-      Seconds.of(10));
-    
-    mechanism = new SysIdRoutine.Mechanism(
-      this::setVoltage, 
-      this::logMotors, 
-      shooter);
-
-    routine = new SysIdRoutine(config, mechanism);
-
     motorValues = new MotorValues();
     velocityAccumulator = new ArrayList<Double>();
     maxVelocityError = 0;
@@ -104,48 +71,6 @@ public class ShooterTester {
     returnTimes = new ArrayList<Time>();
     framesWithinTolerance = 0;
     framesSinceDisturbance = 0;
-  }
-
-  private void setVoltage(Voltage volts) {
-    voltageOut.mut_replace(volts);
-  }
-
-  private void logMotors(SysIdRoutineLog log) {
-    MotorValues motorValues = shooter.getValues();
-
-    log.motor("drive")
-      .voltage(motorValues.motorVoltage)
-      .current(motorValues.statorCurrent)
-      .angularPosition(motorValues.position)
-      .angularVelocity(motorValues.velocity)
-      .angularAcceleration(motorValues.acceleration);
-  }
-
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return Commands.race(
-      shooter.runAtVoltage(() -> voltageOut),
-      routine.quasistatic(direction)
-    );
-  }
-
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return Commands.race(
-      shooter.runAtVoltage(() -> voltageOut),
-      routine.dynamic(direction)
-    );
-  }
-
-  /**
-   * Returns a command that runs quasistatic and dynamic sysid forwards and backwards
-   * 
-   * @return a command that runs quasistatic and dynamic sysid forwards and backwards
-   */
-  public Command runFullSysId() {
-    return new runFullSysId(
-      this::sysIdQuasistatic, 
-      this::sysIdDynamic, 
-      () -> shooter.getValues().velocity.abs(RotationsPerSecond) < 0.1,
-      shooter);
   }
 
   public Command findVelocityVariance(AngularVelocity testVelocity) {
