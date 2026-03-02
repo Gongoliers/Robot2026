@@ -11,14 +11,13 @@ import frc.lib.motors.LossyMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorOutputSim;
 import frc.lib.motors.MotorOutputTalonFX;
-import frc.robot.Robot;
-import frc.robot.RobotConstants;
+import frc.robot.HardwareManager;
 
 /** Creates hood hardware abstractions */
 public class HoodFactory {
   
   public static MotorOutput createHoodMotor(MechanismConfig config) {
-    if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.HOOD)) {
+    if (HardwareManager.anyEnabled(HardwareManager.Hardware.TURRET, HardwareManager.Hardware.HOOD)) {
       return new MotorOutputTalonFX(config.motorConfig(), new CAN(20));
     }
 
