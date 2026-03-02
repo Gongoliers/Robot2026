@@ -15,7 +15,6 @@ import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
-import frc.robot.hood.HoodTester;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.turret.Turret;
@@ -54,7 +53,7 @@ public class RobotContainer {
   private final Hood hood;
 
   /** Hood tester */
-  private final HoodTester hoodTester;
+  private final SysIdTester hoodTester;
 
   /** Turret */
   private final Turret turret;
@@ -87,7 +86,10 @@ public class RobotContainer {
             azimuth::getValues,
             new SysIdRoutine.Config(Volts.per(Second).of(0.75), Volts.of(4), Seconds.of(5)));
     hood = Hood.getInstance();
-    hoodTester = HoodTester.getInstance();
+    hoodTester = new SysIdTester(hood,
+            hood::setVoltage,
+            hood::getValues,
+            new SysIdRoutine.Config(Volts.per(Second).of(1.25), Volts.of(2), Seconds.of(2)));
     turret = Turret.getInstance();
 
     multithreader.start();
@@ -112,7 +114,7 @@ public class RobotContainer {
     operatorController.leftTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(-0.5)));
     operatorController.rightTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(0.5)));
 
-    driverController.a().onTrue(hoodTester.runFullSysId());
+    driverController.a().onTrue(hoodTester.fullSysId(Seconds.of(0.25)));
     
     driverController.rightBumper().whileTrue(Commands.run(() -> hood.setSetpoint(Rotations.of(0.07))).finallyDo(() -> hood.setSetpoint(Rotations.of(0.04))));
 

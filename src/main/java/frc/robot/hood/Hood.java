@@ -159,6 +159,22 @@ public class Hood extends MultithreadedSubsystem {
 
     motorOutput.setVoltage(voltageOut);
   }
+
+  /**
+   * Sets the voltage to run this subsystem at.
+   *
+   * @param voltage The voltage.
+   */
+  public void setVoltage(Voltage voltage) {
+    voltageSet = true;
+    if (motorValues.position.gte(minPosition) && voltage.lte(Volts.of(0.0))) {
+      voltageOut.mut_replace(voltage);
+    } else if (motorValues.position.lte(maxPosition) && voltage.gte(Volts.of(0.0))) {
+      voltageOut.mut_replace(voltage);
+    } else {
+      voltageOut.mut_replace(Volts.zero());
+    }
+  }
   
   /**
    * Returns a command that allows for temporary manual voltage control of the hood motor
@@ -168,15 +184,7 @@ public class Hood extends MultithreadedSubsystem {
    */
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
     return Commands.run(() -> {
-      voltageSet = true;
-      Voltage voltageRequest = voltageSupplier.get();
-      if (motorValues.position.gte(minPosition) && voltageRequest.lte(Volts.of(0.0))) {
-        voltageOut.mut_replace(voltageRequest);
-      } else if (motorValues.position.lte(maxPosition) && voltageRequest.gte(Volts.of(0.0))) {
-        voltageOut.mut_replace(voltageRequest);
-      } else {
-        voltageOut.mut_replace(Volts.of(0.0));
-      }
+      setVoltage(voltageSupplier.get());
     }).finallyDo(() -> voltageSet = false);
   }
 
