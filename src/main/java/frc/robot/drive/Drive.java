@@ -8,10 +8,9 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,9 +21,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.lib.PosePublisher;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
 import frc.lib.swerves.SwerveOutput;
+import frc.robot.TurretDriveOptimizer;
+import frc.robot.azimuth.Azimuth;
+import frc.robot.configuration.FieldRegion;
+import frc.robot.configuration.Objective;
+import frc.robot.configuration.ScoringTarget;
+import frc.robot.configuration.TurretBounds;
+import frc.robot.visualization.TurretVisualizer;
+
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 public class Drive extends Subsystem {
@@ -158,5 +167,53 @@ public class Drive extends Subsystem {
         .withVelocityY(fieldSpeeds.vyMetersPerSecond)
         .withRotationalRate(fieldSpeeds.omegaRadiansPerSecond));
     }, this);
+  }
+
+  public Command driveWithTurret(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
+    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0);
+
+    return run(() -> {
+      ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
+
+      // Get the robot's current pose to determine what action it should take
+      Pose2d pose = getPose();
+
+      // Publish some helper information for debugging
+      // PosePublisher.publish("Scoring Targets", ScoringTarget.positions());
+      PosePublisher.publish("Corners", FieldRegion.allCorners());
+      PosePublisher.publish("Drive Pose", pose);
+
+      // Determine the region the robot is in
+      FieldRegion[] candidates = FieldRegion.containing(pose.getTranslation());
+      FieldRegion region = Arrays.stream(candidates).findFirst().orElse(FieldRegion.FIELD_FALLBACK);
+      SmartDashboard.putString("Region", region.name());
+
+      // Find the objective should be based on our alliance
+      DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
+      Objective objective = region.objective(alliance);
+      Objective.Action action = objective.action();
+      ScoringTarget target = objective.target();
+
+      // Publish the action and the scoring target
+      SmartDashboard.putString("Action", action.name());
+      PosePublisher.publish("Scoring Target", target.position());
+
+      // Find the angle from the turret's current pose to the target pose
+      Angle turretSetpoint = Azimuth.getInstance().getSetpoint();
+      Translation3d turretPosition = TurretVisualizer.globalTurretPose(pose, turretSetpoint).getTranslation();
+      PosePublisher.publish("Turret Position", turretPosition);
+
+      Angle turretToTarget = target.position().toTranslation2d().minus(turretPosition.toTranslation2d()).getAngle().getMeasure();
+      SmartDashboard.putNumber("turretToTarget", turretToTarget.in(Degrees));
+
+      // Calculate the optimal turret-drive rotation trade-off
+      var result = TurretDriveOptimizer.optimize(getPose().getRotation().getMeasure(), turretSetpoint, turretToTarget, TurretBounds.FULL, TurretDriveOptimizer.Costs.PREFER_TURRET);
+
+      // Rotate the drive to its setpoint
+      swerve.setControl(request.withVelocityX(fieldSpeeds.vxMetersPerSecond).withVelocityY(fieldSpeeds.vyMetersPerSecond).withTargetRateFeedforward(fieldSpeeds.omegaRadiansPerSecond).withTargetDirection(new Rotation2d(result.drive())));
+
+      // Rotate the turret to its setpoint
+      Azimuth.getInstance().setSetpoint(result.turret());
+    });
   }
 }

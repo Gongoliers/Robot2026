@@ -1,9 +1,6 @@
 package frc.robot.visualization;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -15,9 +12,9 @@ import frc.lib.PosePublisher;
 import static edu.wpi.first.units.Units.*;
 
 public class TurretVisualizer {
-    /** Transform from the robot center to the turret center */
-    // TODO Update these measurements with measurements from CAD
-    private static final Transform3d ROBOT_TO_TURRET = new Transform3d(Inches.of(10), Inches.of(10), Inches.of(0.0), Rotation3d.kZero);
+    /** Distances from the center of the turret to the robot's origin. */
+    // TODO These were tuned by hand to get the turret visualization to line up; probably not accurate to CAD
+    public static final Translation3d ROBOT_TO_TURRET = new Translation3d(Inches.of(2.075), Inches.of(-3.9), Inches.of(14.939).plus(Meters.of(0.075)));
 
     /** Length of the hood. Used for visualization. */
     private static final Distance HOOD_LENGTH = Inches.of(24);
@@ -31,17 +28,33 @@ public class TurretVisualizer {
     /** Ligament for the hood mechanism. */
     private static final MechanismLigament2d HOOD = HOOD_ROOT.append(new MechanismLigament2d("Hood", HOOD_LENGTH.in(Meters), 0.0));
 
+    /** Constructs a rotation with the only specified yaw rotation. */
+    public static Rotation3d yawRotation(Angle rotation) {
+        return new Rotation3d(Degrees.zero(), Degrees.zero(), rotation);
+    }
+
+    /** Gets turret pose relative to the robot's pose. */
+    public static Pose3d localTurretPose(Angle rotation) {
+        return new Pose3d(ROBOT_TO_TURRET, yawRotation(rotation));
+    }
+
+    /** Gets the global rotated turret pose. */
+    public static Pose3d globalTurretPose(Pose3d robotPose, Angle rotation) {
+        return new Pose3d(robotPose.getTranslation().plus(ROBOT_TO_TURRET), robotPose.getRotation().plus(yawRotation(rotation)));
+    }
+
+    /** Gets the rotated turret pose relative to the robot's pose. */
+    public static Pose3d globalTurretPose(Pose2d robotPose, Angle rotation) {
+        return globalTurretPose(new Pose3d(robotPose), rotation);
+    }
+
     /** Updates the turret visualization. */
     public static void update(Pose3d robotPose, Angle rotation, Angle inclination) {
-        Pose3d turretPose = robotPose.transformBy(ROBOT_TO_TURRET);
-        Rotation3d instrinsticYawRotation = new Rotation3d(Degrees.zero(), Degrees.zero(), rotation);
-        Pose3d rotatedTurretPose = turretPose.rotateAround(turretPose.getTranslation(), instrinsticYawRotation);
-
         // Hood inclination is reflected over the Z axis because it is opposite the turret angle
         HOOD.setAngle(180 - inclination.in(Degrees));
 
         // Publish the updates
-        PosePublisher.publish("Turret", rotatedTurretPose);
+        PosePublisher.publish("Turret", globalTurretPose(robotPose, rotation));
         SmartDashboard.putData("Hood Mechanism", HOOD_MECHANISM);
     }
 
