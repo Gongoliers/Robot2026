@@ -1,6 +1,9 @@
 package frc.lib;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.units.measure.Distance;
+
+import static edu.wpi.first.units.Units.*;
 
 /**
  * Utility class for performing operations on poses.
@@ -41,6 +44,16 @@ public class PoseUtils {
      */
     public static Translation2d error(Pose2d pose, Pose2d target) {
         return target.getTranslation().minus(pose.getTranslation());
+    }
+
+    /**
+     * Returns the magnitude of the translation, in meters.
+     *
+     * @param translation The translation.
+     * @return The magnitude, in meters.
+     */
+    public static Distance magnitude(Translation2d translation) {
+        return Meters.of(translation.getNorm());
     }
 
 }
