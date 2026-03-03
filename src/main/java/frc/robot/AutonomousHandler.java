@@ -47,7 +47,7 @@ public class AutonomousHandler {
 
   private AutonomousHandler() {
     // Configure AutoBuilder
-    RobotConfig robotConfig = new RobotConfig(1, 1, null, null);
+    RobotConfig robotConfig = null;
     try {
       robotConfig = RobotConfig.fromGUISettings();
     } catch (Exception e) {
