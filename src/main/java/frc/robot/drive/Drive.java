@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
+import frc.lib.swerves.PhoenixSwerve;
 import frc.lib.swerves.SwerveOutput;
 import java.util.function.Supplier;
 
@@ -88,6 +89,11 @@ public class Drive extends Subsystem {
         }
       );
     }
+  }
+
+  public void addPoseEstimate(Pose2d pose2d, double timestampSeconds) {
+    PhoenixSwerve swerve_ = (PhoenixSwerve) swerve;
+    swerve_.addVisionMeasurement(pose2d, timestampSeconds);
   }
 
   public ChassisSpeeds speedsFromController(CommandXboxController controller) {
