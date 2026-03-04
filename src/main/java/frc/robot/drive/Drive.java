@@ -17,6 +17,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -94,9 +95,14 @@ public class Drive extends Subsystem {
     }
   }
 
-  public void addPoseEstimate(Pose2d pose2d, double timestampSeconds) {
-    PhoenixSwerve swerve_ = (PhoenixSwerve) swerve;
-    swerve_.addVisionMeasurement(pose2d, timestampSeconds);
+  /**
+   * Adds a pose estimate.
+   *
+   * @param pose2d The pose estimate to add.
+   * @param timestamp The timestamp of the pose estimate.
+   */
+  public void addPoseEstimate(Pose2d pose2d, Time timestamp) {
+    swerve.addVisionMeasurement(pose2d, timestamp.in(Seconds));
   }
 
   public ChassisSpeeds speedsFromController(CommandXboxController controller) {
