@@ -8,12 +8,11 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -26,6 +25,9 @@ import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
 import frc.lib.swerves.SwerveOutput;
 import java.util.function.Supplier;
+
+import frc.robot.localization.Vision;
+import frc.robot.localization.VisionSim;
 
 public class Drive extends Subsystem {
 
@@ -40,6 +42,11 @@ public class Drive extends Subsystem {
   private boolean hasSetPerspective = false;
 
   private PIDController yawPID;
+
+  /**
+   * Vision-based localization system.
+   */
+  private final Vision vision;
 
   public static Drive getInstance() {
     if (instance == null) {
@@ -56,6 +63,13 @@ public class Drive extends Subsystem {
 
     yawPID = new PIDController(6, 0.0, 0.0);
     yawPID.enableContinuousInput(-0.5, 0.5);
+
+    vision = new VisionSim("PhotonVisionSim");
+
+    // TODO Static camera -- Needs an actual measurement from CAD
+    // TODO Add support for cameras where the transform varies
+    vision.addCamera("Static", new Transform3d(new Translation3d(0.1, 0, 0.5), new Rotation3d(0, Math.toRadians(-30), Math.toRadians(30))));
+    vision.registerPoseUpdate(estimate -> addPoseEstimate(estimate.pose().toPose2d(), estimate.timestamp()));
   }
 
   @Override
@@ -70,6 +84,8 @@ public class Drive extends Subsystem {
   @Override
   public void periodic() {
     state = swerve.getState();
+    // NOTE Causes a feedback loop where simulated poses keep approaching the tags
+    vision.update(state.Pose);
     field.setRobotPose(state.Pose);
 
     // NOTE This was taken from the generated project, unsure if it is needed
@@ -88,6 +104,16 @@ public class Drive extends Subsystem {
         }
       );
     }
+  }
+
+  /**
+   * Adds a pose estimate.
+   *
+   * @param pose2d The pose estimate to add.
+   * @param timestamp The timestamp of the pose estimate.
+   */
+  public void addPoseEstimate(Pose2d pose2d, Time timestamp) {
+    swerve.addVisionMeasurement(pose2d, timestamp.in(Seconds));
   }
 
   public ChassisSpeeds speedsFromController(CommandXboxController controller) {
