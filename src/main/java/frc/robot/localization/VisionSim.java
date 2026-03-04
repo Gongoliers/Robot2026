@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
@@ -99,7 +100,7 @@ public class VisionSim implements Vision {
     public void update(Pose2d robot) {
         sim.update(robot);
         for (Camera camera : cameras) {
-            cameraPoseEstimate(camera.camera()).ifPresent(
+            cameraPoseEstimates(camera.camera()).forEach(
                     cameraEstimate -> {
                         var robotEstimate = cameraEstimate.pose().plus(camera.cameraToRobot);
                         estimateConsumer.accept(new VisionPoseEstimate(robotEstimate, cameraEstimate.timestamp()));
@@ -114,25 +115,17 @@ public class VisionSim implements Vision {
     private static final Pose3d CAMERA_POSE_ESTIMATE_ORIGIN = new Pose3d();
 
     /**
-     * Gets the most recent camera pose estimate.
+     * Gets the camera pose estimates since the last call.
      *
-     * @param camera The camera whose pose is being estimated.
-     * @return An optional containing the camera's most recent pose estimate, and the timestamp of that estimate.
+     * @param camera The camera whose poses are being estimated.
+     * @return A list containing the camera's pose estimates.
      */
-    private Optional<VisionPoseEstimate> cameraPoseEstimate(PhotonCamera camera) {
-        var results = camera.getAllUnreadResults();
-        for (var result : results) {
-            // Immediately return the first (most recent?) unread result
-            // TODO Process all results, not just the first
-            return result.getMultiTagResult().map(multiTag -> {
-                var cameraPose = multiTag.estimatedPose.best;
-                // The camera's estimated pose is relative to the coordinate frame of the AprilTags
-                var pose = CAMERA_POSE_ESTIMATE_ORIGIN.plus(cameraPose);
-                var timestamp = Microseconds.of(result.metadata.captureTimestampMicros);
-                return new VisionPoseEstimate(pose, timestamp);
-            });
-        }
-
-        return Optional.empty();
+    private List<VisionPoseEstimate> cameraPoseEstimates(PhotonCamera camera) {
+        return camera.getAllUnreadResults().stream().map(result -> result.getMultiTagResult().map(multiTag -> {
+            // The camera's estimated pose is relative to the coordinate frame of the AprilTags
+            var pose = CAMERA_POSE_ESTIMATE_ORIGIN.plus(multiTag.estimatedPose.best);
+            var timestamp = Microseconds.of(result.metadata.captureTimestampMicros);
+            return new VisionPoseEstimate(pose, timestamp);
+        })).filter(Optional::isPresent).map(Optional::get).toList();
     }
 }
