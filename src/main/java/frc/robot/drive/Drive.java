@@ -25,6 +25,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
 import frc.lib.swerves.SwerveOutput;
+import frc.robot.configuration.FieldRegion;
+
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public class Drive extends Subsystem {
@@ -65,6 +68,7 @@ public class Drive extends Subsystem {
     tab.add("Field", field);
     tab.add("States", new SwerveDriveSendable(() -> state.ModuleStates, () -> this.getPose().getRotation()));
     tab.add("Targets", new SwerveDriveSendable(() -> state.ModuleTargets, () -> this.getPose().getRotation()));
+    tab.addString("Region", this::regionName);
   }
 
   @Override
@@ -74,6 +78,30 @@ public class Drive extends Subsystem {
 
     // NOTE This was taken from the generated project, unsure if it is needed
     // trySettingPerspective();
+  }
+
+  /**
+   * Gets the field region that the robot is in.
+   * If the robot is not in a region or is in more than one region, no region is returned.
+   * Otherwise, the region is returned.
+   *
+   * @return An optional containing the region that the robot is in.
+   */
+  private Optional<FieldRegion> region() {
+    FieldRegion[] regions = FieldRegion.containing(state.Pose.getTranslation());
+    if (regions.length == 1) {
+      return Optional.of(regions[0]);
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Gets the name of the region that the robot is in.
+   *
+   * @return the name of the region that the robot is in.
+   */
+  private String regionName() {
+    return region().map(Enum::name).orElse("");
   }
 
   private void trySettingPerspective() {
