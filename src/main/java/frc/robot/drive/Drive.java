@@ -64,8 +64,10 @@ public class Drive extends Subsystem {
 
     vision = new VisionSim("PhotonVisionSim");
 
-    vision.addCamera("main", new Transform3d(new Translation3d(0.1, 0, 0.5), new Rotation3d(0, Math.toRadians(-30), Math.toRadians(30))));
-    vision.registerPoseUpdate(estimate -> Drive.getInstance().addPoseEstimate(estimate.pose().toPose2d(), estimate.timestamp()));
+    // TODO Static camera -- Needs an actual measurement from CAD
+    // TODO Add support for cameras where the transform varies
+    vision.addCamera("Static", new Transform3d(new Translation3d(0.1, 0, 0.5), new Rotation3d(0, Math.toRadians(-30), Math.toRadians(30))));
+    vision.registerPoseUpdate(estimate -> addPoseEstimate(estimate.pose().toPose2d(), estimate.timestamp()));
   }
 
   @Override
