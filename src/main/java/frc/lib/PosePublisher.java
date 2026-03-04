@@ -85,7 +85,7 @@ public class PosePublisher {
      * @param translations The translations to publish.
      */
     public static void publish(String key, Translation3d[] translations) {
-        publish(key, Arrays.stream(translations).map(PoseUtils::translation3DToPose3D).toArray(Pose3d[]::new));
+        publish(key, Arrays.stream(translations).map(PoseUtils::toPose3d).toArray(Pose3d[]::new));
     }
 
     /**
@@ -95,7 +95,7 @@ public class PosePublisher {
      * @param translations The translations to publish.
      */
     public static void publish(String key, Translation2d[] translations) {
-        publish(key, Arrays.stream(translations).map(PoseUtils::translation2DToPose2D).toArray(Pose2d[]::new));
+        publish(key, Arrays.stream(translations).map(PoseUtils::toPose2d).toArray(Pose2d[]::new));
     }
 
     /**
@@ -105,7 +105,7 @@ public class PosePublisher {
      * @param translation The translation to publish.
      */
     public static void publish(String key, Translation3d translation) {
-        publish(key, PoseUtils.translation3DToPose3D(translation));
+        publish(key, PoseUtils.toPose3d(translation));
     }
 
     /**
@@ -115,6 +115,6 @@ public class PosePublisher {
      * @param translation The translation to publish.
      */
     public static void publish(String key, Translation2d translation) {
-        publish(key, PoseUtils.translation2DToPose2D(translation));
+        publish(key, PoseUtils.toPose2d(translation));
     }
 }
