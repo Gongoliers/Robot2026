@@ -8,9 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -43,6 +41,11 @@ public class Drive extends Subsystem {
 
   private PIDController yawPID;
 
+  /**
+   * Vision-based localization system.
+   */
+  private final Vision vision;
+
   public static Drive getInstance() {
     if (instance == null) {
       instance = new Drive();
@@ -58,6 +61,11 @@ public class Drive extends Subsystem {
 
     yawPID = new PIDController(6, 0.0, 0.0);
     yawPID.enableContinuousInput(-0.5, 0.5);
+
+    vision = new VisionSim("PhotonVisionSim");
+
+    vision.addCamera("main", new Transform3d(new Translation3d(0.1, 0, 0.5), new Rotation3d(0, Math.toRadians(-30), Math.toRadians(30))));
+    vision.registerPoseUpdate(estimate -> Drive.getInstance().addPoseEstimate(estimate.pose().toPose2d(), estimate.timestamp()));
   }
 
   @Override
@@ -72,6 +80,8 @@ public class Drive extends Subsystem {
   @Override
   public void periodic() {
     state = swerve.getState();
+    // NOTE Causes a feedback loop where simulated poses keep approaching the tags
+    vision.update(state.Pose);
     field.setRobotPose(state.Pose);
 
     // NOTE This was taken from the generated project, unsure if it is needed
