@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.*;
 import java.util.EnumSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.ser.std.EnumSerializer;
+
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 
@@ -35,5 +37,5 @@ public class RobotConstants {
   }
 
   /** Enabled subsystems */
-  public static final Set<Subsystem> ENABLED_SUBSYSTEMS = EnumSet.of(Subsystem.HOOD, Subsystem.SHOOTER);
+  public static final Set<Subsystem> ENABLED_SUBSYSTEMS = EnumSet.of(Subsystem.SWERVE);
 }

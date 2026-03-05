@@ -95,7 +95,7 @@ public class RobotContainer {
     operatorController.b().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(40)));
     operatorController.rightBumper().whileTrue(shooterTester.runTests(RotationsPerSecond.of(40)));
 
-    operatorController.leftBumper().whileTrue(Commands.run(() ->shooter.setSetpoint(RotationsPerSecond.of(31))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
+    operatorController.leftBumper().whileTrue(Commands.run(() ->shooter.setSetpoint(RotationsPerSecond.of(60))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
 
     operatorController.leftTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(-0.5)));
     operatorController.rightTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(0.5)));
