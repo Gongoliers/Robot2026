@@ -72,13 +72,13 @@ public class SafeAngleOptimizer {
     double highDistance = Math.abs(currentAngle - highEquivalent);
 
     if (highDistance < lowDistance) {  // if closer to higher equivalent than lower equivalent
-      if (highDistance > maxAngle) {     // if higher equivalent is past max angle use lower anyways
+      if (highEquivalent > maxAngle) {     // if higher equivalent is past max angle use lower anyways
         currentAngle = lowEquivalent;
       } else {                           // otherwise use the closer high equivalent
         currentAngle = highEquivalent;
       }
     } else {                           // if closer to lower equivalent than higher equivalent
-      if (lowDistance < minAngle) {      // if lower equivalent is past min angle use higher anyways
+      if (lowEquivalent < minAngle) {      // if lower equivalent is past min angle use higher anyways
         currentAngle = highEquivalent;
       } else {                           // otherwise use the closer low equivalent
         currentAngle = lowEquivalent;   
