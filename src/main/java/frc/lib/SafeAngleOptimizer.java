@@ -3,7 +3,6 @@ package frc.lib;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.DriverStation;
 
 /** 
  * Class used to optimize angle setpoints (instead of changing from 170 to -170, change 
@@ -41,19 +40,20 @@ public class SafeAngleOptimizer {
    * Given a setpoint, returns a new coterminal setpoint that minimizes distance from the 
    * previous setpoint without rotating past safe limits
    * 
-   * @param newSetpoint Setpoint to optimize
+   * @param currentSetpoint Current setpoint
+   * @param newSetpoint New setpoint to optimize and
    * @return Optimized setpoint
    */
-  public Angle optimizeSetpoint(Angle currentAngle, Angle newSetpoint) {
+  public Angle optimizeSetpoint(Angle currentSetpoint, Angle newSetpoint) {
     double newSetpointRotations = newSetpoint.in(Rotations);
-    double currentAngleRotations = currentAngle.in(Rotations);
+    double currentSetpointRotations = currentSetpoint.in(Rotations);
 
-    double distance = currentAngleRotations - newSetpointRotations; // distance from new setpoint to current angle
+    double distance = currentSetpointRotations - newSetpointRotations; // distance from new setpoint to current angle
     double lowEquivalent = newSetpointRotations + Math.floor(distance);
     double highEquivalent = newSetpointRotations + Math.ceil(distance);
 
-    double lowDistance = Math.abs(currentAngleRotations - lowEquivalent);
-    double highDistance = Math.abs(currentAngleRotations - highEquivalent);
+    double lowDistance = Math.abs(currentSetpointRotations - lowEquivalent);
+    double highDistance = Math.abs(currentSetpointRotations - highEquivalent);
 
     if (highDistance < lowDistance) {
       if (highEquivalent > maxAngle) {     
@@ -74,14 +74,15 @@ public class SafeAngleOptimizer {
   }
 
   /**
-   * Gets the current setpoint's distance from the eedges of the range of safe angles
+   * Gets the given angle's distance from the edges of the range of safe angles
    * 
-   * @return The current setpoint's distance from the edges of the range of safe angles
-   * Negative values returned measure how far past the edges of the safe range the current setpoint is
+   * @param angle angle to check
+   * @return The given angle's distance from the edges of the range of safe angles
+   * Negative values returned measure how far past the edges of the safe range the angle is
    */
-  public Angle getCushion(Angle currentAngle) {
-    double currentAngleRotations = currentAngle.in(Rotations);
-    return Rotations.of(Math.min(maxAngle-currentAngleRotations, currentAngleRotations-minAngle));
+  public Angle getCushion(Angle angle) {
+    double angleRotations = angle.in(Rotations);
+    return Rotations.of(Math.min(maxAngle-angleRotations, angleRotations-minAngle));
   }
 
   public Angle getMaxAngle() {
