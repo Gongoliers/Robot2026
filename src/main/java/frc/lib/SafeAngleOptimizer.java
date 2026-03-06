@@ -111,4 +111,16 @@ public class SafeAngleOptimizer {
   public Angle getCushion() {
     return Rotations.of(Math.min(maxAngle-currentAngle, currentAngle-minAngle));
   }
+
+  public Angle getMaxAngle() {
+    return Rotations.of(maxAngle);
+  }
+
+  public Angle getMinAngle() {
+    return Rotations.of(minAngle);
+  }
+
+  public Angle getCenter() {
+    return Rotations.of(center);
+  }
 }
