@@ -3,6 +3,7 @@ package frc.lib;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.DriverStation;
 
 /** 
  * Class used to optimize angle setpoints (instead of changing from 170 to -170, change 
@@ -85,5 +86,29 @@ public class SafeAngleOptimizer {
     }
 
     return Rotations.of(currentAngle);
+  }
+
+  /**
+   * Set new position without optimization
+   * 
+   * @param newPosition New position (will report a warning and do nothing if newPosition isn't between min and max safe angle)
+   */
+  public void setAbsolutePosition(Angle newPosition) {
+    double newPositionRotations = newPosition.in(Rotations);
+    if (newPositionRotations >= minAngle && newPositionRotations <= maxAngle) {
+      currentAngle = newPosition.in(Rotations);
+    } else {
+      DriverStation.reportWarning("Failed to set absolute position, new position out of safe range", true);
+    }
+  }
+
+  /**
+   * Gets the current setpoint's distance from the eedges of the range of safe angles
+   * 
+   * @return The current setpoint's distance from the edges of the range of safe angles
+   * Negative values returned measure how far past the edges of the safe range the current setpoint is
+   */
+  public Angle getCushion() {
+    return Rotations.of(Math.min(maxAngle-currentAngle, currentAngle-minAngle));
   }
 }
