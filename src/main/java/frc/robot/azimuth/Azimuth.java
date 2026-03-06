@@ -171,23 +171,23 @@ public class Azimuth extends MultithreadedSubsystem {
    * Set the local setpoint of the azimuth
    * Automatically handles angle wrapping and constraining
    * 
-   * @param setpointPosition New local azimuth setpoint
+   * @param newSetpoint New local azimuth setpoint
    */
-  public void setSetpoint(Angle setpointPosition) {
-    setpoint.mut_replace(setpointOptimizer.optimizeSetpoint(setpoint, setpointPosition));
+  public void setSetpoint(Angle newSetpoint) {
+    setpoint.mut_replace(setpointOptimizer.optimizeSetpoint(setpoint, newSetpoint));
   }
 
   /**
    * Set the local setpoint of the azimuth without an automatic wrapping and constraining
    * Will do nothing and report a warning if setpoitnPosition is not within safe bounds
    * 
-   * @param setpointPosition New local azimuth setpoint
+   * @param newSetpoint New local azimuth setpoint
    */
-  public void setAbsoluteSetpoint(Angle setpointPosition) {
-    if (setpointPosition.gte(setpointOptimizer.getMinAngle()) && setpointPosition.lte(setpointOptimizer.getMaxAngle())) {
-      setpoint.mut_replace(setpointPosition);
+  public void setAbsoluteSetpoint(Angle newSetpoint) {
+    if (newSetpoint.gte(setpointOptimizer.getMinAngle()) && newSetpoint.lte(setpointOptimizer.getMaxAngle())) {
+      setpoint.mut_replace(newSetpoint);
     } else {
-      DriverStation.reportWarning("Tried setting azimuth setpoint to position out of safe range ("+setpointPosition.in(Rotations)+" rotations)", null);
+      DriverStation.reportWarning("Tried setting azimuth setpoint to position out of safe range ("+newSetpoint.in(Rotations)+" rotations)", null);
     }
   }
 
