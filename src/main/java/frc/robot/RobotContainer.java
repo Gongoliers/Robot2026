@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -94,19 +95,18 @@ public class RobotContainer {
 
   private void configureBindings() {
     TalonFX kicker = new TalonFX(30);
-    TalonFX spinny = new TalonFX(40);
-    driverController.a().onTrue(Commands.runOnce(() -> {
-      kicker.setControl(new VoltageOut(-6));
-      spinny.setControl(new VoltageOut(-6));
+    VoltageOut kickerCtrl = new VoltageOut(0);
+    NeutralOut kickerNeutral = new NeutralOut();
+    TalonFX spinner = new TalonFX(40);
+    VoltageOut spinnerCtrl = new VoltageOut(0);
+    NeutralOut spinnerNeutral = new NeutralOut();
+    operatorController.leftTrigger().whileTrue(Commands.startEnd(() -> {
+      kicker.setControl(kickerCtrl.withOutput(6));
+      spinner.setControl(spinnerCtrl.withOutput(-6));
+    }, () -> {
+      kicker.setControl(kickerNeutral);
+      spinner.setControl(spinnerNeutral);
     }));
-    driverController.b().onTrue(Commands.runOnce(() -> {
-      kicker.setControl(new VoltageOut(0));
-      spinny.setControl(new VoltageOut(0));
-    }));
-
-    driverController.povDown().whileTrue(Commands.run(() -> shooter.setSetpoint(RotationsPerSecond.of(60))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
-
-    operatorController.a().onTrue(ShooterSysID.runFullSysId());
   }
 
   public Command getAutonomousCommand() {
