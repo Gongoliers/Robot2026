@@ -6,6 +6,9 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -90,21 +93,20 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    TalonFX kicker = new TalonFX(30);
+    TalonFX spinny = new TalonFX(40);
+    driverController.a().onTrue(Commands.runOnce(() -> {
+      kicker.setControl(new VoltageOut(-6));
+      spinny.setControl(new VoltageOut(-6));
+    }));
+    driverController.b().onTrue(Commands.runOnce(() -> {
+      kicker.setControl(new VoltageOut(0));
+      spinny.setControl(new VoltageOut(0));
+    }));
+
+    driverController.povDown().whileTrue(Commands.run(() -> shooter.setSetpoint(RotationsPerSecond.of(60))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
+
     operatorController.a().onTrue(ShooterSysID.runFullSysId());
-    
-    operatorController.b().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(40)));
-    operatorController.rightBumper().whileTrue(shooterTester.runTests(RotationsPerSecond.of(40)));
-
-    operatorController.leftBumper().whileTrue(Commands.run(() ->shooter.setSetpoint(RotationsPerSecond.of(60))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
-
-    operatorController.leftTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(-0.5)));
-    operatorController.rightTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(0.5)));
-
-    driverController.a().onTrue(HoodSysID.runFullSysId());
-    
-    driverController.rightBumper().whileTrue(Commands.run(() -> hood.setSetpoint(Rotations.of(0.07))).finallyDo(() -> hood.setSetpoint(Rotations.of(0.04))));
-
-    driverController.rightTrigger().onTrue(Commands.runOnce(() -> hood.setSetpoint(hood.getMinPosition())));
   }
 
   public Command getAutonomousCommand() {
