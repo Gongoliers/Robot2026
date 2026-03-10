@@ -159,6 +159,15 @@ public class RobotContainer {
     driverController.a().onTrue(kicker.goToState(KickerState.STOP));
   }
 
+  private Command logAction(Action action) {
+    return Commands.sequence(
+      Commands.runOnce(() -> SmartDashboard.putString("Action", action.name())),
+      // Delay to simulate performing the action
+      Commands.waitSeconds(2.5),
+      Commands.runOnce(() -> SmartDashboard.putString("Action", ""))
+    );
+  }
+
   public Command getAutonomousCommand() {
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
     if (isLeftSide.getSelected()) {
