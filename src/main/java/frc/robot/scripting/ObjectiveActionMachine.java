@@ -14,6 +14,9 @@ public class ObjectiveActionMachine {
         ArrayList<Objective> objectives = new ArrayList<>();
         Objective objective = initial;
         for (Action action : actions) {
+            if (action == null) {
+                continue;
+            }
             objective = objective.transition(action);
             objectives.add(objective);
         }
