@@ -2,6 +2,7 @@ package frc.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -66,7 +67,8 @@ public class DriverAssistance {
 
     private ChassisSpeeds createDriverAssistanceSpeeds(Distance distance, Rotation2d direction) {
         LinearVelocity assistAmount = distance.timesConversionFactor(gain());
-        return PoseUtils.createChassisSpeeds(assistAmount, direction);
+        LinearVelocity clampedAssistAmount = MetersPerSecond.of(MathUtil.clamp(assistAmount.in(MetersPerSecond), -2.5, 2.5));
+        return PoseUtils.createChassisSpeeds(clampedAssistAmount, direction);
     }
 
     public ChassisSpeeds createDriverAssistanceSpeeds(Pose2d pose, Pose2d target) {
