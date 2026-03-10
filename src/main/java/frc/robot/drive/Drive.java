@@ -73,7 +73,7 @@ public class Drive extends Subsystem {
     field.setRobotPose(state.Pose);
 
     // NOTE This was taken from the generated project, unsure if it is needed
-    // trySettingPerspective();
+    trySettingPerspective();
   }
 
   private void trySettingPerspective() {
