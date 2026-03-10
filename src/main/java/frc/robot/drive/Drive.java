@@ -52,7 +52,7 @@ public class Drive extends Subsystem {
 
   private final DriverAssistance driver;
 
-  private static final Distance DRIVER_TOLERANCE = Centimeters.of(5);
+  private static final Distance DRIVER_TOLERANCE = Centimeters.of(1);
 
   public static Drive getInstance() {
     if (instance == null) {
