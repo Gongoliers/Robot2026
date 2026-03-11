@@ -18,8 +18,10 @@ public enum Objective {
     SCORE_NEAR_RIGHT(NamedPose.NEAR_RIGHT, Action.SCORE_RIGHT),
     SCORE_FAR_LEFT(NamedPose.FAR_LEFT, Action.SCORE_LEFT),
     SCORE_FAR_RIGHT(NamedPose.FAR_RIGHT, Action.SCORE_RIGHT),
-    INTAKE_LEFT(NamedPose.NEUTRAL_LEFT, Action.INTAKE),
-    INTAKE_RIGHT(NamedPose.NEUTRAL_RIGHT, Action.INTAKE),
+    INTAKE_NEUTRAL_LEFT(NamedPose.NEUTRAL_LEFT, Action.INTAKE_ZONE),
+    INTAKE_NEUTRAL_RIGHT(NamedPose.NEUTRAL_RIGHT, Action.INTAKE_ZONE),
+    INTAKE_ZONE_LEFT(NamedPose.PICKUP_ZONE_LEFT, Action.INTAKE_ZONE),
+    INTAKE_ZONE_RIGHT(NamedPose.PICKUP_ZONE_RIGHT, Action.INTAKE_ZONE),
     CLIMB_LEFT(NamedPose.CLIMB_LEFT, Action.CLIMB_LEFT),
     CLIMB_RIGHT(NamedPose.CLIMB_RIGHT, Action.CLIMB_RIGHT);
 
@@ -35,13 +37,14 @@ public enum Objective {
         return action -> NONE;
     }
 
-    private static Function<Action, Objective> create(Objective onScoreLeft, Objective onScoreRight, Objective onPass, Objective onIntake) {
+    private static Function<Action, Objective> create(Objective onScoreLeft, Objective onScoreRight, Objective onPass, Objective onIntakeNeutral, Objective onIntakeZone) {
         return action -> switch (action) {
             case NONE -> NONE;
             case SCORE_LEFT -> onScoreLeft;
             case SCORE_RIGHT -> onScoreRight;
             case PASS -> onPass;
-            case INTAKE -> onIntake;
+            case INTAKE_NEUTRAL -> onIntakeNeutral;
+            case INTAKE_ZONE -> onIntakeZone;
             case CLIMB_LEFT -> CLIMB_LEFT;
             case CLIMB_RIGHT -> CLIMB_RIGHT;
         };
@@ -54,22 +57,25 @@ public enum Objective {
         CLIMB_RIGHT.next = none();
 
         // Initial objectives
-        INITIAL_LEFT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
-        INITIAL_RIGHT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+        // NOTE Prohibit scoring on the opposite side from the start
+        INITIAL_LEFT.next = create(SCORE_FAR_LEFT, NONE, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT);
+        INITIAL_RIGHT.next = create(NONE, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT);
 
         // Score objectives
-        SCORE_NEAR_LEFT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
-        SCORE_NEAR_RIGHT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
-        SCORE_FAR_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
-        SCORE_FAR_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+        SCORE_NEAR_LEFT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT);
+        SCORE_NEAR_RIGHT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT);
+        SCORE_FAR_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT);
+        SCORE_FAR_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT);
 
         // Pass objectives
-        PASS_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
-        PASS_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+        PASS_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT);
+        PASS_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT);
 
         // Intake objectives
-        INTAKE_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_LEFT);
-        INTAKE_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_RIGHT);
+        INTAKE_NEUTRAL_LEFT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT);
+        INTAKE_NEUTRAL_RIGHT.next = create(SCORE_FAR_LEFT, SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT);
+        INTAKE_ZONE_LEFT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, NONE, INTAKE_ZONE_LEFT, INTAKE_ZONE_LEFT);
+        INTAKE_ZONE_RIGHT.next = create(SCORE_NEAR_LEFT, SCORE_NEAR_RIGHT, NONE, INTAKE_ZONE_RIGHT, INTAKE_ZONE_RIGHT);
     }
 
     Objective(NamedPose pose, Action action) {

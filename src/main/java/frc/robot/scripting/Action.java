@@ -5,7 +5,8 @@ public enum Action {
     SCORE_LEFT,
     SCORE_RIGHT,
     PASS,
-    INTAKE,
+    INTAKE_NEUTRAL,
+    INTAKE_ZONE,
     CLIMB_LEFT,
     CLIMB_RIGHT,
 }

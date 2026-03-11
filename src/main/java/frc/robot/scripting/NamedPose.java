@@ -2,6 +2,7 @@ package frc.robot.scripting;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 
@@ -18,15 +19,24 @@ public enum NamedPose {
     FAR_LEFT(Meters.of(3.633), Meters.of(5.5), Degrees.of(-30)),
     FAR_RIGHT(Meters.of(3.633), Meters.of(2.5), Degrees.of(30)),
     CLIMB_LEFT(Meters.of(0.81), Meters.of(5.02), Degrees.of(-90)),
-    CLIMB_RIGHT(Meters.of(1.33), Meters.of(2.6), Degrees.of(90));
+    CLIMB_RIGHT(Meters.of(1.33), Meters.of(2.6), Degrees.of(90)),
+    // TODO Derive these from NamedPoses for DEPOT and OUTPOST
+    PICKUP_ZONE_LEFT(Meters.of(0.6), Meters.of(5.85), Degrees.zero(), Meters.of(15.4), Meters.of(2.12), Degrees.of(180)),
+    PICKUP_ZONE_RIGHT(Meters.of(0.6), Meters.of(0.65), Degrees.zero(), Meters.of(15.4), Meters.of(7.4), Degrees.of(180));
 
     private final Pose2d bluePose_;
 
     private final Pose2d redPose_;
 
-    // TODO Implement, and move to PoseUtils
+
+    // TODO Move to PoseUtils
     private static Pose2d flip(Pose2d bluePose) {
-        return bluePose;
+        // TODO Taken from #34, replace
+        final Distance SIZE_X = Inches.of(650.12);
+        final Distance SIZE_Y = Inches.of(316.64);
+        Translation2d oldTranslation = bluePose.getTranslation();
+        Translation2d newTranslation = new Translation2d(SIZE_X.minus(oldTranslation.getMeasureX()), SIZE_Y.minus(oldTranslation.getMeasureY()));
+        return new Pose2d(newTranslation, bluePose.getRotation().rotateBy(Rotation2d.k180deg));
     }
 
     NamedPose(Pose2d bluePose, Pose2d redPose) {
