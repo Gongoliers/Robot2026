@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.scripting.Action.*;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix6.controls.NeutralOut;
@@ -169,11 +170,12 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
+    DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
     if (isLeftSide.getSelected()) {
-      return ObjectiveActionMachine.createLeftSideCommand(actions, drive::driveTo, this::logAction);
+      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, drive::driveTo, this::logAction);
     } else {
-      return ObjectiveActionMachine.createRightSideCommand(actions, drive::driveTo, this::logAction);
+      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, drive::driveTo, this::logAction);
     }
   }
 }

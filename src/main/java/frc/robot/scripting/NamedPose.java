@@ -20,18 +20,38 @@ public enum NamedPose {
     CLIMB_LEFT(Meters.of(0.81), Meters.of(5.02), Degrees.of(-90)),
     CLIMB_RIGHT(Meters.of(1.33), Meters.of(2.6), Degrees.of(90));
 
-    private final Pose2d pose_;
+    private final Pose2d bluePose_;
 
-    NamedPose(Pose2d pose) {
-        pose_ = pose;
+    private final Pose2d redPose_;
+
+    // TODO Implement, and move to PoseUtils
+    private static Pose2d flip(Pose2d bluePose) {
+        return bluePose;
+    }
+
+    NamedPose(Pose2d bluePose, Pose2d redPose) {
+        bluePose_ = bluePose;
+        redPose_ = redPose;
+    }
+
+    NamedPose(Pose2d bluePose) {
+        this(bluePose, flip(bluePose));
     }
 
     NamedPose(Distance x, Distance y, Angle angle) {
         this(new Pose2d(x, y, new Rotation2d(angle)));
     }
 
-    public Pose2d pose() {
-        return pose_;
+    NamedPose(Distance bx, Distance by, Angle bt, Distance rx, Distance ry, Angle rt) {
+        this(new Pose2d(bx, by, new Rotation2d(bt)), new Pose2d(rx, ry, new Rotation2d(rt)));
+    }
+
+    public Pose2d blue() {
+        return bluePose_;
+    }
+
+    public Pose2d red() {
+        return redPose_;
     }
 
 }
