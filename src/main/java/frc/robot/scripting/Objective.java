@@ -1,6 +1,7 @@
 package frc.robot.scripting;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -109,14 +110,14 @@ public enum Objective {
         return actionFactory.apply(action_);
     }
 
-    public Command driveCommand(Function<Pose2d, Command> driveToPoseFactory) {
+    public Command driveCommand(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory) {
         if (!hasPose || pose_ == null) {
             return Commands.none();
         }
-        return driveToPoseFactory.apply(pose_.pose());
+        return driveToPoseFactory.apply(alliance == DriverStation.Alliance.Blue ? pose_.blue() : pose_.red());
     }
 
-    public Command command(Function<Pose2d, Command> driveToPoseFactory, Function<Action, Command> actionFactory) {
-        return Commands.sequence(driveCommand(driveToPoseFactory), actionCommand(actionFactory));
+    public Command command(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory, Function<Action, Command> actionFactory) {
+        return Commands.sequence(driveCommand(alliance, driveToPoseFactory), actionCommand(actionFactory));
     }
 }
