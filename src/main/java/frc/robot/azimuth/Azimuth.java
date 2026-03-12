@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
@@ -17,11 +18,13 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
+import frc.lib.SafeAngleOptimizer;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
 import frc.lib.configs.MechanismConfig;
 import frc.lib.configs.MechanismConfig.MechanismBuilder;
 import frc.lib.configs.MotorConfig.MotorBuilder;
+import frc.lib.motors.DiscreteMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
 import frc.robot.RobotConstants;
@@ -41,11 +44,8 @@ public class Azimuth extends MultithreadedSubsystem {
   /** Target position */
   private final MutAngle setpoint;
 
-  /** Minimum azimuth rotation (for safety) */
-  private final Angle minPosition = Rotations.of(-0.5);
-
-  /** Maximum azimuth rotation (for safety) */
-  private final Angle maxPosition = Rotations.of(0.5);
+  /** Setpoint optimizer that handles max and min azimuth angle and safe angle wrapping */
+  private final SafeAngleOptimizer setpointOptimizer;
 
   /** True if a manual voltage is set by runAtVoltage command */
   private boolean voltageSet;
@@ -105,11 +105,16 @@ public class Azimuth extends MultithreadedSubsystem {
     motorOutput.setPosition(Rotations.of(0.0));
 
     setpoint = Rotations.mutable(0);
+    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-1), Rotations.of(1));
     voltageSet = false;
     voltageOut = Volts.mutable(0);
 
     feedback = config.feedbackControllerConfig().createPIDController();
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
+
+    if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
+      discreteSim.usePosition(() -> setpoint);
+    }
   }
 
   @Override
@@ -162,10 +167,35 @@ public class Azimuth extends MultithreadedSubsystem {
     }).finallyDo(() -> voltageSet = false);
   }
 
-  public void setSetpoint(Angle setpointPosition) {
-    setpoint.mut_replace(setpointPosition);
+  /**
+   * Set the local setpoint of the azimuth
+   * Automatically handles angle wrapping and constraining
+   * 
+   * @param newSetpoint New local azimuth setpoint
+   */
+  public void setSetpoint(Angle newSetpoint) {
+    setpoint.mut_replace(setpointOptimizer.optimizeSetpoint(setpoint, newSetpoint));
   }
 
+  /**
+   * Set the local setpoint of the azimuth without an automatic wrapping and constraining
+   * Will do nothing and report a warning if setpoitnPosition is not within safe bounds
+   * 
+   * @param newSetpoint New local azimuth setpoint
+   */
+  public void setAbsoluteSetpoint(Angle newSetpoint) {
+    if (newSetpoint.gte(setpointOptimizer.getMinAngle()) && newSetpoint.lte(setpointOptimizer.getMaxAngle())) {
+      setpoint.mut_replace(newSetpoint);
+    } else {
+      DriverStation.reportWarning("Tried setting azimuth setpoint to position out of safe range ("+newSetpoint.in(Rotations)+" rotations)", null);
+    }
+  }
+
+  /**
+   * Gets the local setpoint of the azimuth
+   * 
+   * @return the local setpoint of the azimuth
+   */
   public Angle getSetpoint() {
     return setpoint;
   }
@@ -176,7 +206,7 @@ public class Azimuth extends MultithreadedSubsystem {
    * @return minimum safe azimuth angle
    */
   public Angle getMinPosition() {
-    return minPosition;
+    return setpointOptimizer.getMinAngle();
   }
 
   /**
@@ -185,7 +215,26 @@ public class Azimuth extends MultithreadedSubsystem {
    * @return maximum safe azimuth angle
    */
   public Angle getMaxPosition() {
-    return maxPosition;
+    return setpointOptimizer.getMaxAngle();
+  }
+
+  /**
+   * Gets center azimuth angle (value halfway between min position and max position)
+   * 
+   * @return center azimuth angle
+   */
+  public Angle getCenter() {
+    return setpointOptimizer.getCenter();
+  }
+
+  /**
+   * Gets the current azimuth setpoint's distance from the edges of the range of safe angles
+   * 
+   * @return The current azimuth setpoint's distance from the edges of the range of safe angles
+   * Negative values returned measure how far past the edges of the safe range the angle is
+   */
+  public Angle getCushion() {
+    return setpointOptimizer.getCushion(setpoint);
   }
 
   public void resetPosition(Angle newPosition) {
