@@ -81,6 +81,7 @@ public class RobotConstants {
     SHOOTER,
     AZIMUTH,
     HOOD,
+    INTAKE,
   }
 
   /** Enabled subsystems */
