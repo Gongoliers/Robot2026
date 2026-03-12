@@ -3,14 +3,18 @@ package frc.robot.turret;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
 import frc.lib.PosePublisher;
+import frc.robot.LimelightHelpers;
 import frc.robot.RobotConstants;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
@@ -61,9 +65,11 @@ public class Turret extends MultithreadedSubsystem {
     state = TurretState.STOW;
 
     hubTarget = new Translation2d(0, 0);
+
+    LimelightHelpers.setCameraPose_RobotSpace("turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
   }
 
-  @Override
+  @Override 
   public void initializeTab() {
     ShuffleboardTab tab = Shuffleboard.getTab("Turret");
 
@@ -79,6 +85,28 @@ public class Turret extends MultithreadedSubsystem {
 
   @Override
   public void fastPeriodic() {
+    // For now, pose estimation will be done in 2d, since it's what odometry supports and should work ok
+    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("turret");
+
+    Pose2d turretPose = new Pose2d();
+
+    if (poseEstimate != null && poseEstimate.tagCount > 1) {
+      turretPose = poseEstimate.pose;
+      Angle azimuthAngle = azimuth.getValues().position;
+      Pose2d robotPose = new Pose2d(
+        turretPose.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d()),
+        turretPose.getRotation().minus(new Rotation2d(azimuthAngle)));
+
+      Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
+    } else {
+      turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
+    }
+
+    System.out.println(turretPose.getRotation().getMeasure());
+    System.out.println(RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d().getRotation().getMeasure());
+
+    PosePublisher.publish("Estimated turret pose", turretPose);
+
     switch (state) {
       case STOW:
         if (azimuth.getCurrentCommand() == null) {azimuth.setSetpoint(Rotations.of(0.0));};
