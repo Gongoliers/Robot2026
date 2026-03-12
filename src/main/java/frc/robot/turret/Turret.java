@@ -102,9 +102,6 @@ public class Turret extends MultithreadedSubsystem {
       turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
     }
 
-    System.out.println(turretPose.getRotation().getMeasure());
-    System.out.println(RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d().getRotation().getMeasure());
-
     PosePublisher.publish("Estimated turret pose", turretPose);
 
     switch (state) {
