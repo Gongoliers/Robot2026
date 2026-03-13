@@ -82,6 +82,7 @@ public class RobotConstants {
     AZIMUTH,
     HOOD,
     INTAKE,
+    SPINDEXER,
   }
 
   /** Enabled subsystems */
