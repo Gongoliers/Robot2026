@@ -1,4 +1,4 @@
-package frc.robot.spindexer;
+package frc.robot.kicker;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -11,9 +11,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
 
-public class SpindexerSysID {
+public class KickerSysID {
   
-  private static final Spindexer spindexer;
+  private static final Kicker kicker;
 
   private static final SysIdRoutine.Config config;
 
@@ -24,7 +24,7 @@ public class SpindexerSysID {
   private static final MutVoltage voltageOut;
 
   static {
-    spindexer = Spindexer.getInstance();
+    kicker = Kicker.getInstance();
 
     voltageOut = Volts.mutable(0.0);
 
@@ -34,9 +34,9 @@ public class SpindexerSysID {
       Seconds.of(10));
 
     mechanism = new SysIdRoutine.Mechanism(
-      SpindexerSysID::setVoltage, 
-      SpindexerSysID::logMotors, 
-      spindexer);
+      KickerSysID::setVoltage, 
+      KickerSysID::logMotors, 
+      kicker);
 
     routine = new SysIdRoutine(config, mechanism);
   }
@@ -46,7 +46,7 @@ public class SpindexerSysID {
   }
 
   private static void logMotors(SysIdRoutineLog log) {
-    MotorValues motorValues = spindexer.getValues();
+    MotorValues motorValues = kicker.getValues();
 
     log.motor("drive")
       .voltage(motorValues.motorVoltage)
@@ -55,26 +55,26 @@ public class SpindexerSysID {
       .angularVelocity(motorValues.velocity)
       .angularAcceleration(motorValues.acceleration);
   }
-  
+
   public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      spindexer.runAtVoltage(() -> voltageOut),
+      kicker.runAtVoltage(() -> voltageOut),
       routine.quasistatic(direction)
     );
   }
 
   public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      spindexer.runAtVoltage(() -> voltageOut),
+      kicker.runAtVoltage(() -> voltageOut),
       routine.dynamic(direction)
     );
   }
 
   public static Command runFullSysId() {
     return new runFullSysId(
-      SpindexerSysID::sysIdQuasistatic, 
-      SpindexerSysID::sysIdDynamic, 
-      () -> spindexer.getValues().velocity.abs(RotationsPerSecond) < 0.1, 
-      spindexer);
+      KickerSysID::sysIdQuasistatic, 
+      KickerSysID::sysIdDynamic, 
+      () -> kicker.getValues().velocity.abs(RotationsPerSecond) < 0.1, 
+      kicker);
   }
 }
