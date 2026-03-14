@@ -166,7 +166,7 @@ public class RobotContainer {
     return switch (action) {
         case NONE, INTAKE_NEUTRAL, PASS, INTAKE_ZONE, CLIMB -> fakeIt;
         // TODO Implement `turret.score() -> Command`
-        case SCORE -> logActionAndThen.apply(turret.faceHub().withTimeout(2.5).asProxy());
+        case SCORE -> logActionAndThen.apply(turret.faceHub().withTimeout(2.5).asProxy().withName("faceHub"));
     };
   }
 
