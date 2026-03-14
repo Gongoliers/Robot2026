@@ -106,6 +106,7 @@ public class RobotContainer {
 
   private void configureDefaultCommands() {
     drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
+    turret.setDefaultCommand(turret.stow());
   }
 
   private void configureBindings() {
