@@ -4,27 +4,48 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANcoderConfigurator;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.CustomParamsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.units.measure.*;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.MutAngle;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 import frc.lib.CAN;
+import frc.lib.configs.AbsoluteEncoderConfig;
 import frc.lib.configs.MotorConfig;
 
-/** Motor output implementation for a single TalonFX controlled motor */
-public class MotorOutputTalonFX implements MotorOutput {
-
+/** Motor output implementation for a single TalonFX controlled motor using a CANcoder for position and velocity measurements */
+public class MotorOutputTalonFXCANcoder implements MotorOutput {
+  
   /** Motor config */
-  private final MotorConfig config;
+  private final MotorConfig motorConfig;
+
+  /** Absolute encoder config */
+  private final AbsoluteEncoderConfig encoderConfig;
 
   /** TalonFX hardware */
   private final TalonFX motor;
 
-  /** Position offset */
-  private final MutAngle positionOffset;
+  /** CANcoder hardware */
+  private final CANcoder encoder;
 
   // Status signals
   private final StatusSignal<Angle> position;
@@ -44,18 +65,18 @@ public class MotorOutputTalonFX implements MotorOutput {
    * @param config motor config used to configure motor
    * @param motorCAN CAN id and bus for TalonFX motor
    */
-  public MotorOutputTalonFX(MotorConfig config, CAN motorCAN) {
+  public MotorOutputTalonFXCANcoder(MotorConfig motorConfig, AbsoluteEncoderConfig encoderConfig, CAN motorCAN, CAN encoderCAN) {
 
     // set config
-    this.config = config;
+    this.motorConfig = motorConfig;
+    this.encoderConfig = encoderConfig;
 
     // create hardware and status signals
     motor = new TalonFX(motorCAN.id(), motorCAN.bus());
+    encoder = new CANcoder(encoderCAN.id(), encoderCAN.bus());
 
-    positionOffset = Rotations.mutable(0.0);
-
-    position = motor.getPosition();
-    velocity = motor.getVelocity();
+    position = encoder.getPosition();
+    velocity = encoder.getVelocity();
     acceleration = motor.getAcceleration();
     motorVoltage = motor.getMotorVoltage();
     supplyVoltage = motor.getSupplyVoltage();
@@ -72,7 +93,7 @@ public class MotorOutputTalonFX implements MotorOutput {
         statorCurrent,
         supplyCurrent);
         
-    ParentDevice.optimizeBusUtilizationForAll(motor);
+    ParentDevice.optimizeBusUtilizationForAll(motor, encoder);
   }
 
   @Override
@@ -82,8 +103,7 @@ public class MotorOutputTalonFX implements MotorOutput {
 
   @Override
   public void setPosition(Angle newPosition) {
-    BaseStatusSignal.refreshAll(position);
-    positionOffset.mut_replace(newPosition.minus(position.getValue()));
+    encoder.setPosition(newPosition);
   }
 
   @Override
@@ -97,8 +117,8 @@ public class MotorOutputTalonFX implements MotorOutput {
         statorCurrent,
         supplyCurrent);
 
-    values.position.mut_replace(position.getValueAsDouble() + positionOffset.in(Rotations), Rotations);
-    values.velocity.mut_replace(velocity.getValueAsDouble(), RotationsPerSecond);
+    values.position.mut_replace(position.getValueAsDouble() / encoderConfig.sensorToMechRatio(), Rotations);
+    values.velocity.mut_replace(velocity.getValueAsDouble() / encoderConfig.sensorToMechRatio(), RotationsPerSecond);
     values.acceleration.mut_replace(acceleration.getValueAsDouble(), RotationsPerSecondPerSecond);
     values.motorVoltage.mut_replace(motorVoltage.getValueAsDouble(), Volts);
     values.supplyVoltage.mut_replace(supplyVoltage.getValueAsDouble(), Volts);
@@ -115,22 +135,36 @@ public class MotorOutputTalonFX implements MotorOutput {
         new TalonFXConfiguration()
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(config.statorCurrentLimit())
-                    .withSupplyCurrentLimit(config.supplyCurrentLimit()))
+                    .withStatorCurrentLimit(motorConfig.statorCurrentLimit())
+                    .withSupplyCurrentLimit(motorConfig.supplyCurrentLimit()))
             .withMotorOutput(
                 new MotorOutputConfigs()
                     .withInverted(
-                        config.ccwPositive()
+                        motorConfig.ccwPositive()
                             ? InvertedValue.CounterClockwise_Positive
                             : InvertedValue.Clockwise_Positive)
                     .withNeutralMode(
-                        config.neutralBrake() ? NeutralModeValue.Brake : NeutralModeValue.Coast))
+                        motorConfig.neutralBrake() ? NeutralModeValue.Brake : NeutralModeValue.Coast))
             .withFeedback(
                 new FeedbackConfigs()
                     .withRotorToSensorRatio(1)
-                    .withSensorToMechanismRatio(config.rotorToSensorRatio()*config.sensorToMechRatio()));
+                    .withSensorToMechanismRatio(motorConfig.rotorToSensorRatio()*motorConfig.sensorToMechRatio()));
 
     motorConfigurator.apply(motorConfiguration);
+
+    CANcoderConfigurator encoderConfigurator = encoder.getConfigurator();
+
+    CANcoderConfiguration encoderConfiguration =
+      new CANcoderConfiguration()
+        .withMagnetSensor(
+          new MagnetSensorConfigs()
+            .withMagnetOffset(encoderConfig.offset().getMeasure())
+            .withSensorDirection(
+              encoderConfig.ccwPositive()
+                ? SensorDirectionValue.CounterClockwise_Positive
+                : SensorDirectionValue.Clockwise_Positive));
+
+    encoderConfigurator.apply(encoderConfiguration);
 
     return true;
   }

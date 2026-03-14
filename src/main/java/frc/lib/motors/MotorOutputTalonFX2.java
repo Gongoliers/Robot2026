@@ -137,8 +137,8 @@ public class MotorOutputTalonFX2 implements MotorOutput {
                         config.neutralBrake() ? NeutralModeValue.Brake : NeutralModeValue.Coast))
             .withFeedback(
                 new FeedbackConfigs()
-                    .withRotorToSensorRatio(config.rotorToSensorRatio())
-                    .withSensorToMechanismRatio(config.sensorToMechRatio()));
+                    .withRotorToSensorRatio(1)
+                    .withSensorToMechanismRatio(config.rotorToSensorRatio()*config.sensorToMechRatio()));
 
     leaderConfigurator.apply(motorConfiguration);
     followerConfigurator.apply(motorConfiguration);
