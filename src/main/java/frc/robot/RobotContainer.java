@@ -26,6 +26,7 @@ import frc.robot.hood.Hood;
 import frc.robot.intake.IntakePivotState;
 import frc.robot.intake.IntakeRollerState;
 import frc.robot.scripting.Action;
+import frc.robot.scripting.NamedPose;
 import frc.robot.scripting.ObjectiveActionMachine;
 import frc.robot.intake.Intake;
 import frc.robot.intake.IntakeRollerSysID;
@@ -194,9 +195,22 @@ public class RobotContainer {
     );
   }
 
+  private void seedSimPose(boolean isLeftSide, DriverStation.Alliance alliance) {
+    if (Robot.isReal()) {
+      return;
+    }
+
+    if (isLeftSide) {
+      drive.resetPose(NamedPose.FAR_LEFT.pose(alliance));
+    } else {
+      drive.resetPose(NamedPose.FAR_RIGHT.pose(alliance));
+    }
+  }
+
   public Command getAutonomousCommand() {
     DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
+    seedSimPose(isLeftSide.getSelected(), alliance);
     if (isLeftSide.getSelected()) {
       return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
     } else {

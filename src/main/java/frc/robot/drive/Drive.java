@@ -222,4 +222,8 @@ public class Drive extends Subsystem {
   public void addVisionMeasurement(Pose2d pose, double timestampSeconds, Matrix<N3, N1> stdDevs) {
     swerve.addVisionMeasurement(pose, timestampSeconds, stdDevs);
   }
+
+  public void resetPose(Pose2d pose) {
+    swerve.resetPose(pose);
+  }
 }
