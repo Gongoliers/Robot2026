@@ -18,9 +18,12 @@ import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodSysID;
+import frc.robot.intake.Intake;
+import frc.robot.kicker.Kicker;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterSysID;
 import frc.robot.shooter.ShooterTester;
+import frc.robot.spindexer.Spindexer;
 import frc.robot.turret.Turret;
 
 /** Robot container */
@@ -56,6 +59,15 @@ public class RobotContainer {
   /** Turret */
   private final Turret turret;
 
+  /** Intake */
+  private final Intake intake;
+
+  /** Spindexer */
+  private final Spindexer spindexer;
+
+  /** Kicker */
+  private final Kicker kicker;
+
   /**
    * Gets robot container instance
    * 
@@ -81,6 +93,9 @@ public class RobotContainer {
     azimuth = Azimuth.getInstance();
     hood = Hood.getInstance();
     turret = Turret.getInstance();
+    intake = Intake.getInstance();
+    spindexer = Spindexer.getInstance();
+    kicker = Kicker.getInstance();
 
     multithreader.start();
 
@@ -94,19 +109,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    TalonFX kicker = new TalonFX(30);
-    VoltageOut kickerCtrl = new VoltageOut(0);
-    NeutralOut kickerNeutral = new NeutralOut();
-    TalonFX spinner = new TalonFX(40);
-    VoltageOut spinnerCtrl = new VoltageOut(0);
-    NeutralOut spinnerNeutral = new NeutralOut();
-    operatorController.leftTrigger().whileTrue(Commands.startEnd(() -> {
-      kicker.setControl(kickerCtrl.withOutput(6));
-      spinner.setControl(spinnerCtrl.withOutput(-6));
-    }, () -> {
-      kicker.setControl(kickerNeutral);
-      spinner.setControl(spinnerNeutral);
-    }));
+    
   }
 
   public Command getAutonomousCommand() {
