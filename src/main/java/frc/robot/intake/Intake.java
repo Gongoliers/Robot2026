@@ -182,7 +182,19 @@ public class Intake extends Subsystem {
     rollerStateTab.addDouble("Acceleration (rotpsps)", () -> rollerValues.acceleration.in(RotationsPerSecondPerSecond));
     rollerStateTab.addDouble("Setpoint (rotps)", () -> rollerSetpoint.in(RotationsPerSecond));
 
+<<<<<<< New base: Demo code
     tab.addString("Current state", () -> state.name());
+||||||| Common ancestor
+    tab.addString("Target pivot state", () -> targetPivotState.name());
+    tab.addDouble("Target pivot positon (rot)", () -> targetPivotState.getPosition().in(Rotations));
+    
+    tab.addDouble("Target roller velocity (rotps)", () -> currentRollerState.getVelocity().in(RotationsPerSecond));
+=======
+    tab.addString("Target pivot state", () -> targetPivotState.name());
+    tab.addDouble("Target pivot positon (rot)", () -> targetPivotState.getPosition().in(Rotations));
+
+    tab.addDouble("Target roller velocity (rotps)", () -> currentRollerState.getVelocity().in(RotationsPerSecond));
+>>>>>>> Current commit: Inject drive command in action factory
   }
 
   @Override
@@ -253,6 +265,7 @@ public class Intake extends Subsystem {
     return Commands.runOnce(() -> state = intakeState);
   }
 
+<<<<<<< New base: Demo code
   public boolean atTargetState() {
     if (state == IntakeState.AGITATE) {
       return pivotValues.position.lte(Rotations.of(0.2)) 
@@ -261,6 +274,34 @@ public class Intake extends Subsystem {
       return MathUtil.isNear(pivotSetpoint.in(Rotations), pivotValues.position.in(Rotations), 0.05)
           && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
     }
+||||||| Common ancestor
+  public boolean pivotAtTargetState() {
+    return currentPivotState == targetPivotState;
+  }
+
+  public IntakePivotState getPivotState() {
+    return currentPivotState;
+  }
+
+  public IntakePivotState getTargetPivotState() {
+    return targetPivotState;
+=======
+  public void stow() {
+    currentPivotState = IntakePivotState.STOW;
+    currentRollerState = IntakeRollerState.STOP;
+  }
+
+  public boolean pivotAtTargetState() {
+    return currentPivotState == targetPivotState;
+  }
+
+  public IntakePivotState getPivotState() {
+    return currentPivotState;
+  }
+
+  public IntakePivotState getTargetPivotState() {
+    return targetPivotState;
+>>>>>>> Current commit: Inject drive command in action factory
   }
 
   public IntakeState getState() {
