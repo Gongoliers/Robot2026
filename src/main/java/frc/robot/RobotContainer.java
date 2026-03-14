@@ -4,16 +4,11 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
 import static frc.robot.scripting.Action.*;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -24,7 +19,6 @@ import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.scripting.Action;
 import frc.robot.scripting.ObjectiveActionMachine;
-import frc.robot.hood.HoodSysID;
 import frc.robot.intake.Intake;
 import frc.robot.intake.IntakePivotState;
 import frc.robot.intake.IntakeRollerState;
@@ -33,7 +27,6 @@ import frc.robot.kicker.Kicker;
 import frc.robot.kicker.KickerState;
 import frc.robot.kicker.KickerSysID;
 import frc.robot.shooter.Shooter;
-import frc.robot.shooter.ShooterSysID;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
@@ -43,6 +36,7 @@ import frc.robot.turret.Turret;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 /** Robot container */
@@ -123,9 +117,9 @@ public class RobotContainer {
     // TODO Create ActionSelector class
     choosers = IntStream.rangeClosed(1, 8).mapToObj(n -> String.format("Action %d", n)).map(name -> {
       SendableChooser<Action> chooser = new SendableChooser<>();
-      chooser.setDefaultOption("", Action.NONE);
+      chooser.setDefaultOption("", NONE);
 
-      for (Action action : Arrays.stream(values()).filter(action -> action != Action.NONE).toList()) {
+      for (Action action : Arrays.stream(values()).filter(action -> action != NONE).toList()) {
         chooser.addOption(action.name(), action);
       }
 
@@ -160,22 +154,29 @@ public class RobotContainer {
     driverController.a().onTrue(kicker.goToState(KickerState.STOP));
   }
 
-  private Command logAction(Action action) {
-    return Commands.sequence(
-      Commands.runOnce(() -> SmartDashboard.putString("Action", action.name())),
-      // Delay to simulate performing the action
-      Commands.waitSeconds(2.5),
-      Commands.runOnce(() -> SmartDashboard.putString("Action", ""))
+  private Command performAction(Action action) {
+    Function<Command, Command> logActionAndThen = cmd -> Commands.sequence(
+        Commands.runOnce(() -> SmartDashboard.putString("Action", action.name())),
+        cmd,
+        Commands.runOnce(() -> SmartDashboard.putString("Action", ""))
     );
+
+    Command fakeIt = logActionAndThen.apply(Commands.waitSeconds(2.5));
+
+    return switch (action) {
+        case NONE, INTAKE_NEUTRAL, PASS, INTAKE_ZONE, CLIMB -> fakeIt;
+        // TODO Implement `turret.score() -> Command`
+        case SCORE -> logActionAndThen.apply(turret.faceHub().withTimeout(2.5).asProxy());
+    };
   }
 
   public Command getAutonomousCommand() {
     DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
     if (isLeftSide.getSelected()) {
-      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, drive::driveTo, this::logAction);
+      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, drive::driveTo, this::performAction);
     } else {
-      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, drive::driveTo, this::logAction);
+      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, drive::driveTo, this::performAction);
     }
   }
 }
