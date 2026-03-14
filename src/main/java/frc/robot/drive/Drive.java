@@ -31,6 +31,7 @@ import frc.lib.PoseUtils;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
 import frc.lib.swerves.SwerveOutput;
+import frc.robot.RobotConstants;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -52,7 +53,7 @@ public class Drive extends Subsystem {
 
   private final DriverAssistance driver;
 
-  private static final Distance DRIVER_TOLERANCE = Centimeters.of(1);
+  private static final Distance DRIVER_TOLERANCE = Centimeters.of(3);
 
   public static Drive getInstance() {
     if (instance == null) {
@@ -201,7 +202,12 @@ public class Drive extends Subsystem {
 
   public Command driveTo(Pose2d pose) {
     BooleanSupplier atPose = () -> PoseUtils.errorMagnitude(getPose(), pose).lte(DRIVER_TOLERANCE);
-    return driveFollowing(() -> pose).until(atPose);
+    ChassisSpeeds zero = new ChassisSpeeds();
+    // TODO Determine timeout (maximum run duration) by distance between poses
+    Command toPose = driveFollowing(() -> pose).until(atPose).withTimeout(4);
+    // TODO Implement `setChassisSpeeds(ChassisSpeeds) -> void` or `stop() -> Command`
+    Command stop = drive(() -> zero).withTimeout(RobotConstants.PERIODIC_DURATION);
+    return Commands.sequence(toPose, stop);
   }
 
   public void addVisionMeasurement(Pose2d pose, double timestampSeconds) {
