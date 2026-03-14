@@ -28,6 +28,9 @@ public class IntakeFactory {
       return new MotorOutputTalonFX(config.motorConfig(), new CAN(13));
     }
 
+    return new DiscreteMotorOutputSim();
+
+    /**
     MotorOutputSim losslessSim = new MotorOutputSim(
       Volts.per(RotationsPerSecond).ofNative(config.feedforwardControllerConfig().kV()),
       Volts.per(RotationsPerSecondPerSecond).ofNative(config.feedforwardControllerConfig().kA()),
@@ -36,5 +39,6 @@ public class IntakeFactory {
     return new LossyMotorOutputSim(
       losslessSim, 
       Volts.of(config.feedforwardControllerConfig().kS()));
+    */
   }
 }

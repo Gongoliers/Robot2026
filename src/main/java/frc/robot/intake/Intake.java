@@ -20,6 +20,7 @@ import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
 import frc.lib.configs.MechanismConfig;
 import frc.lib.configs.MechanismConfig.MechanismBuilder;
 import frc.lib.configs.MotorConfig.MotorBuilder;
+import frc.lib.motors.DiscreteMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
 import frc.robot.RobotConstants;
@@ -142,6 +143,14 @@ public class Intake extends Subsystem {
     pivotFeedback = pivotConfig.feedbackControllerConfig().createPIDController();
     rollerFeedback = rollerConfig.feedbackControllerConfig().createPIDController();
     rollerFeedforward = rollerConfig.feedforwardControllerConfig().createSimpleMotorFeedforward();
+
+    if (pivotOutput instanceof DiscreteMotorOutputSim discreteSim) {
+      discreteSim.usePosition(() -> targetPivotState.getPosition());
+    }
+
+    if (rollerOutput instanceof DiscreteMotorOutputSim discreteSim) {
+      discreteSim.useVelocity(() -> targetRollerState.getVelocity());
+    }
   }
 
   @Override

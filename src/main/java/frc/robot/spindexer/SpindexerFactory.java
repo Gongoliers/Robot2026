@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import frc.lib.CAN;
 import frc.lib.configs.MechanismConfig;
+import frc.lib.motors.DiscreteMotorOutputSim;
 import frc.lib.motors.LossyMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorOutputSim;
@@ -19,6 +20,9 @@ public class SpindexerFactory {
       return new MotorOutputTalonFX(config.motorConfig(), new CAN(14));
     }
 
+    return new DiscreteMotorOutputSim();
+
+    /**
     MotorOutputSim losslessSim = new MotorOutputSim(
       Volts.per(RotationsPerSecond).ofNative(config.feedforwardControllerConfig().kV()),
       Volts.per(RotationsPerSecondPerSecond).ofNative(config.feedforwardControllerConfig().kA()),
@@ -27,5 +31,6 @@ public class SpindexerFactory {
     return new LossyMotorOutputSim(
       losslessSim, 
       Volts.of(config.feedforwardControllerConfig().kS()));
+    */
   }
 }
