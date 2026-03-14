@@ -68,6 +68,19 @@ public class Tunable<R> implements Supplier<Optional<R>> {
     }
 
     /**
+     * Creates a unit-safe handle for a value modified through NetworkTables.
+     * @param name The name for the value, as seen through NetworkTables.
+     * @param Unit The unit of the value.
+     * @param defaultValue The default value to display in NetworkTables.
+     * @return A unit-safe handle for a value modified through NetworkTables.
+     * @param <U> The unit of the value.
+     */
+    public static <U extends Unit> Tunable<Measure<U>> ofUnit(String name, U Unit, Measure<U> defaultValue) {
+        String nameWithUnit = String.format("%s (%s)", name, Unit.name());
+        return new Tunable<>(nameWithUnit, d -> (Measure<U>) Unit.of(d), defaultValue.in(Unit));
+    }
+
+    /**
      * Sets up the function to retrieve the value from NetworkTables.
      * @param name The name for the value, as seen through NetworkTables.
      * @param defaultValue The default value to display in NetworkTables.
