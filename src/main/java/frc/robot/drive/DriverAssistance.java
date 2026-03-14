@@ -28,9 +28,9 @@ public class DriverAssistance {
 
     public DriverAssistance(
             Measure<? extends  PerUnit<LinearVelocityUnit, DistanceUnit>> gain, Distance minDistance, Distance maxDistance) {
-        GAIN = Tunable.ofUnit("DriverAssistance.Gain", MetersPerSecond.per(Meter), (Measure<PerUnit<LinearVelocityUnit, DistanceUnit>>) gain);
-        MIN_DISTANCE = Tunable.ofUnit("DriverAssistance.MinDistance", Meters, minDistance);
-        MAX_DISTANCE = Tunable.ofUnit("DriverAssistance.MaxDistance", Meters, maxDistance);
+        GAIN = Tunable.ofUnit("DriverAssistance/Gain", MetersPerSecond.per(Meter), (Measure<PerUnit<LinearVelocityUnit, DistanceUnit>>) gain);
+        MIN_DISTANCE = Tunable.ofUnit("DriverAssistance/MinDistance", Meters, minDistance);
+        MAX_DISTANCE = Tunable.ofUnit("DriverAssistance/MaxDistance", Meters, maxDistance);
         this.defaultGain = (Measure<PerUnit<LinearVelocityUnit, DistanceUnit>>) gain;
         this.defaultMinDistance = minDistance;
         this.defaultMaxDistance = maxDistance;
@@ -54,15 +54,15 @@ public class DriverAssistance {
     }
 
     public void publishDebugPoses(Pose2d pose, Pose2d target) {
-        PosePublisher.publish("DriverAssistance.Pose", pose);
-        PosePublisher.publish("DriverAssistance.TargetPose", target);
+        PosePublisher.publish("DriverAssistance/Pose", pose);
+        PosePublisher.publish("DriverAssistance/TargetPose", target);
 
         Rotation2d direction = PoseUtils.errorDirection(pose, target);
         Pose2d minPose = PoseUtils.poseAlongLine(target, direction, minDistance());
         Pose2d maxPose = PoseUtils.poseAlongLine(target, direction, maxDistance());
 
-        PosePublisher.publish("DriverAssistance.MinPose", minPose);
-        PosePublisher.publish("DriverAssistance.MaxPose", maxPose);
+        PosePublisher.publish("DriverAssistance/MinPose", minPose);
+        PosePublisher.publish("DriverAssistance/MaxPose", maxPose);
     }
 
     private ChassisSpeeds createDriverAssistanceSpeeds(Distance distance, Rotation2d direction) {

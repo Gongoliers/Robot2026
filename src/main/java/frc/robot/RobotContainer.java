@@ -6,6 +6,7 @@ package frc.robot;
 
 import static frc.robot.scripting.Action.*;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.lib.PosePublisher;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
@@ -154,11 +156,18 @@ public class RobotContainer {
     driverController.a().onTrue(kicker.goToState(KickerState.STOP));
   }
 
+  private Command performDrive(Pose2d pose) {
+    return Commands.sequence(
+        Commands.runOnce(() -> PosePublisher.publish("Auto/NextPose", pose)),
+        drive.driveTo(pose)
+    );
+  }
+
   private Command performAction(Action action) {
     Function<Command, Command> logActionAndThen = cmd -> Commands.sequence(
-        Commands.runOnce(() -> SmartDashboard.putString("Action", action.name())),
+        Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", action.name())),
         cmd,
-        Commands.runOnce(() -> SmartDashboard.putString("Action", ""))
+        Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", ""))
     );
 
     Command fakeIt = logActionAndThen.apply(Commands.waitSeconds(2.5));
@@ -174,9 +183,9 @@ public class RobotContainer {
     DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
     if (isLeftSide.getSelected()) {
-      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, drive::driveTo, this::performAction);
+      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, this::performDrive, this::performAction);
     } else {
-      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, drive::driveTo, this::performAction);
+      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, this::performDrive, this::performAction);
     }
   }
 }
