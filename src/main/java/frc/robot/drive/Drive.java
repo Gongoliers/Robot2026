@@ -15,6 +15,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -26,15 +29,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.lib.PosePublisher;
 import frc.lib.PoseUtils;
 import frc.lib.Subsystem;
-import frc.lib.sendables.SwerveDriveSendable;
+import frc.lib.Tunable;
 import frc.lib.swerves.SwerveOutput;
 import frc.robot.RobotConstants;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Drive extends Subsystem {
@@ -53,7 +54,11 @@ public class Drive extends Subsystem {
 
   private final DriverAssistance driver;
 
-  private static final Distance DRIVER_TOLERANCE = Centimeters.of(3);
+  private static final Distance AUTO_DISTANCE_TOLERANCE_DEFAULT = Centimeters.of(2.5);
+
+  private static final Tunable<Measure<DistanceUnit>> AUTO_DISTANCE_TOLERANCE = Tunable.ofUnit("Auto/DistanceTolerance", Centimeters, AUTO_DISTANCE_TOLERANCE_DEFAULT);
+
+  private static final Angle AUTO_ANGLE_TOLERANCE = Degrees.of(5);
 
   public static Drive getInstance() {
     if (instance == null) {
@@ -183,7 +188,7 @@ public class Drive extends Subsystem {
 
   public Command driveFacing(Supplier<ChassisSpeeds> fieldSpeedsSupplier, Supplier<Rotation2d> targetDirection) {
     // TODO Perform configuration
-    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle();
+    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0);
 
     return run(() -> {
       ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
@@ -201,7 +206,7 @@ public class Drive extends Subsystem {
   }
 
   public Command driveTo(Pose2d pose) {
-    BooleanSupplier atPose = () -> PoseUtils.errorMagnitude(getPose(), pose).lte(DRIVER_TOLERANCE);
+    BooleanSupplier atPose = () -> PoseUtils.errorMagnitude(getPose(), pose).lte(AUTO_DISTANCE_TOLERANCE.get().orElse(AUTO_DISTANCE_TOLERANCE_DEFAULT)) && getPose().getRotation().getMeasure().isNear(pose.getRotation().getMeasure(), AUTO_ANGLE_TOLERANCE);
     ChassisSpeeds zero = new ChassisSpeeds();
     // TODO Determine timeout (maximum run duration) by distance between poses
     Command toPose = driveFollowing(() -> pose).until(atPose).withTimeout(4);
