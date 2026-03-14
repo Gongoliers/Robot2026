@@ -21,14 +21,23 @@ public enum NamedPose {
     FAR_RIGHT(Meters.of(3.633), Meters.of(2.5), Degrees.of(0)),
     CLIMB_LEFT(Meters.of(0.81), Meters.of(5.02), Degrees.of(-90)),
     CLIMB_RIGHT(Meters.of(1.33), Meters.of(2.6), Degrees.of(90)),
-    // TODO Derive these from NamedPoses for DEPOT and OUTPOST
-    PICKUP_ZONE_LEFT(Meters.of(0.6), Meters.of(5.85), Degrees.zero(), Meters.of(15.4), Meters.of(2.12), Degrees.of(180)),
-    PICKUP_ZONE_RIGHT(Meters.of(0.6), Meters.of(0.65), Degrees.zero(), Meters.of(15.4), Meters.of(7.4), Degrees.of(180));
+    DEPOT(Meters.of(0.6), Meters.of(5.85), Degrees.zero(), Meters.of(15.4), Meters.of(2.12), Degrees.of(180)),
+    OUTPOST(Meters.of(0.6), Meters.of(0.65), Degrees.zero(), Meters.of(15.4), Meters.of(7.4), Degrees.of(180)),
+    PICKUP_ZONE_LEFT(DEPOT),
+    PICKUP_ZONE_RIGHT(OUTPOST);
 
     private final Pose2d bluePose_;
 
     private final Pose2d redPose_;
 
+    NamedPose(Pose2d bluePose, Pose2d redPose) {
+        bluePose_ = bluePose;
+        redPose_ = redPose;
+    }
+
+    NamedPose(NamedPose alias) {
+        this(alias.blue(), alias.red());
+    }
 
     // TODO Move to PoseUtils
     private static Pose2d flip(Pose2d bluePose) {
@@ -38,11 +47,6 @@ public enum NamedPose {
         Translation2d oldTranslation = bluePose.getTranslation();
         Translation2d newTranslation = new Translation2d(SIZE_X.minus(oldTranslation.getMeasureX()), SIZE_Y.minus(oldTranslation.getMeasureY()));
         return new Pose2d(newTranslation, bluePose.getRotation().rotateBy(Rotation2d.k180deg));
-    }
-
-    NamedPose(Pose2d bluePose, Pose2d redPose) {
-        bluePose_ = bluePose;
-        redPose_ = redPose;
     }
 
     NamedPose(Pose2d bluePose) {
