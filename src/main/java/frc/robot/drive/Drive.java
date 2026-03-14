@@ -186,9 +186,9 @@ public class Drive extends Subsystem {
     });
   }
 
-  public Command driveFacing(Supplier<ChassisSpeeds> fieldSpeedsSupplier, Supplier<Rotation2d> targetDirection) {
+  public Command driveFacing(Supplier<ChassisSpeeds> fieldSpeedsSupplier, Supplier<Rotation2d> targetDirection, SwerveRequest.ForwardPerspectiveValue perspective) {
     // TODO Perform configuration
-    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0);
+    SwerveRequest.FieldCentricFacingAngle request = new SwerveRequest.FieldCentricFacingAngle().withHeadingPID(10, 0, 0).withForwardPerspective(perspective);
 
     return run(() -> {
       ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
@@ -202,7 +202,7 @@ public class Drive extends Subsystem {
   }
 
   public Command driveFollowing(Supplier<Pose2d> pose) {
-    return driveFacing(() -> driver.createDriverAssistanceSpeeds(getPose(), pose.get()), () -> pose.get().getRotation());
+    return driveFacing(() -> driver.createDriverAssistanceSpeeds(getPose(), pose.get()), () -> pose.get().getRotation(), SwerveRequest.ForwardPerspectiveValue.BlueAlliance);
   }
 
   public Command driveTo(Pose2d pose) {
