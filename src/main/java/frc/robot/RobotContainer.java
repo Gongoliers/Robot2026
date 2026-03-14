@@ -22,6 +22,7 @@ import frc.robot.hood.Hood;
 import frc.robot.intake.IntakePivotState;
 import frc.robot.intake.IntakeRollerState;
 import frc.robot.scripting.Action;
+import frc.robot.scripting.NamedPose;
 import frc.robot.scripting.ObjectiveActionMachine;
 import frc.robot.intake.Intake;
 import frc.robot.intake.IntakePivotState;
@@ -168,7 +169,7 @@ public class RobotContainer {
     return switch (action) {
         case NONE, PASS, CLIMB -> drive.andThen(Commands.waitSeconds(2.5));
         // TODO Implement `intake.intake() -> Command`
-        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.runState(IntakePivotState.TEST, IntakeRollerState.TEST)).finallyDo(intake::stow);
+        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.runState(IntakePivotState.TEST, IntakeRollerState.TEST).finallyDo(intake::stow));
         // TODO Implement `turret.score() -> Command`
         case SCORE -> drive.andThen(turret.faceHub().withTimeout(2.5));
     };
@@ -182,9 +183,22 @@ public class RobotContainer {
     );
   }
 
+  private void seedSimPose(boolean isLeftSide, DriverStation.Alliance alliance) {
+    if (Robot.isReal()) {
+      return;
+    }
+
+    if (isLeftSide) {
+      drive.resetPose(NamedPose.FAR_LEFT.pose(alliance));
+    } else {
+      drive.resetPose(NamedPose.FAR_RIGHT.pose(alliance));
+    }
+  }
+
   public Command getAutonomousCommand() {
     DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
+    seedSimPose(isLeftSide.getSelected(), alliance);
     if (isLeftSide.getSelected()) {
       return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
     } else {

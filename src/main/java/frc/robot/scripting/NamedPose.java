@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -62,6 +63,14 @@ public enum NamedPose {
 
     public Pose2d red() {
         return redPose_;
+    }
+
+    public Pose2d pose(DriverStation.Alliance alliance) {
+        if (alliance == DriverStation.Alliance.Red) {
+            return red();
+        } else {
+            return blue();
+        }
     }
 
 }
