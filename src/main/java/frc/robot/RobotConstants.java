@@ -83,6 +83,7 @@ public class RobotConstants {
     HOOD,
     INTAKE,
     SPINDEXER,
+    KICKER,
   }
 
   /** Enabled subsystems */
