@@ -251,6 +251,18 @@ public class Intake extends Subsystem {
     }).finallyDo(() -> rollerVoltageSet = false);
   }
 
+  public void stow() {
+    targetPivotState = IntakePivotState.STOW;
+    targetRollerState = IntakeRollerState.STOP;
+  }
+
+  public Command runState(IntakePivotState pivot, IntakeRollerState roller) {
+    return Commands.run(() -> {
+      targetPivotState = pivot;
+      targetRollerState = roller;
+    });
+  }
+
   public Command goToState(IntakePivotState pivotState) {
     return Commands.race(
       Commands.run(() -> {

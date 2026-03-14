@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ObjectiveActionMachine {
@@ -24,17 +25,17 @@ public class ObjectiveActionMachine {
         return objectives.toArray(Objective[]::new);
     }
 
-    public static Command createCommand(DriverStation.Alliance alliance, Objective initial, Action[] actions, Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory) {
+    public static Command createCommand(DriverStation.Alliance alliance, Objective initial, Action[] actions, Function<Pose2d, Command> driveFactory, BiFunction<Action, Command, Command> actionFactory) {
         Objective[] objectives = walk(initial, actions);
         Command[] commands = Arrays.stream(objectives).map(o -> o.command(alliance, driveFactory, actionFactory)).toArray(Command[]::new);
         return Commands.print(Objective.explainAll(objectives)).andThen(Commands.sequence(commands));
     }
 
-    public static Command createLeftSideCommand(DriverStation.Alliance alliance, Action[] actions, Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory) {
+    public static Command createLeftSideCommand(DriverStation.Alliance alliance, Action[] actions, Function<Pose2d, Command> driveFactory, BiFunction<Action, Command, Command> actionFactory) {
         return createCommand(alliance, Objective.INITIAL_LEFT, actions, driveFactory, actionFactory);
     }
 
-    public static Command createRightSideCommand(DriverStation.Alliance alliance, Action[] actions, Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory) {
+    public static Command createRightSideCommand(DriverStation.Alliance alliance, Action[] actions, Function<Pose2d, Command> driveFactory, BiFunction<Action, Command, Command> actionFactory) {
         return createCommand(alliance, Objective.INITIAL_RIGHT, actions, driveFactory, actionFactory);
     }
 

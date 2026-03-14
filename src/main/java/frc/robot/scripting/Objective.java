@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public enum Objective {
@@ -111,18 +112,15 @@ public enum Objective {
         return String.join("\n", Arrays.stream(objectives).map(Objective::explain).toList());
     }
 
-    public Command actionCommand(Function<Action, Command> actionFactory) {
-        return actionFactory.apply(action_);
-    }
-
-    public Command driveCommand(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory) {
+    private Command driveCommand(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory) {
         if (!hasPose || pose_ == null) {
             return Commands.none();
         }
         return driveToPoseFactory.apply(alliance == DriverStation.Alliance.Blue ? pose_.blue() : pose_.red());
     }
 
-    public Command command(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory, Function<Action, Command> actionFactory) {
-        return Commands.sequence(driveCommand(alliance, driveToPoseFactory), actionCommand(actionFactory));
+    public Command command(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory, BiFunction<Action, Command, Command> actionFactory) {
+        Command driveToPose = driveCommand(alliance, driveToPoseFactory);
+        return actionFactory.apply(action_, driveToPose);
     }
 }

@@ -19,6 +19,8 @@ import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
+import frc.robot.intake.IntakePivotState;
+import frc.robot.intake.IntakeRollerState;
 import frc.robot.scripting.Action;
 import frc.robot.scripting.ObjectiveActionMachine;
 import frc.robot.intake.Intake;
@@ -38,7 +40,6 @@ import frc.robot.turret.Turret;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 
 /** Robot container */
@@ -163,29 +164,31 @@ public class RobotContainer {
     );
   }
 
-  private Command performAction(Action action) {
-    Function<Command, Command> logActionAndThen = cmd -> Commands.sequence(
-        Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", action.name())),
-        cmd,
-        Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", ""))
-    );
-
-    Command fakeIt = logActionAndThen.apply(Commands.waitSeconds(2.5));
-
+  private Command performAction(Action action, Command drive) {
     return switch (action) {
-        case NONE, INTAKE_NEUTRAL, PASS, INTAKE_ZONE, CLIMB -> fakeIt;
+        case NONE, PASS, CLIMB -> drive.andThen(Commands.waitSeconds(2.5));
+        // TODO Implement `intake.intake() -> Command`
+        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.runState(IntakePivotState.TEST, IntakeRollerState.TEST)).finallyDo(intake::stow);
         // TODO Implement `turret.score() -> Command`
-        case SCORE -> logActionAndThen.apply(turret.faceHub().withTimeout(2.5).asProxy().withName("faceHub"));
+        case SCORE -> drive.andThen(turret.faceHub().withTimeout(2.5).asProxy().withName("faceHub"));
     };
+  }
+
+  private Command loggedPerformAction(Action action, Command drive) {
+    return Commands.sequence(
+            Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", action.name())),
+            performAction(action, drive),
+            Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", ""))
+    );
   }
 
   public Command getAutonomousCommand() {
     DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
     if (isLeftSide.getSelected()) {
-      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, this::performDrive, this::performAction);
+      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
     } else {
-      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, this::performDrive, this::performAction);
+      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
     }
   }
 }
