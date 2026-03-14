@@ -106,42 +106,65 @@ public class Turret extends MultithreadedSubsystem {
 
     switch (state) {
       case STOW:
-        if (azimuth.getCurrentCommand() == null) {azimuth.setSetpoint(Rotations.of(0.0));};
+        azimuth.setSetpoint(Rotations.of(-0.25));
+        hood.setSetpoint(hood.getMinPosition());
+        shooter.setSetpoint(RotationsPerSecond.of(0.0));
+        break;
+      case ALLOW_EXTERNAL_CONTROL:
+        if (azimuth.getCurrentCommand() == null) {azimuth.setSetpoint(Rotations.of(-0.25));};
         if (hood.getCurrentCommand() == null) {hood.setSetpoint(hood.getMinPosition());};
         if (shooter.getCurrentCommand() == null) {shooter.setSetpoint(RotationsPerSecond.of(0.0));};
+      case FACE_HUB:
+        faceHub(turretPose);
         break;
-      case SCORING:
-        targetHub();
+      case TARGET_HUB:
+        faceHub(turretPose);
         break;
     }
   }
 
-  /** Autoaim the turret to shoot in the hub, automagically firing when locked on */
-  private void targetHub() {
-    // gurt
+  /** 
+   * Turns the azimuth to face your alliance hub given an estimated turret pose
+   * 
+   * @param turretPose estimated turret pose
+   */
+  private void faceHub(Pose2d turretPose) {
+    Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
+    Rotation2d rotationError = translationToHub.getAngle().minus(turretPose.getRotation());
+
+    azimuth.setSetpoint(azimuth.getSetpoint().plus(rotationError.getMeasure()));
   }
 
   /**
    * Stows the turret
    * 
-   * @return a command that stows the turret while running
+   * @return a command that stows the turret while it's running
    */
   public Command stow() {
     return Commands.run(() -> {
       state = TurretState.STOW;
+    }, this, azimuth, hood, shooter);
+  }
+
+  /**
+   * Stows the turret by default, but allows external control of the shooter, hood, and azimuth through other commands
+   * 
+   * @return a command that stows the turret by default, but allows external control of the turret by other commands while it's running
+   */
+  public Command allowExternalControl() {
+    return Commands.run(() -> {
+      state = TurretState.ALLOW_EXTERNAL_CONTROL;
     }, this);
   }
 
   /**
-   * Targets a position on the field to try and fire hub shots at
+   * Faces the azimuth at the alliance hub
    * 
-   * @param targetPosition 2d projection of the positon to aim ait (will aim to fire about 7ft above the given point)
-   * @return a command that targets a position on the field to fire hub shots at
+   * @return a command that faces the azimuth at the aliance hub while it's running
    */
-  public Command scoreAtTarget(Translation2d targetPosition) {
+  public Command faceHub() {
     return Commands.run(() -> {
-      hubTarget = targetPosition;
-      state = TurretState.SCORING;
+      state = TurretState.FACE_HUB;
     }, this, azimuth, hood, shooter);
   }
 }
