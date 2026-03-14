@@ -163,7 +163,14 @@ public class Azimuth extends MultithreadedSubsystem {
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
     return Commands.run(() -> {
       voltageSet = true;
-      voltageOut.mut_replace(voltageSupplier.get());
+      Voltage voltageRequest = voltageSupplier.get();
+      if (motorValues.position.gte(setpointOptimizer.getMaxAngle()) && voltageRequest.lte(Volts.zero())) {
+        voltageOut.mut_replace(voltageRequest);
+      } else if (motorValues.position.lte(setpointOptimizer.getMaxAngle()) && voltageRequest.gte(Volts.zero())) {
+        voltageOut.mut_replace(voltageRequest);
+      } else {
+        voltageOut.mut_replace(Volts.zero());
+      }
     }).finallyDo(() -> voltageSet = false);
   }
 
