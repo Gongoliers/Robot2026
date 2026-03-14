@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.MutAngle;
 import edu.wpi.first.units.measure.MutVoltage;
@@ -22,6 +23,7 @@ import frc.lib.SafeAngleOptimizer;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
 import frc.lib.configs.MechanismConfig;
+import frc.lib.configs.AbsoluteEncoderConfig.AbsoluteEncoderBuilder;
 import frc.lib.configs.MechanismConfig.MechanismBuilder;
 import frc.lib.configs.MotorConfig.MotorBuilder;
 import frc.lib.motors.DiscreteMotorOutputSim;
@@ -83,6 +85,12 @@ public class Azimuth extends MultithreadedSubsystem {
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
           .build())
+      .absoluteEncoderConfig(
+        AbsoluteEncoderBuilder.defaults()
+          .ccwPositive(false)
+          .sensorToMechRatio(14)
+          .offset(Rotation2d.fromRotations(0.0))
+          .build())
       .build();
 
   /**
@@ -102,7 +110,6 @@ public class Azimuth extends MultithreadedSubsystem {
   private Azimuth() {
     motorOutput = AzimuthFactory.createAzimuthMotor(config);
     motorOutput.configure();
-    motorOutput.setPosition(Rotations.of(0.0));
 
     setpoint = Rotations.mutable(0);
     setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-1), Rotations.of(1));

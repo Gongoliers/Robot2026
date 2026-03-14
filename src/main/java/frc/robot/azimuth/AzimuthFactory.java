@@ -8,7 +8,7 @@ import frc.lib.configs.MechanismConfig;
 import frc.lib.motors.LossyMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorOutputSim;
-import frc.lib.motors.MotorOutputTalonFX;
+import frc.lib.motors.MotorOutputTalonFXCANcoder;
 import frc.robot.Robot;
 import frc.robot.RobotConstants;
 
@@ -17,7 +17,7 @@ public class AzimuthFactory {
   
   public static MotorOutput createAzimuthMotor(MechanismConfig config) {
     if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.AZIMUTH)) {
-      return new MotorOutputTalonFX(config.motorConfig(), new CAN(0));
+      return new MotorOutputTalonFXCANcoder(config.motorConfig(), config.absoluteEncoderConfig(), new CAN(0), new CAN(45));
     }
 
     MotorOutputSim losslessSim = new MotorOutputSim(
