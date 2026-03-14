@@ -17,7 +17,7 @@ public class AzimuthFactory {
   
   public static MotorOutput createAzimuthMotor(MechanismConfig config) {
     if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.AZIMUTH)) {
-      return new MotorOutputTalonFXCANcoder(config.motorConfig(), config.absoluteEncoderConfig(), new CAN(0), new CAN(45));
+      return new MotorOutputTalonFXCANcoder(config.motorConfig(), config.absoluteEncoderConfig(), new CAN(0), new CAN(37));
     }
 
     MotorOutputSim losslessSim = new MotorOutputSim(

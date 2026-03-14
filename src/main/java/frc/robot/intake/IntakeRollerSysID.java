@@ -29,8 +29,8 @@ public class IntakeRollerSysID {
     voltageOut = Volts.mutable(0.0);
 
     config = new SysIdRoutine.Config(
-      Volts.per(Second).of(0.5),
-      Volts.of(4),
+      Volts.per(Second).of(0.75),
+      Volts.of(6),
       Seconds.of(10));
 
     mechanism = new SysIdRoutine.Mechanism(

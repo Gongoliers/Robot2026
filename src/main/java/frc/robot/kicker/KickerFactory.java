@@ -12,7 +12,7 @@ public class KickerFactory {
   
   public static MotorOutput createKickerMotor(MechanismConfig config) {
     if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.KICKER)) {
-      return new MotorOutputTalonFX(config.motorConfig(), new CAN(13));
+      return new MotorOutputTalonFX(config.motorConfig(), new CAN(30));
     }
 
     return new DiscreteMotorOutputSim();

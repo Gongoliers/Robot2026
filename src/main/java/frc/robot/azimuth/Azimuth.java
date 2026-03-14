@@ -66,15 +66,15 @@ public class Azimuth extends MultithreadedSubsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(7.216)
-          .kA(0.20182)
-          .kS(0.20099)
+          .kV(0.0)
+          .kA(0.0)
+          .kS(0.0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(45.336)
+          .kP(0.0)
           .kI(0.0)
-          .kD(5.2604)
+          .kD(0.0)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -87,15 +87,14 @@ public class Azimuth extends MultithreadedSubsystem {
           .build())
       .absoluteEncoderConfig(
         AbsoluteEncoderBuilder.defaults()
-          .ccwPositive(false)
+          .ccwPositive(true)
           .sensorToMechRatio(14)
-          .offset(Rotation2d.fromRotations(0.0))
           .build())
       .build();
 
   /**
    * Gets azimuth subsystem instance
-   * 
+   *
    * @return azimuth subsystem instance
    */
   public static Azimuth getInstance() {
@@ -110,6 +109,7 @@ public class Azimuth extends MultithreadedSubsystem {
   private Azimuth() {
     motorOutput = AzimuthFactory.createAzimuthMotor(config);
     motorOutput.configure();
+    motorOutput.setPosition(Rotations.of(0.25));
 
     setpoint = Rotations.mutable(0);
     setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-1), Rotations.of(1));

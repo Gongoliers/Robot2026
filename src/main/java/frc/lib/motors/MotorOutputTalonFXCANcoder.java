@@ -101,7 +101,7 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
 
   @Override
   public void setPosition(Angle newPosition) {
-    encoder.setPosition(newPosition);
+    encoder.setPosition(newPosition.times(encoderConfig.sensorToMechRatio()));
   }
 
   @Override
@@ -156,7 +156,7 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
       new CANcoderConfiguration()
         .withMagnetSensor(
           new MagnetSensorConfigs()
-            .withMagnetOffset(encoderConfig.offset().getMeasure())
+            .withMagnetOffset(encoderConfig.offset())
             .withSensorDirection(
               encoderConfig.ccwPositive()
                 ? SensorDirectionValue.CounterClockwise_Positive

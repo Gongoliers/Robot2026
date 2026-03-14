@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.*;
@@ -59,6 +60,8 @@ public class Intake extends Subsystem {
 
   private final PIDController rollerFeedback;
 
+  private final ArmFeedforward pivotFeedforward;
+
   private final SimpleMotorFeedforward rollerFeedforward;
 
   private final MechanismConfig pivotConfig =
@@ -68,11 +71,11 @@ public class Intake extends Subsystem {
           .kV(0)
           .kA(0)
           .kS(0)
-          .kG(0)
+          .kG(0.35)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0)
+          .kP(10)
           .kI(0)
           .kD(0)
           .build())
@@ -91,14 +94,14 @@ public class Intake extends Subsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(0)
-          .kA(0)
-          .kS(0)
+          .kV(0.11367)
+          .kA(0.0021923)
+          .kS(0.16469)
           .kG(0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0)
+          .kP(0.013229)
           .kI(0)
           .kD(0)
           .build())
@@ -124,7 +127,7 @@ public class Intake extends Subsystem {
   private Intake() {
     pivotOutput = IntakeFactory.createPivotMotor(pivotConfig);
     pivotOutput.configure();
-    pivotOutput.setPosition(Rotations.of(0.35));
+    pivotOutput.setPosition(IntakePivotState.STOW.getPosition());
 
     rollerOutput = IntakeFactory.createRollerMotor(rollerConfig);
     rollerOutput.configure();
@@ -142,6 +145,7 @@ public class Intake extends Subsystem {
 
     pivotFeedback = pivotConfig.feedbackControllerConfig().createPIDController();
     rollerFeedback = rollerConfig.feedbackControllerConfig().createPIDController();
+    pivotFeedforward = pivotConfig.feedforwardControllerConfig().createArmFeedforward();
     rollerFeedforward = rollerConfig.feedforwardControllerConfig().createSimpleMotorFeedforward();
 
     if (pivotOutput instanceof DiscreteMotorOutputSim discreteSim) {
@@ -197,9 +201,10 @@ public class Intake extends Subsystem {
     double pivotPositionRotations = pivotValues.position.in(Rotations);
 
     if (!pivotVoltageSet) {
-      double feedbackVolts = pivotFeedback.calculate(pivotPositionRotations, pivotSetpointRotations);
+      double feedbackVolts = Math.min(pivotFeedback.calculate(pivotPositionRotations, pivotSetpointRotations), .75);
+      double feedforwardVolts = pivotFeedforward.getKg() * Math.cos(pivotValues.position.in(Radians));
 
-      pivotVoltageOut.mut_replace(feedbackVolts, Volts);
+      pivotVoltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
     }
 
     pivotOutput.setVoltage(pivotVoltageOut);

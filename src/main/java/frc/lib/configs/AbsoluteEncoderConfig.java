@@ -1,6 +1,8 @@
 package frc.lib.configs;
 
-import edu.wpi.first.math.geometry.Rotation2d;
+import static edu.wpi.first.units.Units.Rotations;
+
+import edu.wpi.first.units.measure.Angle;
 
 /**
  * Absolute encoder config
@@ -10,16 +12,16 @@ import edu.wpi.first.math.geometry.Rotation2d;
  * @param offset starting offset for encoder
  */
 public record AbsoluteEncoderConfig(
-    boolean ccwPositive, double sensorToMechRatio, Rotation2d offset) {
+    boolean ccwPositive, double sensorToMechRatio, Angle offset) {
 
   /** Easier and more modular way to construct absolute encoder configs */
   public static class AbsoluteEncoderBuilder {
     private boolean ccwPositive;
     private double sensorToMechRatio;
-    private Rotation2d offset;
+    private Angle offset;
 
     private AbsoluteEncoderBuilder(
-        boolean ccwPositive, double sensorToMechRatio, Rotation2d offset) {
+        boolean ccwPositive, double sensorToMechRatio, Angle offset) {
       this.ccwPositive = ccwPositive;
       this.sensorToMechRatio = sensorToMechRatio;
       this.offset = offset;
@@ -31,7 +33,7 @@ public record AbsoluteEncoderConfig(
      * @return a builder with default values
      */
     public static AbsoluteEncoderBuilder defaults() {
-      return new AbsoluteEncoderBuilder(true, 1.0, new Rotation2d());
+      return new AbsoluteEncoderBuilder(true, 1.0, Rotations.of(0.0));
     }
 
     /**
@@ -55,7 +57,7 @@ public record AbsoluteEncoderConfig(
       return this;
     }
 
-    public AbsoluteEncoderBuilder offset(Rotation2d offset) {
+    public AbsoluteEncoderBuilder offset(Angle offset) {
       this.offset = offset;
       return this;
     }

@@ -50,14 +50,14 @@ public class Kicker extends Subsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(0)
-          .kA(0)
-          .kS(0)
+          .kV(0.67867)
+          .kA(0.013461)
+          .kS(0.1338)
           .kG(0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0)
+          .kP(0.27307)
           .kI(0)
           .kD(0)
           .build())
@@ -147,7 +147,7 @@ public class Kicker extends Subsystem {
       voltageSet = true;
       Voltage voltageRequest = voltageSupplier.get();
       voltageOut.mut_replace(voltageRequest);
-    });
+    }).finallyDo(() -> voltageSet = false);
   }
 
   public Command goToState(KickerState kickerState) {

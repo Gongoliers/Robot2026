@@ -87,5 +87,5 @@ public class RobotConstants {
   }
 
   /** Enabled subsystems */
-  public static final Set<Subsystem> ENABLED_SUBSYSTEMS = EnumSet.of(Subsystem.SWERVE, Subsystem.SHOOTER);
+  public static final Set<Subsystem> ENABLED_SUBSYSTEMS = EnumSet.of(Subsystem.SWERVE, Subsystem.SHOOTER, Subsystem.AZIMUTH, Subsystem.HOOD, Subsystem.INTAKE, Subsystem.SPINDEXER, Subsystem.KICKER);
 }

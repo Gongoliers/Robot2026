@@ -29,8 +29,8 @@ public class KickerSysID {
     voltageOut = Volts.mutable(0.0);
 
     config = new SysIdRoutine.Config(
-      Volts.per(Second).of(0.75),
-      Volts.of(6),
+      Volts.per(Second).of(0.4),
+      Volts.of(3),
       Seconds.of(10));
 
     mechanism = new SysIdRoutine.Mechanism(

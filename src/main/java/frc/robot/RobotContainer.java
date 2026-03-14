@@ -19,11 +19,18 @@ import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodSysID;
 import frc.robot.intake.Intake;
+import frc.robot.intake.IntakePivotState;
+import frc.robot.intake.IntakeRollerState;
+import frc.robot.intake.IntakeRollerSysID;
 import frc.robot.kicker.Kicker;
+import frc.robot.kicker.KickerState;
+import frc.robot.kicker.KickerSysID;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterSysID;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.spindexer.Spindexer;
+import frc.robot.spindexer.SpindexerState;
+import frc.robot.spindexer.SpindexerSysID;
 import frc.robot.turret.Turret;
 
 /** Robot container */
@@ -110,7 +117,12 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    
+    operatorController.a().onTrue(intake.goToState(IntakePivotState.STOW));
+    operatorController.b().onTrue(intake.goToState(IntakePivotState.OUT));
+    operatorController.x().onTrue(IntakeRollerSysID.runFullSysId());
+
+    driverController.b().onTrue(kicker.goToState(KickerState.TEST));
+    driverController.a().onTrue(kicker.goToState(KickerState.STOP));
   }
 
   public Command getAutonomousCommand() {
