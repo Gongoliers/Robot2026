@@ -34,8 +34,6 @@ public class Spindexer extends Subsystem {
 
   private MotorValues motorValues = new MotorValues();
 
-  private SpindexerState targetState;
-
   private SpindexerState currentState;
 
   private boolean voltageSet;
@@ -83,8 +81,7 @@ public class Spindexer extends Subsystem {
   private Spindexer() {
     motorOutput = SpindexerFactory.createSpindexerMotor(config);
     motorOutput.configure();
-    
-    targetState = SpindexerState.STOP;
+
     currentState = SpindexerState.STOP;
 
     voltageOut = Volts.mutable(0);
@@ -95,7 +92,7 @@ public class Spindexer extends Subsystem {
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
 
     if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
-      discreteSim.useVelocity(() -> targetState.getVelocity());
+      discreteSim.useVelocity(() -> currentState.getVelocity());
     }
   }
 
@@ -112,18 +109,16 @@ public class Spindexer extends Subsystem {
     stateTab.addDouble("Position (rot)", () -> motorValues.position.in(Rotations));
     stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
     stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
-    stateTab.addString("Current state", () -> currentState.name());
-    stateTab.addBoolean("At target state", this::atTargetState);
 
-    tab.addString("Target state", () -> targetState.name());
-    tab.addDouble("Target velocity (rotps)", () -> targetState.getVelocity().in(RotationsPerSecond));
+    tab.addString("Current state", () -> currentState.name());
+    tab.addDouble("Setpoint (rotps)", () -> currentState.getVelocity().in(RotationsPerSecond));
   }
 
   @Override
   public void periodic() {
     motorOutput.updateValues(motorValues, RobotConstants.PERIODIC_DURATION);
 
-    double setpointRotationsPerSecond = targetState.getVelocity().in(RotationsPerSecond);
+    double setpointRotationsPerSecond = currentState.getVelocity().in(RotationsPerSecond);
     double velocityRotationsPerSecond = motorValues.velocity.in(RotationsPerSecond);
 
     if (!voltageSet) {
@@ -134,12 +129,6 @@ public class Spindexer extends Subsystem {
     }
 
     motorOutput.setVoltage(voltageOut);
-
-    if (MathUtil.isNear(targetState.getVelocity().in(RotationsPerSecond), motorValues.velocity.in(RotationsPerSecond), 1)) {
-      currentState = targetState;
-    } else {
-      currentState = SpindexerState.MOVING;
-    }
   }
 
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
@@ -151,26 +140,12 @@ public class Spindexer extends Subsystem {
   }
 
   public Command goToState(SpindexerState spindexerState) {
-    return Commands.race(
-      Commands.run(() -> {
-        targetState = spindexerState;
-      }),
-      Commands.waitUntil(this::atTargetState)
-    );
-  }
-
-  public boolean atTargetState() {
-    return currentState == targetState;
+    return Commands.runOnce(() -> currentState = spindexerState);
   }
 
   public SpindexerState getState() {
     return currentState;
   }
-
-  public SpindexerState getTargetState() {
-    return targetState;
-  }
-
   public MechanismConfig getConfig() {
     return config;
   }
