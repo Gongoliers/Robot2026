@@ -169,7 +169,7 @@ public class RobotContainer {
     return switch (action) {
         case NONE, PASS, CLIMB -> drive.andThen(Commands.waitSeconds(2.5));
         // TODO Implement `intake.intake() -> Command`
-        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.runState(IntakePivotState.TEST, IntakeRollerState.TEST).finallyDo(intake::stow));
+        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.runState(IntakePivotState.OUT, IntakeRollerState.TEST).finallyDo(intake::stow));
         // TODO Implement `turret.score() -> Command`
         case SCORE -> drive.andThen(turret.faceHub().withTimeout(2.5));
     };
