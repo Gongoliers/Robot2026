@@ -76,7 +76,7 @@ public class Intake extends Subsystem {
         FeedbackControllerBuilder.defaults()
           .kP(20)
           .kI(0)
-          .kD(1)
+          .kD(0.5)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -192,7 +192,7 @@ public class Intake extends Subsystem {
 
     // Define control to use for each state
     if (state == IntakeState.AGITATE) {
-      double oscillationAmplitude = 0.1; // Oscillation amplitude in seconds
+      double oscillationAmplitude = 0.075; // Oscillation amplitude in seconds
       double oscillationFrequency = 1.5; // Oscillation frequency in cycles per second
 
       double oscillation = Math.sin(6.28 * oscillationFrequency * RobotController.getMeasureTime().in(Seconds));
