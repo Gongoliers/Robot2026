@@ -21,9 +21,8 @@ import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodSysID;
 import frc.robot.intake.Intake;
-import frc.robot.intake.IntakePivotState;
-import frc.robot.intake.IntakeRollerState;
 import frc.robot.intake.IntakeRollerSysID;
+import frc.robot.intake.IntakeState;
 import frc.robot.kicker.Kicker;
 import frc.robot.kicker.KickerState;
 import frc.robot.kicker.KickerSysID;
@@ -119,24 +118,21 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    operatorController.a().onTrue(intake.goToPivotState(IntakePivotState.STOW));
-    operatorController.b().onTrue(intake.goToPivotState(IntakePivotState.OUT));
-    operatorController.y().onTrue(AzimuthSysID.runFullSysId());
-
     operatorController.rightTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(-0.5)));
     operatorController.leftTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(0.5)));
 
-    driverController.a().whileTrue(turret.allowExternalControl().alongWith(Commands.run(() -> azimuth.setSetpoint(Rotations.zero()), azimuth)));
+    driverController.a().onTrue(intake.setState(IntakeState.OUT));
     driverController.b().whileTrue(Commands.parallel(
       turret.allowExternalControl(),
       kicker.setState(KickerState.TEST),
       spindexer.setState(SpindexerState.TEST),
-      intake.setRollerState(IntakeRollerState.TEST)
+      intake.setState(IntakeState.AGITATE)
     )).onFalse((Commands.parallel(
       kicker.setState(KickerState.STOP),
       spindexer.setState(SpindexerState.STOP),
-      intake.setRollerState(IntakeRollerState.STOP)
+      intake.setState(IntakeState.OUT)
     )));
+    driverController.y().onTrue(intake.setState(IntakeState.STOW));
   }
 
   public Command getAutonomousCommand() {

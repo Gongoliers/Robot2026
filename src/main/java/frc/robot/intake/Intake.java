@@ -9,6 +9,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
@@ -40,15 +41,15 @@ public class Intake extends Subsystem {
 
   private MotorValues rollerValues = new MotorValues();
 
-  private IntakePivotState targetPivotState;
-
-  private IntakePivotState currentPivotState;
-
-  private IntakeRollerState currentRollerState;
+  private IntakeState state;
 
   private boolean pivotVoltageSet;
 
   private boolean rollerVoltageSet;
+
+  private final MutAngle pivotSetpoint;
+
+  private final MutAngularVelocity rollerSetpoint;
 
   private final MutVoltage pivotVoltageOut;
 
@@ -73,9 +74,9 @@ public class Intake extends Subsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(10)
+          .kP(20)
           .kI(0)
-          .kD(0)
+          .kD(1)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -125,14 +126,12 @@ public class Intake extends Subsystem {
   private Intake() {
     pivotOutput = IntakeFactory.createPivotMotor(pivotConfig);
     pivotOutput.configure();
-    pivotOutput.setPosition(IntakePivotState.STOW.getPosition());
+    pivotOutput.setPosition(IntakeState.START.pivotSetpoint);
 
     rollerOutput = IntakeFactory.createRollerMotor(rollerConfig);
     rollerOutput.configure();
 
-    targetPivotState = IntakePivotState.STOW;
-    currentPivotState = IntakePivotState.STOW;
-    currentRollerState = IntakeRollerState.STOP;
+    state = IntakeState.START;
 
     pivotVoltageOut = Volts.mutable(0);
     rollerVoltageOut = Volts.mutable(0);
@@ -140,17 +139,20 @@ public class Intake extends Subsystem {
     pivotVoltageSet = false;
     rollerVoltageSet = false;
 
+    pivotSetpoint = IntakeState.START.pivotSetpoint.mutableCopy();
+    rollerSetpoint = IntakeState.START.rollerSetpoint.mutableCopy();
+
     pivotFeedback = pivotConfig.feedbackControllerConfig().createPIDController();
     rollerFeedback = rollerConfig.feedbackControllerConfig().createPIDController();
     pivotFeedforward = pivotConfig.feedforwardControllerConfig().createArmFeedforward();
     rollerFeedforward = rollerConfig.feedforwardControllerConfig().createSimpleMotorFeedforward();
 
     if (pivotOutput instanceof DiscreteMotorOutputSim discreteSim) {
-      discreteSim.usePosition(() -> targetPivotState.getPosition());
+      discreteSim.usePosition(() -> pivotSetpoint);
     }
 
     if (rollerOutput instanceof DiscreteMotorOutputSim discreteSim) {
-      discreteSim.useVelocity(() -> currentRollerState.getVelocity());
+      discreteSim.useVelocity(() -> rollerSetpoint);
     }
   }
 
@@ -167,8 +169,7 @@ public class Intake extends Subsystem {
     pivotStateTab.addDouble("Position (rot)", () -> pivotValues.position.in(Rotations));
     pivotStateTab.addDouble("Velocity (rotps)", () -> pivotValues.velocity.in(RotationsPerSecond));
     pivotStateTab.addDouble("Acceleration (rotpsps)", () -> pivotValues.acceleration.in(RotationsPerSecondPerSecond));
-    pivotStateTab.addString("Current state", () -> currentPivotState.name());
-    pivotStateTab.addBoolean("At target state", this::pivotAtTargetState);
+    pivotStateTab.addDouble("Setpoint (rot)", () -> pivotSetpoint.in(Rotations));
 
     ShuffleboardLayout rollerStateTab = tab.getLayout("Current roller state", BuiltInLayouts.kList);
 
@@ -179,12 +180,9 @@ public class Intake extends Subsystem {
     rollerStateTab.addDouble("Position (rot)", () -> rollerValues.position.in(Rotations));
     rollerStateTab.addDouble("Velocity (rotps)", () -> rollerValues.velocity.in(RotationsPerSecond));
     rollerStateTab.addDouble("Acceleration (rotpsps)", () -> rollerValues.acceleration.in(RotationsPerSecondPerSecond));
-    rollerStateTab.addString("Current state", () -> currentRollerState.name());
+    rollerStateTab.addDouble("Setpoint (rotps)", () -> rollerSetpoint.in(RotationsPerSecond));
 
-    tab.addString("Target pivot state", () -> targetPivotState.name());
-    tab.addDouble("Target pivot positon (rot)", () -> targetPivotState.getPosition().in(Rotations));
-    
-    tab.addDouble("Target roller velocity (rotps)", () -> currentRollerState.getVelocity().in(RotationsPerSecond));
+    tab.addString("Current state", () -> state.name());
   }
 
   @Override
@@ -192,13 +190,28 @@ public class Intake extends Subsystem {
     pivotOutput.updateValues(pivotValues, RobotConstants.PERIODIC_DURATION);
     rollerOutput.updateValues(rollerValues, RobotConstants.PERIODIC_DURATION);
 
+    // Define control to use for each state
+    if (state == IntakeState.AGITATE) {
+      double oscillationAmplitude = 0.1; // Oscillation amplitude in seconds
+      double oscillationFrequency = 1.5; // Oscillation frequency in cycles per second
+
+      double oscillation = Math.sin(6.28 * oscillationFrequency * RobotController.getMeasureTime().in(Seconds));
+      double oscillatingSetpointRotations = oscillation * oscillationAmplitude + IntakeState.OUT.pivotSetpoint.in(Rotations) + oscillationAmplitude;
+
+      pivotSetpoint.mut_replace(oscillatingSetpointRotations, Rotations);
+      rollerSetpoint.mut_replace(state.rollerSetpoint);
+    } else {
+      pivotSetpoint.mut_replace(state.pivotSetpoint);
+      rollerSetpoint.mut_replace(state.rollerSetpoint);
+    }
+
     // Pivot control
-    double pivotSetpointRotations = targetPivotState.getPosition().in(Rotations);
+    double pivotSetpointRotations = pivotSetpoint.in(Rotations);
     double pivotPositionRotations = pivotValues.position.in(Rotations);
 
     if (!pivotVoltageSet) {
       double feedbackVolts = pivotFeedback.calculate(pivotPositionRotations, pivotSetpointRotations);
-      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 2), feedbackVolts);
+      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 4), feedbackVolts);
       double feedforwardVolts = pivotFeedforward.getKg() * Math.cos(pivotValues.position.in(Radians));
 
       pivotVoltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
@@ -206,14 +219,8 @@ public class Intake extends Subsystem {
 
     pivotOutput.setVoltage(pivotVoltageOut);
 
-    if (MathUtil.isNear(targetPivotState.getPosition().in(Rotations), pivotValues.position.in(Rotations), 0.02)) {
-      currentPivotState = targetPivotState;
-    } else {
-      currentPivotState = IntakePivotState.MOVING;
-    }
-
     // Roller control
-    double rollerSetpointRotationsPerSecond = currentRollerState.getVelocity().in(RotationsPerSecond);
+    double rollerSetpointRotationsPerSecond = rollerSetpoint.in(RotationsPerSecond);
     double rollerVelocityRotationsPerSecond = rollerValues.velocity.in(RotationsPerSecond);
 
     if (!rollerVoltageSet) {
@@ -242,37 +249,22 @@ public class Intake extends Subsystem {
     }).finallyDo(() -> rollerVoltageSet = false);
   }
 
-  public Command goToPivotState(IntakePivotState pivotState) {
-    return Commands.race(
-      Commands.run(() -> {
-        targetPivotState = pivotState;}
-      ),
-      Commands.waitUntil(this::pivotAtTargetState)
-    );
+  public Command setState(IntakeState intakeState) {
+    return Commands.runOnce(() -> state = intakeState);
   }
 
-  public Command setRollerState(IntakeRollerState rollerState) {
-    return Commands.runOnce(() -> currentRollerState = rollerState);
+  public boolean atTargetState() {
+    if (state == IntakeState.AGITATE) {
+      return pivotValues.position.lte(Rotations.of(0.2)) 
+          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+    } else {
+      return MathUtil.isNear(pivotSetpoint.in(Rotations), pivotValues.position.in(Rotations), 0.05)
+          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+    }
   }
 
-  public Command goToStates(IntakePivotState pivotState, IntakeRollerState rollerState) {
-    return goToPivotState(pivotState).alongWith(setRollerState(rollerState));
-  }
-
-  public boolean pivotAtTargetState() {
-    return currentPivotState == targetPivotState;
-  }
-
-  public IntakePivotState getPivotState() {
-    return currentPivotState;
-  }
-
-  public IntakePivotState getTargetPivotState() {
-    return targetPivotState;
-  }
-
-  public IntakeRollerState getRollerState() {
-    return currentRollerState;
+  public IntakeState getState() {
+    return state;
   }
 
   public void resetPivotPosition(Angle newPosition) {
