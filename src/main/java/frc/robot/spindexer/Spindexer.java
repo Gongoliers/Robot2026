@@ -139,7 +139,7 @@ public class Spindexer extends Subsystem {
     }).finallyDo(() -> voltageSet = false);
   }
 
-  public Command goToState(SpindexerState spindexerState) {
+  public Command setState(SpindexerState spindexerState) {
     return Commands.runOnce(() -> currentState = spindexerState);
   }
 
