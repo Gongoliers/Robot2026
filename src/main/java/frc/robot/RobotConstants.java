@@ -34,7 +34,7 @@ public class RobotConstants {
   // TODO Needs to be updated with exact CAD measurements
   /** Distances from the robot's center to the turret's center of rotation. */
   public static final Translation3d ROBOT_TO_TURRET = new Translation3d(
-        Inches.of(2.075),
+        Inches.of(-2.075),
         Inches.of(-3.9),
         Inches.of(14.939).plus(Meters.of(0.075))
   );

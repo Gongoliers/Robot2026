@@ -61,7 +61,7 @@ public class Kicker extends Subsystem {
           .build())
       .motorConfig(
         MotorBuilder.defaults()
-          .ccwPositive(false)
+          .ccwPositive(true)
           .rotorToSensorRatio(1)
           .sensorToMechRatio(3*(36/15))
           .neutralBrake(true)

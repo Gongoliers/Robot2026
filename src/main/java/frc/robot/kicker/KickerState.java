@@ -6,7 +6,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 public enum KickerState {
   STOP(RotationsPerSecond.of(0)),
-  TEST(RotationsPerSecond.of(5));
+  TEST(RotationsPerSecond.of(14));
 
   private final AngularVelocity velocity;
 

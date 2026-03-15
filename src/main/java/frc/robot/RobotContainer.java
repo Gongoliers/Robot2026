@@ -13,8 +13,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
+import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodSysID;
@@ -119,10 +121,22 @@ public class RobotContainer {
   private void configureBindings() {
     operatorController.a().onTrue(intake.goToPivotState(IntakePivotState.STOW));
     operatorController.b().onTrue(intake.goToPivotState(IntakePivotState.OUT));
-    operatorController.x().onTrue(IntakeRollerSysID.runFullSysId());
+    operatorController.y().onTrue(AzimuthSysID.runFullSysId());
 
-    driverController.b().onTrue(kicker.setState(KickerState.TEST));
-    driverController.a().onTrue(kicker.setState(KickerState.STOP));
+    operatorController.rightTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(-0.5)));
+    operatorController.leftTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(0.5)));
+
+    driverController.a().whileTrue(turret.allowExternalControl().alongWith(Commands.run(() -> azimuth.setSetpoint(Rotations.zero()), azimuth)));
+    driverController.b().whileTrue(Commands.parallel(
+      turret.allowExternalControl(),
+      kicker.setState(KickerState.TEST),
+      spindexer.setState(SpindexerState.TEST),
+      intake.setRollerState(IntakeRollerState.TEST)
+    )).onFalse((Commands.parallel(
+      kicker.setState(KickerState.STOP),
+      spindexer.setState(SpindexerState.STOP),
+      intake.setRollerState(IntakeRollerState.STOP)
+    )));
   }
 
   public Command getAutonomousCommand() {

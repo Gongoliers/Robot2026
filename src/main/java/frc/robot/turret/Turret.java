@@ -66,7 +66,7 @@ public class Turret extends MultithreadedSubsystem {
 
     hubTarget = new Translation2d(0, 0);
 
-    LimelightHelpers.setCameraPose_RobotSpace("turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
+    LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
   }
 
   @Override 
@@ -86,17 +86,21 @@ public class Turret extends MultithreadedSubsystem {
   @Override
   public void fastPeriodic() {
     // For now, pose estimation will be done in 2d, since it's what odometry supports and should work ok
-    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("turret");
+    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
 
     Pose2d turretPose = new Pose2d();
 
+    PosePublisher.publish("pose", poseEstimate.pose);
+
     if (poseEstimate != null && poseEstimate.tagCount > 1) {
       turretPose = poseEstimate.pose;
+      PosePublisher.publish("Camera estimated turret pose", turretPose);
       Angle azimuthAngle = azimuth.getValues().position;
       Pose2d robotPose = new Pose2d(
         turretPose.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d()),
         turretPose.getRotation().minus(new Rotation2d(azimuthAngle)));
 
+      PosePublisher.publish("Camera estimated bot pose", robotPose);
       Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
     } else {
       turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
@@ -106,14 +110,15 @@ public class Turret extends MultithreadedSubsystem {
 
     switch (state) {
       case STOW:
-        azimuth.setSetpoint(Rotations.of(-0.25));
+        azimuth.setSetpoint(Rotations.of(0.25));
         hood.setSetpoint(hood.getMinPosition());
         shooter.setSetpoint(RotationsPerSecond.of(0.0));
         break;
       case ALLOW_EXTERNAL_CONTROL:
-        if (azimuth.getCurrentCommand() == null) {azimuth.setSetpoint(Rotations.of(-0.25));};
+        if (azimuth.getCurrentCommand() == null) {azimuth.setSetpoint(Rotations.of(0.25));};
         if (hood.getCurrentCommand() == null) {hood.setSetpoint(hood.getMinPosition());};
         if (shooter.getCurrentCommand() == null) {shooter.setSetpoint(RotationsPerSecond.of(0.0));};
+        break;
       case FACE_HUB:
         faceHub(turretPose);
         break;

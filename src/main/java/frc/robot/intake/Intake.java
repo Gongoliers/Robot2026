@@ -197,7 +197,8 @@ public class Intake extends Subsystem {
     double pivotPositionRotations = pivotValues.position.in(Rotations);
 
     if (!pivotVoltageSet) {
-      double feedbackVolts = Math.min(pivotFeedback.calculate(pivotPositionRotations, pivotSetpointRotations), .75);
+      double feedbackVolts = pivotFeedback.calculate(pivotPositionRotations, pivotSetpointRotations);
+      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 2), feedbackVolts);
       double feedforwardVolts = pivotFeedforward.getKg() * Math.cos(pivotValues.position.in(Radians));
 
       pivotVoltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);

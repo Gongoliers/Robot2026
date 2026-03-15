@@ -6,7 +6,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 public enum IntakeRollerState {
   STOP(RotationsPerSecond.of(0)),
-  TEST(RotationsPerSecond.of(5));
+  TEST(RotationsPerSecond.of(49));
   
   private final AngularVelocity velocity;
 

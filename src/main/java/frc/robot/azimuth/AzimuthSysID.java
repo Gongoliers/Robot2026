@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
+import frc.robot.turret.Turret;
 
 /** Class with methods to run sysid with azimuth */
 public class AzimuthSysID {
@@ -35,8 +36,8 @@ public class AzimuthSysID {
     voltageOut = Volts.mutable(0.0);
 
     config = new SysIdRoutine.Config(
-      Volts.per(Second).of(0.75),
-      Volts.of(4),
+      Volts.per(Second).of(0.5),
+      Volts.of(2),
       Seconds.of(5));
 
     mechanism = new SysIdRoutine.Mechanism(
@@ -48,6 +49,7 @@ public class AzimuthSysID {
   }
 
   private static void setVoltage(Voltage volts) {
+    System.out.println("it's trying");
     voltageOut.mut_replace(volts);
   }
 
@@ -65,6 +67,7 @@ public class AzimuthSysID {
   public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
       azimuth.runAtVoltage(() -> voltageOut),
+      Turret.getInstance().allowExternalControl(),
       routine.quasistatic(direction)
     );
   }
@@ -72,6 +75,7 @@ public class AzimuthSysID {
   public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
       azimuth.runAtVoltage(() -> voltageOut),
+      Turret.getInstance().allowExternalControl(),
       routine.dynamic(direction)
     );
   }

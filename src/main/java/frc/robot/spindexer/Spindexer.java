@@ -61,7 +61,7 @@ public class Spindexer extends Subsystem {
           .build())
       .motorConfig(
         MotorBuilder.defaults()
-          .ccwPositive(true)
+          .ccwPositive(false)
           .rotorToSensorRatio(1)
           .sensorToMechRatio(3*(36/15))
           .neutralBrake(true)

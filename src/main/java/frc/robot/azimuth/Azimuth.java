@@ -66,19 +66,19 @@ public class Azimuth extends MultithreadedSubsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(0.0)
-          .kA(0.0)
-          .kS(0.0)
+          .kV(3.8551)
+          .kA(0.13834)
+          .kS(0.1689)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0.0)
+          .kP(100)
           .kI(0.0)
-          .kD(0.0)
+          .kD(4)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
-          .ccwPositive(false)
+          .ccwPositive(true)
           .rotorToSensorRatio(1)
           .sensorToMechRatio(5*10)
           .neutralBrake(true)
@@ -112,7 +112,7 @@ public class Azimuth extends MultithreadedSubsystem {
     motorOutput.setPosition(Rotations.of(0.25));
 
     setpoint = Rotations.mutable(0);
-    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-1), Rotations.of(1));
+    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.3), Rotations.of(0.8125));
     voltageSet = false;
     voltageOut = Volts.mutable(0);
 
@@ -153,6 +153,7 @@ public class Azimuth extends MultithreadedSubsystem {
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
+      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 4), feedbackVolts);
       double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
@@ -171,7 +172,7 @@ public class Azimuth extends MultithreadedSubsystem {
     return Commands.run(() -> {
       voltageSet = true;
       Voltage voltageRequest = voltageSupplier.get();
-      if (motorValues.position.gte(setpointOptimizer.getMaxAngle()) && voltageRequest.lte(Volts.zero())) {
+      if (motorValues.position.gte(setpointOptimizer.getMinAngle()) && voltageRequest.lte(Volts.zero())) {
         voltageOut.mut_replace(voltageRequest);
       } else if (motorValues.position.lte(setpointOptimizer.getMaxAngle()) && voltageRequest.gte(Volts.zero())) {
         voltageOut.mut_replace(voltageRequest);
