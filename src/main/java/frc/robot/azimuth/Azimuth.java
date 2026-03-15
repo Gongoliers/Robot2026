@@ -80,7 +80,7 @@ public class Azimuth extends MultithreadedSubsystem {
         MotorBuilder.defaults()
           .ccwPositive(false)
           .rotorToSensorRatio(1)
-          .sensorToMechRatio(5*14)
+          .sensorToMechRatio(5*10)
           .neutralBrake(true)
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
@@ -88,7 +88,7 @@ public class Azimuth extends MultithreadedSubsystem {
       .absoluteEncoderConfig(
         AbsoluteEncoderBuilder.defaults()
           .ccwPositive(true)
-          .sensorToMechRatio(14)
+          .sensorToMechRatio(10)
           .build())
       .build();
 
