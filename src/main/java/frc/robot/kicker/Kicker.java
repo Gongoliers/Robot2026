@@ -34,8 +34,6 @@ public class Kicker extends Subsystem {
 
   private MotorValues motorValues = new MotorValues();
 
-  private KickerState targetState;
-
   private KickerState currentState;
 
   private boolean voltageSet;
@@ -84,7 +82,6 @@ public class Kicker extends Subsystem {
     motorOutput = KickerFactory.createKickerMotor(config);
     motorOutput.configure();
 
-    targetState = KickerState.STOP;
     currentState = KickerState.STOP;
 
     voltageOut = Volts.mutable(0);
@@ -95,7 +92,7 @@ public class Kicker extends Subsystem {
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
 
     if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
-      discreteSim.useVelocity(() -> targetState.getVelocity());
+      discreteSim.useVelocity(() -> currentState.getVelocity());
     }
   }
 
@@ -112,18 +109,16 @@ public class Kicker extends Subsystem {
     stateTab.addDouble("Position (rot)", () -> motorValues.position.in(Rotations));
     stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
     stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
-    stateTab.addString("Current state", () -> currentState.name());
-    stateTab.addBoolean("At target state", this::atTargetState);
 
-    tab.addString("Target state", () -> targetState.name());
-    tab.addDouble("Target velocity (rotps)", () -> targetState.getVelocity().in(RotationsPerSecond));
+    tab.addString("Current state", () -> currentState.name());
+    tab.addDouble("Setpoint (rotps)", () -> currentState.getVelocity().in(RotationsPerSecond));
   }
 
   @Override
   public void periodic() {
     motorOutput.updateValues(motorValues, RobotConstants.PERIODIC_DURATION);
 
-    double setpointRotationsPerSecond = targetState.getVelocity().in(RotationsPerSecond);
+    double setpointRotationsPerSecond = currentState.getVelocity().in(RotationsPerSecond);
     double velocityRotationsPerSecond = motorValues.velocity.in(RotationsPerSecond);
 
     if (!voltageSet) {
@@ -134,12 +129,6 @@ public class Kicker extends Subsystem {
     }
 
     motorOutput.setVoltage(voltageOut);
-
-    if (MathUtil.isNear(targetState.getVelocity().in(RotationsPerSecond), motorValues.velocity.in(RotationsPerSecond), 1)) {
-      currentState = targetState;
-    } else {
-      currentState = KickerState.MOVING;
-    }
   }
 
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
@@ -150,25 +139,12 @@ public class Kicker extends Subsystem {
     }).finallyDo(() -> voltageSet = false);
   }
 
-  public Command goToState(KickerState kickerState) {
-    return Commands.race(
-      Commands.run(() -> {
-        targetState = kickerState;
-      }),
-      Commands.waitUntil(this::atTargetState)
-    );
-  }
-
-  public boolean atTargetState() {
-    return currentState == targetState;
+  public Command setState(KickerState kickerState) {
+    return Commands.runOnce(() -> currentState = kickerState);
   }
 
   public KickerState getState() {
     return currentState;
-  }
-
-  public KickerState getTargetState() {
-    return targetState;
   }
 
   public MechanismConfig getConfig() {
