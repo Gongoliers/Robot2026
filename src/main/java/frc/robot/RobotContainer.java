@@ -117,12 +117,12 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    operatorController.a().onTrue(intake.goToState(IntakePivotState.STOW));
-    operatorController.b().onTrue(intake.goToState(IntakePivotState.OUT));
+    operatorController.a().onTrue(intake.goToPivotState(IntakePivotState.STOW));
+    operatorController.b().onTrue(intake.goToPivotState(IntakePivotState.OUT));
     operatorController.x().onTrue(IntakeRollerSysID.runFullSysId());
 
-    driverController.b().onTrue(kicker.goToState(KickerState.TEST));
-    driverController.a().onTrue(kicker.goToState(KickerState.STOP));
+    driverController.b().onTrue(kicker.setState(KickerState.TEST));
+    driverController.a().onTrue(kicker.setState(KickerState.STOP));
   }
 
   public Command getAutonomousCommand() {
