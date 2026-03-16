@@ -135,7 +135,7 @@ public class Hood extends MultithreadedSubsystem {
     stateTab.addDouble("Position (rot)", () -> motorValues.position.in(Rotations));
     stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
     stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
-    stateTab.addBoolean("At setpoint", this::atSetpoint);
+    stateTab.addBoolean("At setpoint", () -> nearSetpoint(Rotations.of(0.01)));
 
     tab.addDouble("Setpoint (rot)", () -> setpoint.in(Rotations));
   }
@@ -154,7 +154,7 @@ public class Hood extends MultithreadedSubsystem {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
       double feedforwardVolts = Math.cos(positionRotations)*feedforward.getKg();
 
-      if (!atSetpoint()) {
+      if (!nearSetpoint(Rotations.of(0.01))) {
         feedforwardVolts += Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
       }
 
@@ -184,8 +184,14 @@ public class Hood extends MultithreadedSubsystem {
     }).finallyDo(() -> voltageSet = false);
   }
 
-  public boolean atSetpoint() {
-    return MathUtil.isNear(setpoint.in(Rotations), motorValues.position.in(Rotations), posTolerance.in(Rotations));
+  /**
+   * Returns true if hood is near its setpoint
+   * 
+   * @param tolerance how close it has to be to its setpoint to be considered near that setpoint
+   * @return true if hood is near its setpoint
+   */
+  public boolean nearSetpoint(Angle tolerance) {
+    return MathUtil.isNear(setpoint.in(Rotations), motorValues.position.in(Rotations), tolerance.in(Rotations));
   }
 
   public void setSetpoint(Angle setpointPosition) {
