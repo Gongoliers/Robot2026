@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,14 +16,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.PosePublisher;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
-import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.scripting.*;
 import frc.robot.intake.Intake;
-import frc.robot.intake.IntakeRollerSysID;
 import frc.robot.intake.IntakeState;
-import frc.robot.intake.IntakeRollerSysID;
 import frc.robot.kicker.Kicker;
 import frc.robot.kicker.KickerState;
 import frc.robot.shooter.Shooter;
@@ -151,22 +147,29 @@ public class RobotContainer {
     );
   }
 
-  private Command performAction(Action action, Command drive) {
+  private Command performAction(Action action) {
     return switch (action) {
-        case NONE, PASS, CLIMB -> drive.andThen(Commands.waitSeconds(2.5));
+        case NONE, PASS, CLIMB -> Commands.waitSeconds(2.5);
         // TODO Implement `intake.intake() -> Command`
-        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.setState(IntakeState.OUT).repeatedly().finallyDo(intake::stow));
+        case INTAKE_NEUTRAL, INTAKE_ZONE -> intake.setState(IntakeState.OUT).repeatedly().finallyDo(intake::stow);
         // TODO Implement `turret.score() -> Command`
-        case SCORE -> drive.andThen(turret.faceHub().withTimeout(2.5));
+        case SCORE -> turret.faceHub().withTimeout(2.5);
     };
   }
 
-  private Command loggedPerformAction(Action action, Command drive) {
+  private Command loggedPerformAction(Action action) {
     return Commands.sequence(
             Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", action.name())),
-            performAction(action, drive),
+            performAction(action),
             Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", ""))
     );
+  }
+
+  private ObjectiveAutoBuilder.AutoComposers.AutoComposer compose(Action action) {
+    return switch (action) {
+      case NONE, PASS, CLIMB, SCORE -> ObjectiveAutoBuilder.AutoComposers.AFTER_DRIVING;
+      case INTAKE_NEUTRAL, INTAKE_ZONE -> ObjectiveAutoBuilder.AutoComposers.WHILE_DRIVING;
+    };
   }
 
   public Command getAutonomousCommand() {
@@ -182,8 +185,13 @@ public class RobotContainer {
 
     List<Objective> objectives = Objective.walk(initial, actions);
 
-    Function<DriverStation.Alliance, Command> sequence = ObjectiveCommandBinding.sequenceFactory(objectives, this::performDrive, this::loggedPerformAction);
+    ObjectiveAutoBuilder auto = new ObjectiveAutoBuilder(
+        this::performDrive,
+        this::loggedPerformAction,
+        this::compose
+    );
 
-    return ObjectiveCommandBinding.explain(objectives).andThen(sequence.apply(alliance));
+    Function<DriverStation.Alliance, Command> sequence = auto.createSequence(objectives);
+    return ObjectiveAutoBuilder.explain(objectives).andThen(sequence.apply(alliance));
   }
 }
