@@ -18,6 +18,8 @@ import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
+import frc.robot.intake.Intake;
+import frc.robot.intake.IntakeState;
 import frc.robot.shooter.Shooter;
 
 /** Turret subsystem */
@@ -79,8 +81,7 @@ public class Turret extends MultithreadedSubsystem {
   @Override
   public void periodic() {
     Pose2d robot = Drive.getInstance().getPose();
-    PosePublisher.publish("Turret (Local)", RobotConstants.localTurretPose(azimuth.localPosition()));
-    PosePublisher.publish("Turret (Global)", RobotConstants.globalTurretPose(robot, azimuth.localPosition()));
+    PosePublisher.publish("Components", RobotConstants.advantageScopeComponents(azimuth.localPosition(), Intake.getInstance().getPivotValues().position));
   }
 
   @Override

@@ -75,6 +75,11 @@ public class RobotConstants {
     return globalTurretPose(new Pose3d(robot), azimuth);
   }
 
+  public static Pose3d[] advantageScopeComponents(Angle azimuth, Angle intake) {
+    Pose3d intakePose = new Pose3d(new Translation3d(Meters.of(-0.285), Meters.zero(), Meters.of(0.23)), new Rotation3d(Degrees.zero(), intake, Degrees.zero()));
+    return new Pose3d[]{localTurretPose(azimuth), intakePose};
+  }
+
   /** Subsystems */
   public enum Subsystem {
     SWERVE,
