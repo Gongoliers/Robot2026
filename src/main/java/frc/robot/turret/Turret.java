@@ -38,6 +38,9 @@ public class Turret extends MultithreadedSubsystem {
   /** Current turret state */
   private TurretState state;
 
+  /** Estimated turret pose */
+  private volatile Pose2d turretPose;
+
   /**
    * Gets turret subsystem instance
    * 
@@ -74,33 +77,29 @@ public class Turret extends MultithreadedSubsystem {
     Pose2d robot = Drive.getInstance().getPose();
     PosePublisher.publish("Turret (Local)", RobotConstants.localTurretPose(azimuth.localPosition()));
     PosePublisher.publish("Turret (Global)", RobotConstants.globalTurretPose(robot, azimuth.localPosition()));
+
+    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
+
+    if (poseEstimate != null && poseEstimate.tagCount > 1) {
+      Pose2d estimated = poseEstimate.pose;
+      PosePublisher.publish("Camera estimated turret pose", estimated);
+      Angle azimuthAngle = azimuth.getValues().position;
+      Pose2d robotPose = new Pose2d(
+        estimated.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d()),
+        estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
+
+      PosePublisher.publish("Camera estimated bot pose", robotPose);
+      Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
+    }
+    
+    //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
+    turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
+
+    PosePublisher.publish("Estimated turret pose", turretPose);
   }
 
   @Override
   public void fastPeriodic() {
-    // For now, pose estimation will be done in 2d, since it's what odometry supports and should work ok
-    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
-
-    Pose2d turretPose = new Pose2d();
-
-    PosePublisher.publish("pose", poseEstimate.pose);
-
-    if (poseEstimate != null && poseEstimate.tagCount > 1) {
-      turretPose = poseEstimate.pose;
-      PosePublisher.publish("Camera estimated turret pose", turretPose);
-      Angle azimuthAngle = azimuth.getValues().position;
-      Pose2d robotPose = new Pose2d(
-        turretPose.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d()),
-        turretPose.getRotation().minus(new Rotation2d(azimuthAngle)));
-
-      PosePublisher.publish("Camera estimated bot pose", robotPose);
-      Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
-    } else {
-      turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
-    }
-
-    PosePublisher.publish("Estimated turret pose", turretPose);
-
     switch (state) {
       case STOW:
         azimuth.setSetpoint(Rotations.of(0.25));
