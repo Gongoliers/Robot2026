@@ -36,7 +36,7 @@ public class MotorOutputTalonFX implements MotorOutput {
   private final StatusSignal<Current> supplyCurrent;
 
   /** Voltage control request object */
-  private VoltageOut voltage = new VoltageOut(0.0);
+  private VoltageOut voltage = new VoltageOut(0.0).withEnableFOC(true);
 
   /**
    * Motor output constructor
