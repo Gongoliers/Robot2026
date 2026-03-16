@@ -110,7 +110,7 @@ public class Azimuth extends MultithreadedSubsystem {
     motorOutput.setPosition(Rotations.of(0.25));
 
     setpoint = Rotations.mutable(0);
-    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.3), Rotations.of(0.8125));
+    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.25), Rotations.of(0.8125));
     voltageSet = false;
     voltageOut = Volts.mutable(0);
 
