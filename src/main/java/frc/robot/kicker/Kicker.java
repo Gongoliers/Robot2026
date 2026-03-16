@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.Subsystem;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
@@ -32,7 +33,7 @@ public class Kicker extends Subsystem {
 
   private MotorValues motorValues = new MotorValues();
 
-  private KickerState currentState;
+  private KickerState state;
 
   private boolean voltageSet;
 
@@ -80,7 +81,7 @@ public class Kicker extends Subsystem {
     motorOutput = KickerFactory.createKickerMotor(config);
     motorOutput.configure();
 
-    currentState = KickerState.STOP;
+    state = KickerState.STOP;
 
     voltageOut = Volts.mutable(0);
 
@@ -90,7 +91,7 @@ public class Kicker extends Subsystem {
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
 
     if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
-      discreteSim.useVelocity(() -> currentState.getVelocity());
+      discreteSim.useVelocity(() -> state.velocity);
     }
   }
 
@@ -108,15 +109,15 @@ public class Kicker extends Subsystem {
     stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
     stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
 
-    tab.addString("Current state", () -> currentState.name());
-    tab.addDouble("Setpoint (rotps)", () -> currentState.getVelocity().in(RotationsPerSecond));
+    tab.addString("Current state", () -> state.name());
+    tab.addDouble("Setpoint (rotps)", () -> state.velocity.in(RotationsPerSecond));
   }
 
   @Override
   public void periodic() {
     motorOutput.updateValues(motorValues, RobotConstants.PERIODIC_DURATION);
 
-    double setpointRotationsPerSecond = currentState.getVelocity().in(RotationsPerSecond);
+    double setpointRotationsPerSecond = state.velocity.in(RotationsPerSecond);
     double velocityRotationsPerSecond = motorValues.velocity.in(RotationsPerSecond);
 
     if (!voltageSet) {
@@ -137,12 +138,36 @@ public class Kicker extends Subsystem {
     }).finallyDo(() -> voltageSet = false);
   }
 
-  public Command setState(KickerState kickerState) {
-    return this.runOnce(() -> currentState = kickerState);
+  /** 
+   * Instantaneously changes the kicker's control state if the kicker subsystem is not currently required by a command
+   * 
+   * @param kickerState New kicker state
+   */
+  public void setState(KickerState kickerState) {
+    if (this.getCurrentCommand() == null) {
+      state = kickerState;
+    }
+  }
+
+  /**
+   * Returns a command that changes the kicker's control state and waits until at that state
+   * 
+   * @param kickerState New kicker state
+   * @return A command that changes the kicker's control state and waits until at that state
+   */
+  public Command goToState(KickerState kickerState) {
+    return Commands.sequence(
+      this.runOnce(() -> state = kickerState),
+      Commands.waitUntil(this::atTargetState)
+    );
+  }
+
+  public boolean atTargetState() {
+    return motorValues.velocity.isNear(state.velocity, RotationsPerSecond.of(1));
   }
 
   public KickerState getState() {
-    return currentState;
+    return state;
   }
 
   public MechanismConfig getConfig() {

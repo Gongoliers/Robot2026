@@ -181,6 +181,16 @@ public class Azimuth extends MultithreadedSubsystem {
   }
 
   /**
+   * Returns true if azimuth is near its setpoint
+   * 
+   * @param tolerance how close it has to be to its setpoint to be considered near that setpoint
+   * @return true if azimuth is near its setpoint
+   */
+  public boolean nearSetpoint(Angle tolerance) {
+    return motorValues.position.isNear(setpoint, tolerance);
+  }
+
+  /**
    * Set the local setpoint of the azimuth
    * Automatically handles angle wrapping and constraining
    * 

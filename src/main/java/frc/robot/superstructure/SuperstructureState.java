@@ -3,8 +3,10 @@ package frc.robot.superstructure;
 public enum SuperstructureState {
   INIT,
   STOW,
-  ALLOW_EXTERNAL_CONTROL,
-  INTAKE,
+  IDLE,
   FACE_HUB,
-  SCORE;
+  INTAKE,
+  SCORE,
+  ALLOW_EXTERNAL_TURRET_CONTROL,
+  ALLOW_EXTERNAL_TURRET_CONTROL_FACING_HUB;
 }

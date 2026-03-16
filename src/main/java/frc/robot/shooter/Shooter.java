@@ -169,6 +169,16 @@ public class Shooter extends MultithreadedSubsystem {
     }).finallyDo(() -> voltageSet = false);
   }
 
+  /**
+   * Returns true if shooter is near its setpoint
+   * 
+   * @param tolerance how close it has to be to its setpoint to be considered near that setpoint
+   * @return true if shooter is near its setpoint
+   */
+  public boolean nearSetpoint(AngularVelocity tolerance) {
+    return motorValues.velocity.isNear(setpointVelocity, tolerance);
+  }
+
   public void setSetpoint(AngularVelocity velocitySetpoint) {
     setpointVelocity.mut_replace(velocitySetpoint);
   }

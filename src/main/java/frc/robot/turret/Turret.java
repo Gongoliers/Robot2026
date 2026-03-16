@@ -108,16 +108,35 @@ public class Turret extends MultithreadedSubsystem {
         shooter.setSetpoint(RotationsPerSecond.of(0.0));
         break;
       case ALLOW_EXTERNAL_CONTROL:
-        if (azimuth.getCurrentCommand() == null) {azimuth.setSetpoint(Rotations.of(0.25));};
-        if (hood.getCurrentCommand() == null) {hood.setSetpoint(hood.getMinPosition());};
-        if (shooter.getCurrentCommand() == null) {shooter.setSetpoint(RotationsPerSecond.of(0.0));};
+        break;
+      case ALLOW_EXTERNAL_CONTROL_FACING_HUB:
+        faceHub(turretPose);
         break;
       case FACE_HUB:
         faceHub(turretPose);
+        hood.setSetpoint(hood.getMinPosition());
+        shooter.setSetpoint(RotationsPerSecond.of(0.0));
         break;
       case TARGET_HUB:
         faceHub(turretPose);
         break;
+    }
+  }
+
+  public boolean atTargetState() {
+    switch (state) {
+      case STOW:
+        return azimuth.nearSetpoint(Rotations.of(0.01));
+      case FACE_HUB:
+        return azimuth.nearSetpoint(Rotations.of(0.1))
+            && azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.2;
+      case TARGET_HUB:
+        return azimuth.nearSetpoint(Rotations.of(0.1))
+            && azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.2
+            && shooter.nearSetpoint(RotationsPerSecond.of(1))
+            && hood.nearSetpoint(Rotations.of(0.05));
+      default:
+        return true;
     }
   }
 
@@ -134,35 +153,62 @@ public class Turret extends MultithreadedSubsystem {
   }
 
   /**
-   * Stows the turret
+   * Stows the turret and waits until fully stowed
    * 
-   * @return a command that stows the turret while it's running
+   * @return a command that stows the turret and waits until fully stowed
    */
   public Command stow() {
-    return Commands.run(() -> {
+    return Commands.runOnce(() -> {
       state = TurretState.STOW;
-    }, this, azimuth, hood, shooter);
+    }, this, azimuth, hood, shooter)
+    .andThen(Commands.waitUntil(this::atTargetState));
   }
 
   /**
-   * Stows the turret by default, but allows external control of the shooter, hood, and azimuth through other commands
+   * Allows external control of azimuth, shooter, and hood using their setSetpoint methods
    * 
-   * @return a command that stows the turret by default, but allows external control of the turret by other commands while it's running
+   * @return a command that allows external control of azimuth, shooter, and hood using their setSetpoint methods
    */
   public Command allowExternalControl() {
-    return Commands.run(() -> {
+    return Commands.runOnce(() -> {
       state = TurretState.ALLOW_EXTERNAL_CONTROL;
-    }, this);
+    }, this)
+    .andThen(Commands.waitUntil(this::atTargetState));
   }
 
   /**
-   * Faces the azimuth at the alliance hub
+   * Allows external control of shooter and hood using their setSetpoint methods while looking at the hub with azimuth
    * 
-   * @return a command that faces the azimuth at the aliance hub while it's running
+   * @return a command that allows external control of shooter and hood using their setSetpoint methods while looking at the hub with azimuth
+   */
+  public Command allowExternalControlFacingHub() {
+    return Commands.runOnce(() -> {
+      state = TurretState.ALLOW_EXTERNAL_CONTROL_FACING_HUB;
+    }, this, azimuth)
+    .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  /**
+   * Faces the azimuth at the alliance hub and waits until facing the hub
+   * 
+   * @return a command that faces the azimuth at the aliance hub and waits until facing the hub
    */
   public Command faceHub() {
-    return Commands.run(() -> {
+    return Commands.runOnce(() -> {
       state = TurretState.FACE_HUB;
-    }, this, azimuth, hood, shooter);
+    }, this, azimuth, hood, shooter)
+    .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  /**
+   * Targets the alliance hub with the azimuth, shooter, and hood, and waits until targetting accurately
+   * 
+   * @return a command that targets the alliance hub with the azimuth, shooter, and hood, and waits until targetting accurately
+   */
+  public Command targetHub() {
+    return Commands.runOnce(() -> {
+      state = TurretState.TARGET_HUB;
+    }, this, azimuth, hood, shooter)
+    .andThen(Commands.waitUntil(this::atTargetState));
   }
 }

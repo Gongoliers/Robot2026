@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -15,6 +14,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.Subsystem;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
@@ -248,17 +248,37 @@ public class Intake extends Subsystem {
     }).finallyDo(() -> rollerVoltageSet = false);
   }
 
-  public Command setState(IntakeState intakeState) {
-    return this.runOnce(() -> state = intakeState);
+  /** 
+   * Instantaneously changes the intake's control state if the intake subsystem is not currently required by a command
+   * 
+   * @param intakeState New intake state
+   */
+  public void setState(IntakeState intakeState) {
+    if (this.getCurrentCommand() == null) {
+      state = intakeState;
+    }
+  }
+
+  /** 
+   * Returns a command that changes the intake's control state and waits until at that state
+   * 
+   * @param intakeState New intake state
+   * @return A command that changes the intake's control state and waits until at that state
+   */
+  public Command goToState(IntakeState intakeState) {
+    return Commands.sequence(
+      this.runOnce(() -> state = intakeState),
+      Commands.waitUntil(this::atTargetState)
+    );
   }
 
   public boolean atTargetState() {
     if (state == IntakeState.AGITATE) {
       return pivotValues.position.lte(Rotations.of(0.2)) 
-          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+          && rollerValues.velocity.isNear(rollerSetpoint, RotationsPerSecond.of(1));
     } else {
-      return MathUtil.isNear(pivotSetpoint.in(Rotations), pivotValues.position.in(Rotations), 0.05)
-          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+      return pivotValues.position.isNear(pivotSetpoint, Rotations.of(0.05))
+          && rollerValues.velocity.isNear(rollerSetpoint, RotationsPerSecond.of(1));
     }
   }
 
