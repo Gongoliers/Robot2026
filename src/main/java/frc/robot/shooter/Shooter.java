@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.configs.MechanismConfig;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.MechanismConfig.MechanismBuilder;
@@ -164,7 +163,7 @@ public class Shooter extends MultithreadedSubsystem {
    * @return a command that allows for temporary manual voltage control of the shooter
    */
   public Command runAtVoltage(Supplier<Voltage> voltageSupplier) {
-    return Commands.run(() -> {
+    return this.run(() -> {
       voltageSet = true;
       voltageOut.mut_replace(voltageSupplier.get());
     }).finallyDo(() -> voltageSet = false);

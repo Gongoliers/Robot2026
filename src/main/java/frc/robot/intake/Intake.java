@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.Subsystem;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
@@ -234,7 +233,7 @@ public class Intake extends Subsystem {
   }
 
   public Command runPivotAtVoltage(Supplier<Voltage> voltageSupplier) {
-    return Commands.run(() -> {
+    return this.run(() -> {
       pivotVoltageSet = true;
       Voltage voltageRequest = voltageSupplier.get();
       pivotVoltageOut.mut_replace(voltageRequest);
@@ -242,7 +241,7 @@ public class Intake extends Subsystem {
   }
 
   public Command runRollerAtVoltage(Supplier<Voltage> voltageSupplier) {
-    return Commands.run(() -> {
+    return this.run(() -> {
       rollerVoltageSet = true;
       Voltage voltageRequest = voltageSupplier.get();
       rollerVoltageOut.mut_replace(voltageRequest);
@@ -250,7 +249,7 @@ public class Intake extends Subsystem {
   }
 
   public Command setState(IntakeState intakeState) {
-    return Commands.runOnce(() -> state = intakeState);
+    return this.runOnce(() -> state = intakeState);
   }
 
   public boolean atTargetState() {

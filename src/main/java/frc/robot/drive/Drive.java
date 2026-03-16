@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
@@ -153,14 +152,14 @@ public class Drive extends Subsystem {
   public Command drive(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
     SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
 
-    return Commands.run(() -> {
+    return this.run(() -> {
       ChassisSpeeds fieldSpeeds = fieldSpeedsSupplier.get();
 
       swerve.setControl(request
         .withVelocityX(fieldSpeeds.vxMetersPerSecond)
         .withVelocityY(fieldSpeeds.vyMetersPerSecond)
         .withRotationalRate(fieldSpeeds.omegaRadiansPerSecond));
-    }, this);
+    });
   }
 
   public void addVisionMeasurement(Pose2d pose, double timestampSeconds) {
