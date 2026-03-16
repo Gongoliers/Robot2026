@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.measure.Angle;
@@ -187,7 +186,7 @@ public class Hood extends MultithreadedSubsystem {
    * @return true if hood is near its setpoint
    */
   public boolean nearSetpoint(Angle tolerance) {
-    return MathUtil.isNear(setpoint.in(Rotations), motorValues.position.in(Rotations), tolerance.in(Rotations));
+    return motorValues.position.isNear(setpoint, tolerance);
   }
 
   public void setSetpoint(Angle setpointPosition) {

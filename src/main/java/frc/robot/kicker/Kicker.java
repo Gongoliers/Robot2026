@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.MutVoltage;
@@ -164,7 +163,7 @@ public class Kicker extends Subsystem {
   }
 
   public boolean atTargetState() {
-    return MathUtil.isNear(state.velocity.in(RotationsPerSecond), motorValues.velocity.in(RotationsPerSecond), 1);
+    return motorValues.velocity.isNear(state.velocity, RotationsPerSecond.of(1));
   }
 
   public KickerState getState() {

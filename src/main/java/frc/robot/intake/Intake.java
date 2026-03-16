@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -276,10 +275,10 @@ public class Intake extends Subsystem {
   public boolean atTargetState() {
     if (state == IntakeState.AGITATE) {
       return pivotValues.position.lte(Rotations.of(0.2)) 
-          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+          && rollerValues.velocity.isNear(rollerSetpoint, RotationsPerSecond.of(1));
     } else {
-      return MathUtil.isNear(pivotSetpoint.in(Rotations), pivotValues.position.in(Rotations), 0.05)
-          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+      return pivotValues.position.isNear(pivotSetpoint, Rotations.of(0.05))
+          && rollerValues.velocity.isNear(rollerSetpoint, RotationsPerSecond.of(1));
     }
   }
 

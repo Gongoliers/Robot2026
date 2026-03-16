@@ -176,7 +176,7 @@ public class Shooter extends MultithreadedSubsystem {
    * @return true if shooter is near its setpoint
    */
   public boolean nearSetpoint(AngularVelocity tolerance) {
-    return MathUtil.isNear(setpointVelocity.in(RotationsPerSecond), motorValues.velocity.in(RotationsPerSecond), tolerance.in(RotationsPerSecond));
+    return motorValues.velocity.isNear(setpointVelocity, tolerance);
   }
 
   public void setSetpoint(AngularVelocity velocitySetpoint) {
