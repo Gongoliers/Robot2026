@@ -38,11 +38,6 @@ public class Turret extends MultithreadedSubsystem {
   /** Current turret state */
   private TurretState state;
 
-  // Variables used by control states
-
-  /** Hub target */
-  private Translation2d hubTarget;
-
   /**
    * Gets turret subsystem instance
    * 
