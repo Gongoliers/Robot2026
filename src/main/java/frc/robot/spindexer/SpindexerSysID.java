@@ -58,14 +58,14 @@ public class SpindexerSysID {
   
   public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      spindexer.runAtVoltage(() -> voltageOut),
+      spindexer.runAtVoltage(() -> voltageOut).asProxy(),
       routine.quasistatic(direction)
     );
   }
 
   public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      spindexer.runAtVoltage(() -> voltageOut),
+      spindexer.runAtVoltage(() -> voltageOut).asProxy(),
       routine.dynamic(direction)
     );
   }

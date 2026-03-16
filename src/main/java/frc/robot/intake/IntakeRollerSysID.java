@@ -58,14 +58,14 @@ public class IntakeRollerSysID {
 
   public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      intake.runRollerAtVoltage(() -> voltageOut),
+      intake.runRollerAtVoltage(() -> voltageOut).asProxy(),
       routine.quasistatic(direction)
     );
   }
 
   public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      intake.runRollerAtVoltage(() -> voltageOut),
+      intake.runRollerAtVoltage(() -> voltageOut).asProxy(),
       routine.dynamic(direction)
     );
   }

@@ -64,14 +64,14 @@ public class HoodSysID {
 
   public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      hood.runAtVoltage(() -> voltageOut),
+      hood.runAtVoltage(() -> voltageOut).asProxy(),
       routine.quasistatic(direction)
     );
   }
 
   public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      hood.runAtVoltage(() -> voltageOut),
+      hood.runAtVoltage(() -> voltageOut).asProxy(),
       routine.dynamic(direction)
     );
   }

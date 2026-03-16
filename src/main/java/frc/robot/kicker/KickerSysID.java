@@ -58,14 +58,14 @@ public class KickerSysID {
 
   public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      kicker.runAtVoltage(() -> voltageOut),
+      kicker.runAtVoltage(() -> voltageOut).asProxy(),
       routine.quasistatic(direction)
     );
   }
 
   public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
-      kicker.runAtVoltage(() -> voltageOut),
+      kicker.runAtVoltage(() -> voltageOut).asProxy(),
       routine.dynamic(direction)
     );
   }

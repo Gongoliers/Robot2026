@@ -50,7 +50,6 @@ public class Spindexer extends Subsystem {
           .kV(0.56457)
           .kA(0.012554)
           .kS(0.20423)
-          .kG(0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()

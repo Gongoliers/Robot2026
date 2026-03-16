@@ -50,7 +50,6 @@ public class Kicker extends Subsystem {
           .kV(0.67867)
           .kA(0.013461)
           .kS(0.1338)
-          .kG(0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()

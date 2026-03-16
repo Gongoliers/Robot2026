@@ -95,7 +95,6 @@ public class Intake extends Subsystem {
           .kV(0.11367)
           .kA(0.0021923)
           .kS(0.16469)
-          .kG(0)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
