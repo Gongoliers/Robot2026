@@ -126,6 +126,10 @@ public class RobotContainer {
       Rotation2d controllerRotation = new Rotation2d(operatorController.getRightX(), -operatorController.getRightY());
       azimuth.setSetpoint(Rotations.of(controllerRotation.getRotations()));
     }));
+
+    operatorController.a().onTrue(intake.goToState(IntakeState.OUT));
+    operatorController.y().onTrue(intake.goToState(IntakeState.STOW));
+    operatorController.x().onTrue(intake.goToState(IntakeState.INIT));
   }
 
   public Command getAutonomousCommand() {
