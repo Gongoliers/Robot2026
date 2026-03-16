@@ -32,6 +32,7 @@ import frc.robot.shooter.ShooterTester;
 import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
 import frc.robot.spindexer.SpindexerSysID;
+import frc.robot.superstructure.Superstructure;
 import frc.robot.turret.Turret;
 
 /** Robot container */
@@ -76,6 +77,9 @@ public class RobotContainer {
   /** Kicker */
   private final Kicker kicker;
 
+  /** Superstrcture */
+  private final Superstructure superstructure;
+
   /**
    * Gets robot container instance
    * 
@@ -104,6 +108,7 @@ public class RobotContainer {
     intake = Intake.getInstance();
     spindexer = Spindexer.getInstance();
     kicker = Kicker.getInstance();
+    superstructure = Superstructure.getInstance();
 
     multithreader.start();
 
@@ -117,24 +122,11 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    operatorController.rightTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(-0.5)));
-    operatorController.leftTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(0.5)));
-
-    driverController.a().onTrue(intake.goToState(IntakeState.OUT));
-    driverController.b().whileTrue(Commands.parallel(
-      turret.allowExternalControl(),
-      kicker.goToState(KickerState.RUN),
-      spindexer.goToState(SpindexerState.RUN),
-      intake.goToState(IntakeState.AGITATE)
-    )).onFalse((Commands.parallel(
-      kicker.goToState(KickerState.STOP),
-      spindexer.goToState(SpindexerState.STOP),
-      intake.goToState(IntakeState.OUT)
-    )));
-    driverController.y().onTrue(intake.goToState(IntakeState.STOW));
-    driverController.x().onTrue(intake.goToState(IntakeState.INIT));
-    driverController.povUp().onTrue(turret.faceHub());
-    driverController.povDown().onTrue(turret.stow());
+    driverController.a().onTrue(superstructure.faceHub());
+    driverController.b().onTrue(superstructure.stow());
+    driverController.x().onTrue(superstructure.init());
+    driverController.leftBumper().onTrue(superstructure.intake());
+    driverController.rightBumper().onTrue(superstructure.score());
   }
 
   public Command getAutonomousCommand() {

@@ -8,8 +8,8 @@ public enum IntakeState {
   INIT(Rotations.of(0.275), RotationsPerSecond.of(0)),
   STOW(Rotations.of(0.25), RotationsPerSecond.of(0)),
   OUT(Rotations.of(0.01), RotationsPerSecond.of(0)),
-  INTAKE(Rotations.of(0.01), RotationsPerSecond.of(50)),
-  AGITATE(null, RotationsPerSecond.of(50));
+  INTAKE(Rotations.of(0.01), RotationsPerSecond.of(70)),
+  AGITATE(null, RotationsPerSecond.of(70));
 
   public final Angle pivotSetpoint;
   public final AngularVelocity rollerSetpoint;

@@ -118,6 +118,7 @@ public class Turret extends MultithreadedSubsystem {
         break;
       case TARGET_HUB:
         faceHub(turretPose);
+        shooter.setSetpoint(RotationsPerSecond.of(40));
         break;
     }
   }
@@ -131,7 +132,7 @@ public class Turret extends MultithreadedSubsystem {
             && azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.2;
       case TARGET_HUB:
         return azimuth.nearSetpoint(Rotations.of(0.1))
-            && azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.2
+            && azimuth.getValues().velocity.abs(RotationsPerSecond) < 1
             && shooter.nearSetpoint(RotationsPerSecond.of(1))
             && hood.nearSetpoint(Rotations.of(0.05));
       default:

@@ -78,7 +78,7 @@ public class Azimuth extends MultithreadedSubsystem {
         MotorBuilder.defaults()
           .ccwPositive(true)
           .rotorToSensorRatio(1)
-          .sensorToMechRatio(5*10)
+          .sensorToMechRatio((50/12)*10)
           .neutralBrake(true)
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
@@ -151,7 +151,7 @@ public class Azimuth extends MultithreadedSubsystem {
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 6), feedbackVolts);
+      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 2), feedbackVolts);
       double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);

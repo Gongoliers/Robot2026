@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.CAN;
 import frc.lib.configs.AbsoluteEncoderConfig;
 import frc.lib.configs.MotorConfig;
@@ -47,6 +48,7 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
 
   // Status signals
   private final StatusSignal<Angle> position;
+  private final StatusSignal<Angle> motorPosition;
   private final StatusSignal<AngularVelocity> velocity;
   private final StatusSignal<AngularAcceleration> acceleration;
   private final StatusSignal<Voltage> motorVoltage;
@@ -74,6 +76,7 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
     encoder = new CANcoder(encoderCAN.id(), encoderCAN.bus());
 
     position = encoder.getPosition();
+    motorPosition = motor.getPosition();
     velocity = encoder.getVelocity();
     acceleration = motor.getAcceleration();
     motorVoltage = motor.getMotorVoltage();
@@ -84,6 +87,7 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
     BaseStatusSignal.setUpdateFrequencyForAll(
         100,
         position,
+        motorPosition,
         velocity,
         acceleration,
         motorVoltage,
@@ -108,12 +112,16 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
   public void updateValues(MotorValues values, Time dt) {
     BaseStatusSignal.refreshAll(
         position,
+        motorPosition,
         velocity,
         acceleration,
         motorVoltage,
         supplyVoltage,
         statorCurrent,
         supplyCurrent);
+
+    SmartDashboard.putNumber("cancoder position", position.getValueAsDouble() / encoderConfig.sensorToMechRatio());
+    SmartDashboard.putNumber("motor position", motorPosition.getValueAsDouble());
 
     values.position.mut_replace(position.getValueAsDouble() / encoderConfig.sensorToMechRatio(), Rotations);
     values.velocity.mut_replace(velocity.getValueAsDouble() / encoderConfig.sensorToMechRatio(), RotationsPerSecond);
