@@ -70,9 +70,9 @@ public class Azimuth extends MultithreadedSubsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(100)
+          .kP(50)
           .kI(0.0)
-          .kD(4)
+          .kD(0.5)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -151,7 +151,7 @@ public class Azimuth extends MultithreadedSubsystem {
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 4), feedbackVolts);
+      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 6), feedbackVolts);
       double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
