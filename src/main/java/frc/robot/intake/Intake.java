@@ -250,12 +250,14 @@ public class Intake extends Subsystem {
   }
 
   /** 
-   * Instantaneously changes the intake's control state 
+   * Instantaneously changes the intake's control state if the intake subsystem is not currently required by a command
    * 
    * @param intakeState New intake state
    */
   public void setState(IntakeState intakeState) {
-    state = intakeState;
+    if (this.getCurrentCommand() == null) {
+      state = intakeState;
+    }
   }
 
   /** 
@@ -266,7 +268,7 @@ public class Intake extends Subsystem {
    */
   public Command goToState(IntakeState intakeState) {
     return Commands.sequence(
-      this.runOnce(() -> setState(intakeState)),
+      this.runOnce(() -> state = intakeState),
       Commands.waitUntil(this::atTargetState)
     );
   }

@@ -140,12 +140,14 @@ public class Spindexer extends Subsystem {
   }
 
   /**
-   * Instantaneously changes the spindexer's control state
+   * Instantaneously changes the spindexer's control state if the spindexer subsystem is not currently required by a command
    * 
    * @param spindexerState New spindexer state
    */
   public void setState(SpindexerState spindexerState) {
-    state = spindexerState;
+    if (this.getCurrentCommand() == null) {
+      state = spindexerState;
+    }
   }
 
   /**
@@ -156,7 +158,7 @@ public class Spindexer extends Subsystem {
    */
   public Command goToState(SpindexerState spindexerState) {
     return Commands.sequence(
-      this.runOnce(() -> setState(spindexerState)),
+      this.runOnce(() -> state = spindexerState),
       Commands.waitUntil(this::atTargetState)
     );
   }

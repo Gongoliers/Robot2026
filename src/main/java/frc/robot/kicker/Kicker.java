@@ -140,12 +140,14 @@ public class Kicker extends Subsystem {
   }
 
   /** 
-   * Instantaneously changes the kicker's control state 
+   * Instantaneously changes the kicker's control state if the kicker subsystem is not currently required by a command
    * 
    * @param kickerState New kicker state
    */
   public void setState(KickerState kickerState) {
-    state = kickerState;
+    if (this.getCurrentCommand() == null) {
+      state = kickerState;
+    }
   }
 
   /**
@@ -156,7 +158,7 @@ public class Kicker extends Subsystem {
    */
   public Command goToState(KickerState kickerState) {
     return Commands.sequence(
-      this.runOnce(() -> setState(kickerState)),
+      this.runOnce(() -> state = kickerState),
       Commands.waitUntil(this::atTargetState)
     );
   }
