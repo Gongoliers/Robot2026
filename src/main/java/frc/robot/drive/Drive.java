@@ -18,6 +18,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -103,6 +104,17 @@ public class Drive extends Subsystem {
 
     return new ChassisSpeeds(
       maxVelocity.times(x), maxVelocity.times(y), maxAngularVelocity.times(omega));
+  }
+
+  public ChassisSpeeds speedsFromMambo(GenericHID hid) {
+    LinearVelocity maxVelocity = MetersPerSecond.of(2);
+    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.5);
+
+    double x = MathUtil.applyDeadband(hid.getRawAxis(2), 0.1);
+    double y = MathUtil.applyDeadband(hid.getRawAxis(1), 0.1);
+    double omega = MathUtil.applyDeadband(hid.getRawAxis(3), 0.1);
+
+    return new ChassisSpeeds(maxVelocity.times(x), maxVelocity.times(-y), maxAngularVelocity.times(-omega));
   }
 
   /**

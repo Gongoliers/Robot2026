@@ -113,7 +113,8 @@ public class RobotContainer {
   }
 
   private void configureDefaultCommands() {
-    drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
+    GenericHID mambo = new GenericHID(0);
+    drive.setDefaultCommand(drive.drive(() -> drive.speedsFromMambo(mambo)));
     turret.setDefaultCommand(turret.stow());
   }
 
