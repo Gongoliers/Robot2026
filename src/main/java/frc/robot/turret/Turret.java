@@ -148,7 +148,7 @@ public class Turret extends MultithreadedSubsystem {
     Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
     Rotation2d rotationError = translationToHub.getAngle().minus(turretPose.getRotation());
 
-    azimuth.setSetpoint(azimuth.getSetpoint().plus(rotationError.getMeasure()));
+    azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
   }
 
   /**

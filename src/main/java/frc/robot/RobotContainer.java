@@ -132,6 +132,9 @@ public class RobotContainer {
       intake.goToState(IntakeState.OUT)
     )));
     driverController.y().onTrue(intake.goToState(IntakeState.STOW));
+    driverController.x().onTrue(intake.goToState(IntakeState.INIT));
+    driverController.povUp().onTrue(turret.faceHub());
+    driverController.povDown().onTrue(turret.stow());
   }
 
   public Command getAutonomousCommand() {

@@ -61,7 +61,7 @@ public class RobotConstants {
   public static Pose3d globalTurretPose(Pose3d robot, Angle azimuth) {
     // TODO This calculation may be simplified by treating the turret's local pose as a transform
     Rotation3d yawRotation = new Rotation3d(Degrees.zero(), Degrees.zero(), azimuth);
-    return new Pose3d(robot.getTranslation().plus(ROBOT_TO_TURRET), robot.getRotation().plus(yawRotation));
+    return new Pose3d(robot.getTranslation().plus(ROBOT_TO_TURRET.rotateBy(robot.getRotation())), robot.getRotation().plus(yawRotation));
   }
 
   /**
