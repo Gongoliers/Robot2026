@@ -188,7 +188,7 @@ public class RobotContainer {
       }
     });
 
-    List<Objective> objectives = ObjectiveActionMachine.walk(initial, actions);
+    List<Objective> objectives = Objective.walk(initial, actions);
 
     Function<DriverStation.Alliance, Command> sequence = ObjectiveCommandBinding.sequenceFactory(objectives, this::performDrive, this::loggedPerformAction);
 

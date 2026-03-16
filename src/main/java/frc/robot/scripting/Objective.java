@@ -1,14 +1,9 @@
 package frc.robot.scripting;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public enum Objective {
@@ -110,6 +105,20 @@ public enum Objective {
         return next.apply(action);
     }
 
+    public static List<Objective> walk(Objective initial, Action[] actions) {
+        ArrayList<Objective> objectives = new ArrayList<>();
+        // NOTE: The initial objective is never present in the final objectives
+        Objective objective = initial;
+        for (Action action : actions) {
+            if (action == null) {
+                continue;
+            }
+            objective = objective.transition(action);
+            objectives.add(objective);
+        }
+        return objectives;
+    }
+
     public String explain() {
         if (!hasPose) {
             return String.format("%s: The robot will %s.", name(), action_.name());
@@ -124,12 +133,5 @@ public enum Objective {
 
     public static String explainAll(List<Objective> objectives) {
         return explainAll(objectives.toArray(Objective[]::new));
-    }
-
-    private Command driveCommand(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory) {
-        if (!hasPose || pose_ == null) {
-            return Commands.none();
-        }
-        return driveToPoseFactory.apply(pose_.forAlliance(alliance));
     }
 }
