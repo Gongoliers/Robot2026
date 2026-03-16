@@ -124,8 +124,8 @@ public class RobotContainer {
     driverController.a().onTrue(intake.goToState(IntakeState.OUT));
     driverController.b().whileTrue(Commands.parallel(
       turret.allowExternalControl(),
-      kicker.goToState(KickerState.TEST),
-      spindexer.goToState(SpindexerState.TEST),
+      kicker.goToState(KickerState.RUN),
+      spindexer.goToState(SpindexerState.RUN),
       intake.goToState(IntakeState.AGITATE)
     )).onFalse((Commands.parallel(
       kicker.goToState(KickerState.STOP),
