@@ -69,7 +69,7 @@ public enum NamedPose {
         return redPose_;
     }
 
-    public Pose2d pose(DriverStation.Alliance alliance) {
+    public Pose2d forAlliance(DriverStation.Alliance alliance) {
         if (alliance == DriverStation.Alliance.Red) {
             return red();
         } else {
