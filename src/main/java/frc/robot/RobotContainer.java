@@ -22,9 +22,7 @@ import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.intake.IntakePivotState;
 import frc.robot.intake.IntakeRollerState;
-import frc.robot.scripting.Action;
-import frc.robot.scripting.NamedPose;
-import frc.robot.scripting.ObjectiveActionMachine;
+import frc.robot.scripting.*;
 import frc.robot.intake.Intake;
 <<<<<<< New base: Fix error
 import frc.robot.intake.IntakeRollerSysID;
@@ -37,12 +35,14 @@ import frc.robot.intake.IntakeRollerSysID;
 >>>>>>> Current commit: Add `ScriptingChooser` class
 import frc.robot.kicker.Kicker;
 import frc.robot.kicker.KickerState;
-import frc.robot.scripting.ScriptingChooser;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
 import frc.robot.turret.Turret;
+
+import java.util.List;
+import java.util.function.Function;
 
 /** Robot container */
 public class RobotContainer {
@@ -120,6 +120,7 @@ public class RobotContainer {
     chooser = new ScriptingChooser(8);
     chooser.publishActions(SmartDashboard::putData);
     chooser.publishSide(SmartDashboard::putData);
+    SmartDashboard.putString("Auto/CurrentAction", "");
 
     multithreader.start();
 
@@ -162,7 +163,7 @@ public class RobotContainer {
     return switch (action) {
         case NONE, PASS, CLIMB -> drive.andThen(Commands.waitSeconds(2.5));
         // TODO Implement `intake.intake() -> Command`
-        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.goToStates(IntakePivotState.OUT, IntakeRollerState.TEST)).repeatedly().finallyDo(intake::stow);
+        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.goToStates(IntakePivotState.OUT, IntakeRollerState.TEST).repeatedly().finallyDo(intake::stow));
         // TODO Implement `turret.score() -> Command`
         case SCORE -> drive.andThen(turret.faceHub().withTimeout(2.5));
     };
@@ -176,26 +177,21 @@ public class RobotContainer {
     );
   }
 
-  private void seedSimPose(boolean isLeftSide, DriverStation.Alliance alliance) {
-    if (Robot.isReal()) {
-      return;
-    }
-
-    if (isLeftSide) {
-      drive.resetPose(NamedPose.FAR_LEFT.pose(alliance));
-    } else {
-      drive.resetPose(NamedPose.FAR_RIGHT.pose(alliance));
-    }
-  }
-
   public Command getAutonomousCommand() {
     DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
     Action[] actions = chooser.selectedActions().toArray(Action[]::new);
-    seedSimPose(chooser.selectedLeftSide(), alliance);
-    if (chooser.selectedLeftSide()) {
-      return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
-    } else {
-      return ObjectiveActionMachine.createRightSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
-    }
+    Objective initial = chooser.selectedLeftSide() ? Objective.INITIAL_LEFT : Objective.INITIAL_RIGHT;
+
+    initial.pose().ifPresent(pose -> {
+      if (Robot.isSimulation()) {
+        drive.resetPose(pose.forAlliance(alliance));
+      }
+    });
+
+    List<Objective> objectives = ObjectiveActionMachine.walk(initial, actions);
+
+    Function<DriverStation.Alliance, Command> sequence = ObjectiveCommandBinding.sequenceFactory(objectives, this::performDrive, this::loggedPerformAction);
+
+    return ObjectiveCommandBinding.explain(objectives).andThen(sequence.apply(alliance));
   }
 }

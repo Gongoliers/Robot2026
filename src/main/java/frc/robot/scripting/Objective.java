@@ -6,21 +6,23 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public enum Objective {
     NONE,
-    INITIAL_LEFT,
-    INITIAL_RIGHT,
+    INITIAL_LEFT(NamedPose.FAR_LEFT),
+    INITIAL_RIGHT(NamedPose.FAR_RIGHT),
     PASS_LEFT(NamedPose.NEUTRAL_LEFT_BACK, Action.PASS),
     PASS_RIGHT(NamedPose.NEUTRAL_RIGHT_BACK, Action.PASS),
     SCORE_NEAR_LEFT(NamedPose.NEAR_LEFT, Action.SCORE),
     SCORE_NEAR_RIGHT(NamedPose.NEAR_RIGHT, Action.SCORE),
     SCORE_FAR_LEFT(NamedPose.FAR_LEFT, Action.SCORE),
     SCORE_FAR_RIGHT(NamedPose.FAR_RIGHT, Action.SCORE),
-    INTAKE_NEUTRAL_LEFT(NamedPose.NEUTRAL_LEFT, Action.INTAKE_ZONE),
-    INTAKE_NEUTRAL_RIGHT(NamedPose.NEUTRAL_RIGHT, Action.INTAKE_ZONE),
+    INTAKE_NEUTRAL_LEFT(NamedPose.NEUTRAL_LEFT, Action.INTAKE_NEUTRAL),
+    INTAKE_NEUTRAL_RIGHT(NamedPose.NEUTRAL_RIGHT, Action.INTAKE_NEUTRAL),
     INTAKE_ZONE_LEFT(NamedPose.PICKUP_ZONE_LEFT, Action.INTAKE_ZONE),
     INTAKE_ZONE_RIGHT(NamedPose.PICKUP_ZONE_RIGHT, Action.INTAKE_ZONE),
     CLIMB_LEFT(NamedPose.CLIMB_LEFT, Action.CLIMB),
@@ -96,6 +98,14 @@ public enum Objective {
         this(Action.NONE);
     }
 
+    public Optional<NamedPose> pose() {
+        return Optional.ofNullable(pose_);
+    }
+
+    public Action action() {
+        return action_;
+    }
+
     public Objective transition(Action action) {
         return next.apply(action);
     }
@@ -112,15 +122,14 @@ public enum Objective {
         return String.join("\n", Arrays.stream(objectives).map(Objective::explain).toList());
     }
 
+    public static String explainAll(List<Objective> objectives) {
+        return explainAll(objectives.toArray(Objective[]::new));
+    }
+
     private Command driveCommand(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory) {
         if (!hasPose || pose_ == null) {
             return Commands.none();
         }
-        return driveToPoseFactory.apply(alliance == DriverStation.Alliance.Blue ? pose_.blue() : pose_.red());
-    }
-
-    public Command command(DriverStation.Alliance alliance, Function<Pose2d, Command> driveToPoseFactory, BiFunction<Action, Command, Command> actionFactory) {
-        Command driveToPose = driveCommand(alliance, driveToPoseFactory);
-        return actionFactory.apply(action_, driveToPose);
+        return driveToPoseFactory.apply(pose_.forAlliance(alliance));
     }
 }
