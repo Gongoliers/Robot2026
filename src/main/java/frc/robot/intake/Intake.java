@@ -125,12 +125,12 @@ public class Intake extends Subsystem {
   private Intake() {
     pivotOutput = IntakeFactory.createPivotMotor(pivotConfig);
     pivotOutput.configure();
-    pivotOutput.setPosition(IntakeState.START.pivotSetpoint);
+    pivotOutput.setPosition(IntakeState.INIT.pivotSetpoint);
 
     rollerOutput = IntakeFactory.createRollerMotor(rollerConfig);
     rollerOutput.configure();
 
-    state = IntakeState.START;
+    state = IntakeState.INIT;
 
     pivotVoltageOut = Volts.mutable(0);
     rollerVoltageOut = Volts.mutable(0);
@@ -138,8 +138,8 @@ public class Intake extends Subsystem {
     pivotVoltageSet = false;
     rollerVoltageSet = false;
 
-    pivotSetpoint = IntakeState.START.pivotSetpoint.mutableCopy();
-    rollerSetpoint = IntakeState.START.rollerSetpoint.mutableCopy();
+    pivotSetpoint = IntakeState.INIT.pivotSetpoint.mutableCopy();
+    rollerSetpoint = IntakeState.INIT.rollerSetpoint.mutableCopy();
 
     pivotFeedback = pivotConfig.feedbackControllerConfig().createPIDController();
     rollerFeedback = rollerConfig.feedbackControllerConfig().createPIDController();
