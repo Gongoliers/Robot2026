@@ -64,16 +64,16 @@ public class Hood extends MultithreadedSubsystem {
     MechanismBuilder.defaults()
       .feedforwardControllerConfig(
         FeedforwardControllerBuilder.defaults()
-          .kV(0.0)
-          .kA(0.0)
-          .kS(0.0)
-          .kG(0.0)
+          .kV(9.0971)
+          .kA(0.30853)
+          .kS(0.45)
+          .kG(0.4)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0.0)
+          .kP(477.45)
           .kI(0.0)
-          .kD(0)
+          .kD(10)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
