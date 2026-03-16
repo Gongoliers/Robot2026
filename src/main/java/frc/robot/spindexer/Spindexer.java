@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.MutVoltage;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.Subsystem;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
@@ -32,7 +34,7 @@ public class Spindexer extends Subsystem {
 
   private MotorValues motorValues = new MotorValues();
 
-  private SpindexerState currentState;
+  private SpindexerState state;
 
   private boolean voltageSet;
 
@@ -80,7 +82,7 @@ public class Spindexer extends Subsystem {
     motorOutput = SpindexerFactory.createSpindexerMotor(config);
     motorOutput.configure();
 
-    currentState = SpindexerState.STOP;
+    state = SpindexerState.STOP;
 
     voltageOut = Volts.mutable(0);
 
@@ -90,7 +92,7 @@ public class Spindexer extends Subsystem {
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
 
     if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
-      discreteSim.useVelocity(() -> currentState.getVelocity());
+      discreteSim.useVelocity(() -> state.velocity);
     }
   }
 
@@ -108,15 +110,15 @@ public class Spindexer extends Subsystem {
     stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
     stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
 
-    tab.addString("Current state", () -> currentState.name());
-    tab.addDouble("Setpoint (rotps)", () -> currentState.getVelocity().in(RotationsPerSecond));
+    tab.addString("Current state", () -> state.name());
+    tab.addDouble("Setpoint (rotps)", () -> state.velocity.in(RotationsPerSecond));
   }
 
   @Override
   public void periodic() {
     motorOutput.updateValues(motorValues, RobotConstants.PERIODIC_DURATION);
 
-    double setpointRotationsPerSecond = currentState.getVelocity().in(RotationsPerSecond);
+    double setpointRotationsPerSecond = state.velocity.in(RotationsPerSecond);
     double velocityRotationsPerSecond = motorValues.velocity.in(RotationsPerSecond);
 
     if (!voltageSet) {
@@ -137,12 +139,34 @@ public class Spindexer extends Subsystem {
     }).finallyDo(() -> voltageSet = false);
   }
 
-  public Command setState(SpindexerState spindexerState) {
-    return this.runOnce(() -> currentState = spindexerState);
+  /**
+   * Instantaneously changes the spindexer's control state
+   * 
+   * @param spindexerState New spindexer state
+   */
+  public void setState(SpindexerState spindexerState) {
+    state = spindexerState;
+  }
+
+  /**
+   * Returns a command that changes the spindexer's control state and waits until at that state
+   * 
+   * @param spindexerState New spindexer state
+   * @return A command taht changes the spindexer's control state and waits until at that state
+   */
+  public Command goToState(SpindexerState spindexerState) {
+    return Commands.sequence(
+      this.runOnce(() -> setState(spindexerState)),
+      Commands.waitUntil(this::atTargetState)
+    );
+  }
+
+  public boolean atTargetState() {
+    return MathUtil.isNear(state.velocity.in(RotationsPerSecond), motorValues.velocity.in(RotationsPerSecond), 1);
   }
 
   public SpindexerState getState() {
-    return currentState;
+    return state;
   }
   public MechanismConfig getConfig() {
     return config;

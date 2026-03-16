@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.Subsystem;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
@@ -248,8 +249,26 @@ public class Intake extends Subsystem {
     }).finallyDo(() -> rollerVoltageSet = false);
   }
 
-  public Command setState(IntakeState intakeState) {
-    return this.runOnce(() -> state = intakeState);
+  /** 
+   * Instantaneously changes the intake's control state 
+   * 
+   * @param intakeState New intake state
+   */
+  public void setState(IntakeState intakeState) {
+    state = intakeState;
+  }
+
+  /** 
+   * Returns a command that changes the intake's control state and waits until at that state
+   * 
+   * @param intakeState New intake state
+   * @return A command that changes the intake's control state and waits until at that state
+   */
+  public Command goToState(IntakeState intakeState) {
+    return Commands.sequence(
+      this.runOnce(() -> setState(intakeState)),
+      Commands.waitUntil(this::atTargetState)
+    );
   }
 
   public boolean atTargetState() {

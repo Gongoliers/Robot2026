@@ -8,13 +8,9 @@ public enum KickerState {
   STOP(RotationsPerSecond.of(0)),
   TEST(RotationsPerSecond.of(14));
 
-  private final AngularVelocity velocity;
+  public final AngularVelocity velocity;
 
   KickerState(AngularVelocity velocity) {
     this.velocity = velocity;
-  }
-
-  public AngularVelocity getVelocity() {
-    return velocity;
   }
 }

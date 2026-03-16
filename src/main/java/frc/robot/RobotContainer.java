@@ -121,18 +121,18 @@ public class RobotContainer {
     operatorController.rightTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(-0.5)));
     operatorController.leftTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(0.5)));
 
-    driverController.a().onTrue(intake.setState(IntakeState.OUT));
+    driverController.a().onTrue(intake.goToState(IntakeState.OUT));
     driverController.b().whileTrue(Commands.parallel(
       turret.allowExternalControl(),
-      kicker.setState(KickerState.TEST),
-      spindexer.setState(SpindexerState.TEST),
-      intake.setState(IntakeState.AGITATE)
+      kicker.goToState(KickerState.TEST),
+      spindexer.goToState(SpindexerState.TEST),
+      intake.goToState(IntakeState.AGITATE)
     )).onFalse((Commands.parallel(
-      kicker.setState(KickerState.STOP),
-      spindexer.setState(SpindexerState.STOP),
-      intake.setState(IntakeState.OUT)
+      kicker.goToState(KickerState.STOP),
+      spindexer.goToState(SpindexerState.STOP),
+      intake.goToState(IntakeState.OUT)
     )));
-    driverController.y().onTrue(intake.setState(IntakeState.STOW));
+    driverController.y().onTrue(intake.goToState(IntakeState.STOW));
   }
 
   public Command getAutonomousCommand() {
