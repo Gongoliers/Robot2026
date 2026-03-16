@@ -6,17 +6,14 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.scripting.Action.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.PosePublisher;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
@@ -29,22 +26,23 @@ import frc.robot.scripting.Action;
 import frc.robot.scripting.NamedPose;
 import frc.robot.scripting.ObjectiveActionMachine;
 import frc.robot.intake.Intake;
+<<<<<<< New base: Fix error
 import frc.robot.intake.IntakeRollerSysID;
 import frc.robot.intake.IntakeState;
+||||||| Common ancestor
+import frc.robot.intake.IntakePivotState;
+import frc.robot.intake.IntakeRollerState;
+import frc.robot.intake.IntakeRollerSysID;
+=======
+>>>>>>> Current commit: Add `ScriptingChooser` class
 import frc.robot.kicker.Kicker;
 import frc.robot.kicker.KickerState;
-import frc.robot.kicker.KickerSysID;
+import frc.robot.scripting.ScriptingChooser;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
-import frc.robot.spindexer.SpindexerSysID;
 import frc.robot.turret.Turret;
-import frc.robot.turret.Turret;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
 
 /** Robot container */
 public class RobotContainer {
@@ -88,9 +86,7 @@ public class RobotContainer {
   /** Kicker */
   private final Kicker kicker;
 
-  private final List<SendableChooser<Action>> choosers;
-
-  private final SendableChooser<Boolean> isLeftSide;
+  private  final ScriptingChooser chooser;
 
   /**
    * Gets robot container instance
@@ -121,24 +117,9 @@ public class RobotContainer {
     spindexer = Spindexer.getInstance();
     kicker = Kicker.getInstance();
 
-    // TODO Create ActionSelector class
-    choosers = IntStream.rangeClosed(1, 8).mapToObj(n -> String.format("Action %d", n)).map(name -> {
-      SendableChooser<Action> chooser = new SendableChooser<>();
-      chooser.setDefaultOption("", NONE);
-
-      for (Action action : Arrays.stream(values()).filter(action -> action != NONE).toList()) {
-        chooser.addOption(action.name(), action);
-      }
-
-      SmartDashboard.putData(name, chooser);
-      return chooser;
-    }).toList();
-    SmartDashboard.putString("Action", "");
-
-    isLeftSide = new SendableChooser<>();
-    isLeftSide.setDefaultOption("Left", true);
-    isLeftSide.addOption("Right", false);
-    SmartDashboard.putData("Is Left Side?", isLeftSide);
+    chooser = new ScriptingChooser(8);
+    chooser.publishActions(SmartDashboard::putData);
+    chooser.publishSide(SmartDashboard::putData);
 
     multithreader.start();
 
@@ -209,9 +190,9 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
-    Action[] actions = choosers.stream().map(SendableChooser::getSelected).toArray(Action[]::new);
-    seedSimPose(isLeftSide.getSelected(), alliance);
-    if (isLeftSide.getSelected()) {
+    Action[] actions = chooser.selectedActions().toArray(Action[]::new);
+    seedSimPose(chooser.selectedLeftSide(), alliance);
+    if (chooser.selectedLeftSide()) {
       return ObjectiveActionMachine.createLeftSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
     } else {
       return ObjectiveActionMachine.createRightSideCommand(alliance, actions, this::performDrive, this::loggedPerformAction);
