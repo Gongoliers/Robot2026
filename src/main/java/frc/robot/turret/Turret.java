@@ -59,8 +59,6 @@ public class Turret extends MultithreadedSubsystem {
 
     state = TurretState.STOW;
 
-    hubTarget = new Translation2d(0, 0);
-
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
   }
 
