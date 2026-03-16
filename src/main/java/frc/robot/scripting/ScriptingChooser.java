@@ -48,7 +48,7 @@ public class ScriptingChooser {
     }
 
     public List<Action> selectedActions() {
-        return actions.stream().map(SendableChooser::getSelected).filter(Objects::isNull).toList();
+        return actions.stream().map(SendableChooser::getSelected).filter(Objects::nonNull).toList();
     }
 
     public boolean selectedLeftSide() {
