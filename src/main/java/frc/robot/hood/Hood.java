@@ -42,9 +42,6 @@ public class Hood extends MultithreadedSubsystem {
   /** Target position */
   private final MutAngle setpoint;
 
-  /** How close to be to setpoint before considered at that setpoint */
-  private final Angle posTolerance;
-
   /** Minimum hood angle (for safety) */
   private final Angle minPosition = Degrees.of(10);
 
@@ -110,7 +107,6 @@ public class Hood extends MultithreadedSubsystem {
     motorOutput.setPosition(minPosition);
     
     setpoint = Rotations.mutable(minPosition.in(Rotations));
-    posTolerance = Rotations.of(0.005);
     voltageSet = false;
     voltageOut = Volts.mutable(0.0);
 
