@@ -66,7 +66,15 @@ public class Superstructure extends Subsystem {
 
   @Override
   public void periodic() {
-
+    if (state == SuperstructureState.SCORE) {
+      if (turret.atTargetState()) {
+        kicker.setState(KickerState.RUN);
+        spindexer.setState(SpindexerState.RUN);
+      } else{
+        kicker.setState(KickerState.STOP);
+        spindexer.setState(SpindexerState.STOP);
+      }
+    }
   }
 
   public Command init() {

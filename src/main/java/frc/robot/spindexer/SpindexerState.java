@@ -6,7 +6,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 public enum SpindexerState {
   STOP(RotationsPerSecond.of(0)),
-  TEST(RotationsPerSecond.of(7));
+  RUN(RotationsPerSecond.of(7));
 
   public final AngularVelocity velocity;
 
