@@ -10,6 +10,7 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -114,25 +115,17 @@ public class RobotContainer {
 
   private void configureDefaultCommands() {
     drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
-    turret.setDefaultCommand(turret.stow());
+    turret.setDefaultCommand(turret.allowExternalControl());
   }
 
   private void configureBindings() {
-    operatorController.rightTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(-0.5)));
-    operatorController.leftTrigger().whileTrue(azimuth.runAtVoltage(() -> Volts.of(0.5)));
+    operatorController.rightTrigger().whileTrue(Commands.run(() -> azimuth.setSetpoint(azimuth.getSetpoint().plus(Rotations.of(0.0025)))));
+    operatorController.rightTrigger().whileTrue(Commands.run(() -> azimuth.setSetpoint(azimuth.getSetpoint().minus(Rotations.of(0.0025)))));
 
-    driverController.a().onTrue(intake.goToState(IntakeState.OUT));
-    driverController.b().whileTrue(Commands.parallel(
-      turret.allowExternalControl(),
-      kicker.goToState(KickerState.RUN),
-      spindexer.goToState(SpindexerState.RUN),
-      intake.goToState(IntakeState.AGITATE)
-    )).onFalse((Commands.parallel(
-      kicker.goToState(KickerState.STOP),
-      spindexer.goToState(SpindexerState.STOP),
-      intake.goToState(IntakeState.OUT)
-    )));
-    driverController.y().onTrue(intake.goToState(IntakeState.STOW));
+    operatorController.leftBumper().whileTrue(Commands.run(() -> {
+      Rotation2d controllerRotation = new Rotation2d(operatorController.getRightX(), -operatorController.getRightY());
+      azimuth.setSetpoint(Rotations.of(controllerRotation.getRotations()));
+    }));
   }
 
   public Command getAutonomousCommand() {
