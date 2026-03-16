@@ -20,19 +20,11 @@ import frc.robot.azimuth.Azimuth;
 import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
-import frc.robot.intake.IntakePivotState;
-import frc.robot.intake.IntakeRollerState;
 import frc.robot.scripting.*;
 import frc.robot.intake.Intake;
-<<<<<<< New base: Fix error
 import frc.robot.intake.IntakeRollerSysID;
 import frc.robot.intake.IntakeState;
-||||||| Common ancestor
-import frc.robot.intake.IntakePivotState;
-import frc.robot.intake.IntakeRollerState;
 import frc.robot.intake.IntakeRollerSysID;
-=======
->>>>>>> Current commit: Add `ScriptingChooser` class
 import frc.robot.kicker.Kicker;
 import frc.robot.kicker.KickerState;
 import frc.robot.shooter.Shooter;
@@ -163,7 +155,7 @@ public class RobotContainer {
     return switch (action) {
         case NONE, PASS, CLIMB -> drive.andThen(Commands.waitSeconds(2.5));
         // TODO Implement `intake.intake() -> Command`
-        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.goToStates(IntakePivotState.OUT, IntakeRollerState.TEST).repeatedly().finallyDo(intake::stow));
+        case INTAKE_NEUTRAL, INTAKE_ZONE -> drive.deadlineFor(intake.setState(IntakeState.OUT).repeatedly().finallyDo(intake::stow));
         // TODO Implement `turret.score() -> Command`
         case SCORE -> drive.andThen(turret.faceHub().withTimeout(2.5));
     };
