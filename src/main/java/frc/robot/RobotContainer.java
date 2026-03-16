@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -29,6 +30,7 @@ import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
 import frc.robot.turret.Turret;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -112,6 +114,11 @@ public class RobotContainer {
 
     multithreader.start();
 
+    PosePublisher.publish("Auto/AllNamedPoses", Arrays.stream(NamedPose.values()).map(NamedPose::blue).toArray(Pose2d[]::new));
+
+    PosePublisher.publish("Auto/LeftSweep", NamedPose.NEUTRAL_LEFT_SWEEP.blue());
+    PosePublisher.publish("Auto/RightSweep", NamedPose.NEUTRAL_RIGHT_SWEEP.blue());
+
     Telemetry.initializeTabs();
     configureDefaultCommands();
     configureBindings();
@@ -151,7 +158,7 @@ public class RobotContainer {
     return switch (action) {
         case NONE, PASS, CLIMB -> Commands.waitSeconds(2.5);
         // TODO Implement `intake.intake() -> Command`
-        case INTAKE_NEUTRAL, INTAKE_ZONE -> intake.setState(IntakeState.OUT).repeatedly().finallyDo(intake::stow);
+        case INTAKE_NEUTRAL, INTAKE_ZONE, INTAKE_SWEEP -> intake.setState(IntakeState.OUT).repeatedly().finallyDo(intake::stow);
         // TODO Implement `turret.score() -> Command`
         case SCORE -> turret.faceHub().withTimeout(2.5);
     };
@@ -168,7 +175,7 @@ public class RobotContainer {
   private ObjectiveAutoBuilder.AutoComposers.AutoComposer compose(Action action) {
     return switch (action) {
       case NONE, PASS, CLIMB, SCORE -> ObjectiveAutoBuilder.AutoComposers.AFTER_DRIVING;
-      case INTAKE_NEUTRAL, INTAKE_ZONE -> ObjectiveAutoBuilder.AutoComposers.WHILE_DRIVING;
+      case INTAKE_NEUTRAL, INTAKE_ZONE, INTAKE_SWEEP -> ObjectiveAutoBuilder.AutoComposers.WHILE_DRIVING;
     };
   }
 

@@ -18,6 +18,8 @@ public enum Objective {
     SCORE_FAR_RIGHT(NamedPose.FAR_RIGHT, Action.SCORE),
     INTAKE_NEUTRAL_LEFT(NamedPose.NEUTRAL_LEFT, Action.INTAKE_NEUTRAL),
     INTAKE_NEUTRAL_RIGHT(NamedPose.NEUTRAL_RIGHT, Action.INTAKE_NEUTRAL),
+    INTAKE_SWEEP_LEFT(NamedPose.NEUTRAL_LEFT_SWEEP, Action.INTAKE_SWEEP),
+    INTAKE_SWEEP_RIGHT(NamedPose.NEUTRAL_RIGHT_SWEEP, Action.INTAKE_SWEEP),
     INTAKE_ZONE_LEFT(NamedPose.PICKUP_ZONE_LEFT, Action.INTAKE_ZONE),
     INTAKE_ZONE_RIGHT(NamedPose.PICKUP_ZONE_RIGHT, Action.INTAKE_ZONE),
     CLIMB_LEFT(NamedPose.CLIMB_LEFT, Action.CLIMB),
@@ -35,9 +37,21 @@ public enum Objective {
         return action -> NONE;
     }
 
-    private static Function<Action, Objective> create(Objective onScore, Objective onPass, Objective onIntakeNeutral, Objective onIntakeZone, Objective onClimb) {
+    private static Function<Action, Objective> create(Objective onScore, Objective onPass, Objective onIntakeNeutral, Objective onIntakeZone, Objective onClimb, Objective onSweep) {
         return action -> switch (action) {
             case NONE -> NONE;
+            case SCORE -> onScore;
+            case PASS -> onPass;
+            case INTAKE_NEUTRAL -> onIntakeNeutral;
+            case INTAKE_ZONE -> onIntakeZone;
+            case INTAKE_SWEEP -> onSweep;
+            case CLIMB -> onClimb;
+        };
+    }
+
+    private static Function<Action, Objective> create(Objective onScore, Objective onPass, Objective onIntakeNeutral, Objective onIntakeZone, Objective onClimb) {
+        return action -> switch (action) {
+            case NONE, INTAKE_SWEEP -> NONE;
             case SCORE -> onScore;
             case PASS -> onPass;
             case INTAKE_NEUTRAL -> onIntakeNeutral;
@@ -68,11 +82,14 @@ public enum Objective {
         PASS_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
 
         // Intake objectives
-        INTAKE_NEUTRAL_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT);
-        INTAKE_NEUTRAL_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
+        INTAKE_NEUTRAL_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT, INTAKE_SWEEP_RIGHT);
+        INTAKE_NEUTRAL_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT, INTAKE_SWEEP_LEFT);
         // Prevent passing when within the zone
         INTAKE_ZONE_LEFT.next = create(SCORE_NEAR_LEFT, NONE, INTAKE_ZONE_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT);
         INTAKE_ZONE_RIGHT.next = create(SCORE_NEAR_RIGHT, NONE, INTAKE_ZONE_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
+        // Intake sweep objectives
+        INTAKE_SWEEP_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT, INTAKE_SWEEP_RIGHT);
+        INTAKE_SWEEP_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT, INTAKE_SWEEP_LEFT);
     }
 
     Objective(NamedPose pose, Action action) {

@@ -13,6 +13,8 @@ public enum NamedPose {
     // TODO Use actual field measurements
     NEUTRAL_LEFT(Meters.of(8), Meters.of(6), Degrees.of(135)),
     NEUTRAL_RIGHT(Meters.of(8), Meters.of(2), Degrees.of(-135)),
+    NEUTRAL_LEFT_SWEEP(Meters.of(8), Meters.of(6), Degrees.of(-90)),
+    NEUTRAL_RIGHT_SWEEP(Meters.of(8), Meters.of(2), Degrees.of(90)),
     NEUTRAL_LEFT_BACK(Meters.of(8), Meters.of(6), Degrees.of(135)),
     NEUTRAL_RIGHT_BACK(Meters.of(8), Meters.of(2), Degrees.of(-135)),
     NEAR_LEFT(Meters.of(2.25), Meters.of(5.5), Degrees.of(-45)),

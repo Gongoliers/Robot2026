@@ -6,5 +6,6 @@ public enum Action {
     PASS,
     INTAKE_NEUTRAL,
     INTAKE_ZONE,
+    INTAKE_SWEEP,
     CLIMB
 }
