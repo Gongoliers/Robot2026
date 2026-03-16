@@ -120,7 +120,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     operatorController.rightTrigger().whileTrue(Commands.run(() -> azimuth.setSetpoint(azimuth.getSetpoint().plus(Rotations.of(0.0025)))));
-    operatorController.rightTrigger().whileTrue(Commands.run(() -> azimuth.setSetpoint(azimuth.getSetpoint().minus(Rotations.of(0.0025)))));
+    operatorController.leftTrigger().whileTrue(Commands.run(() -> azimuth.setSetpoint(azimuth.getSetpoint().minus(Rotations.of(0.0025)))));
 
     operatorController.leftBumper().whileTrue(Commands.run(() -> {
       Rotation2d controllerRotation = new Rotation2d(operatorController.getRightX(), -operatorController.getRightY());
