@@ -1,5 +1,6 @@
 package frc.robot.superstructure;
 
+import frc.lib.Subsystem;
 import frc.robot.intake.Intake;
 import frc.robot.kicker.Kicker;
 import frc.robot.spindexer.Spindexer;
@@ -10,7 +11,7 @@ import frc.robot.turret.Turret;
  * 
  * Manages automated control of all other subsystems
  */
-public class Superstructure {
+public class Superstructure extends Subsystem {
   
   /** Superstructure subsystem singleton */
   private static Superstructure instance = null;
@@ -51,5 +52,15 @@ public class Superstructure {
     turret = Turret.getInstance();
 
     state = SuperstructureState.INIT;
+  }
+
+  @Override
+  public void initializeTab() {
+
+  }
+
+  @Override
+  public void periodic() {
+    
   }
 }
