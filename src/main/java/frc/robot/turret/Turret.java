@@ -6,6 +6,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -119,6 +121,7 @@ public class Turret extends MultithreadedSubsystem {
         break;
       case TARGET_HUB:
         faceHub(turretPose);
+        targetHub(turretPose);
         break;
     }
   }
@@ -131,10 +134,9 @@ public class Turret extends MultithreadedSubsystem {
         return azimuth.nearSetpoint(Rotations.of(0.1))
             && azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.2;
       case TARGET_HUB:
-        return azimuth.nearSetpoint(Rotations.of(0.1))
-            && azimuth.getValues().velocity.abs(RotationsPerSecond) < 1
-            && shooter.nearSetpoint(RotationsPerSecond.of(1))
-            && hood.nearSetpoint(Rotations.of(0.05));
+        return azimuth.nearSetpoint(Rotations.of(0.075))
+            && shooter.nearSetpoint(RotationsPerSecond.of(4))
+            && hood.nearSetpoint(Rotations.of(0.1));
       default:
         return true;
     }
@@ -152,6 +154,17 @@ public class Turret extends MultithreadedSubsystem {
     SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm()); // getNorm does return distance in meters it isn't documented but translations are in meters
 
     azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
+  }
+
+  private void targetHub(Pose2d turretPose) {
+    Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
+    Distance turretDistance = Meters.of(translationToHub.getNorm());
+
+    Angle hoodSetpoint = TurretTargeter.targetHubHood(turretDistance);
+    AngularVelocity shooterSetpoint = TurretTargeter.targetHubShooter(turretDistance);
+
+    hood.setSetpoint(hoodSetpoint);
+    shooter.setSetpoint(shooterSetpoint);
   }
 
   /**

@@ -105,7 +105,6 @@ public class Shooter extends MultithreadedSubsystem {
     voltageOut = Volts.mutable(0);
 
     feedback = config.feedbackControllerConfig().createPIDController();
-    feedback.setTolerance(2.5);
     feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
 
     if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {

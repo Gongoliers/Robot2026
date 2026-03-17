@@ -19,7 +19,25 @@ public class TurretTargeter {
   private static final InterpolatingDoubleTreeMap shooterMapHub = new InterpolatingDoubleTreeMap();
 
   static {
-    // put tested values in here in format hoodMap.put(distanceMeters, hoodAngleRotations)
+    hoodMapHub.put(1.46, 0.0277);
+    hoodMapHub.put(1.98, 0.0277);
+    hoodMapHub.put(2.286, 0.0277);
+    hoodMapHub.put(2.638, 0.03388);
+    hoodMapHub.put(3.045, 0.038333);
+    hoodMapHub.put(3.43, 0.043);
+    hoodMapHub.put(3.9, 0.04388);
+    hoodMapHub.put(4.4, 0.044166);
+    hoodMapHub.put(5.07, 0.04944);
+
+    shooterMapHub.put(1.46, 24.25);
+    shooterMapHub.put(1.98, 24.25);
+    shooterMapHub.put(2.286, 26.5);
+    shooterMapHub.put(2.638, 28.0);
+    shooterMapHub.put(3.045, 29.75);
+    shooterMapHub.put(3.43, 32.25);
+    shooterMapHub.put(3.9, 33.75);
+    shooterMapHub.put(4.4, 36.0);
+    shooterMapHub.put(5.07, 38.25);
   }
 
   /**
