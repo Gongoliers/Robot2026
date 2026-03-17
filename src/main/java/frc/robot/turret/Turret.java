@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
@@ -147,6 +148,8 @@ public class Turret extends MultithreadedSubsystem {
   private void faceHub(Pose2d turretPose) {
     Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
     Rotation2d rotationError = translationToHub.getAngle().minus(turretPose.getRotation());
+
+    SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm()); // getNorm does return distance in meters it isn't documented but translations are in meters
 
     azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
   }
