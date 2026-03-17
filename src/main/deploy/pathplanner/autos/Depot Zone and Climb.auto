@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DEPOT_BUMP_ZONE to DEPOT"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DEPOT to DEPOT_SAFE"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DEPOT_SAFE to DEPOT_TOWER"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
