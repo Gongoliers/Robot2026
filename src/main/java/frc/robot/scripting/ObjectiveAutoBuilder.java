@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -24,13 +25,13 @@ public class ObjectiveAutoBuilder {
 
     }
 
-    private final Function<Pose2d, Command> driveFactory;
+    private final BiFunction<NamedPose, NamedPose, Command> driveFactory;
 
     private final Function<Action, Command> actionFactory;
 
     private final Function<Action, AutoComposers.AutoComposer> composerFactory;
 
-    public ObjectiveAutoBuilder(Function<Pose2d, Command> driveFactory, Function<Action, Command> actionFactory, Function<Action, AutoComposers.AutoComposer> composerFactory) {
+    public ObjectiveAutoBuilder(BiFunction<NamedPose, NamedPose, Command> driveFactory, Function<Action, Command> actionFactory, Function<Action, AutoComposers.AutoComposer> composerFactory) {
         this.driveFactory = driveFactory;
         this.actionFactory = actionFactory;
         this.composerFactory = composerFactory;
@@ -40,8 +41,8 @@ public class ObjectiveAutoBuilder {
         return Commands.print(Objective.explainAll(objectives));
     }
 
-    private Function<DriverStation.Alliance, Command> driveCommand(Objective objective) {
-        return alliance -> objective.pose().map(pose -> driveFactory.apply(pose.forAlliance(alliance))).orElse(Commands.none());
+    private Function<DriverStation.Alliance, Command> driveCommand(Objective objective, NamedPose previousPose) {
+        return alliance -> objective.pose().map(pose -> driveFactory.apply(previousPose, pose)).orElse(Commands.none());
     }
 
     private Function<Command, Command> actionCommand(Objective objective) {
@@ -50,17 +51,21 @@ public class ObjectiveAutoBuilder {
         return drive -> composer.apply(drive, action);
     }
 
-    public Function<DriverStation.Alliance, Command> createCommand(Objective objective) {
-        return alliance -> actionCommand(objective).apply(driveCommand(objective).apply(alliance));
+    public Function<DriverStation.Alliance, Command> createCommand(Objective objective, NamedPose previousPose) {
+        return alliance -> actionCommand(objective).apply(driveCommand(objective, previousPose).apply(alliance));
     }
 
-    public Function<DriverStation.Alliance, List<Command>> createCommands(List<Objective> objectives) {
-        return alliance -> objectives.stream().map(this::createCommand).map(cmd -> cmd.apply(alliance)).toList();
-    }
-
-    public Function<DriverStation.Alliance, Command> createSequence(List<Objective> objectives) {
+    public Function<DriverStation.Alliance, Command> createCommand(List<Objective> objectives, NamedPose initialPose) {
         return alliance -> {
-            List<Command> commands = createCommands(objectives).apply(alliance);
+            List<Command> commands = new ArrayList<>();
+            NamedPose previousPose = initialPose;
+            for (Objective obj : objectives) {
+                Command cmd = createCommand(obj, previousPose).apply(alliance);
+                commands.add(cmd);
+                if (obj.pose().isPresent()) {
+                    previousPose = obj.pose().get();
+                }
+            }
             return Commands.sequence(commands.toArray(Command[]::new));
         };
     }
