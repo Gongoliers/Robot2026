@@ -125,8 +125,13 @@ public class RobotContainer {
     driverController.a().onTrue(superstructure.faceHub());
     driverController.b().onTrue(superstructure.stow());
     driverController.x().onTrue(superstructure.init());
-    driverController.leftBumper().onTrue(superstructure.intake());
-    driverController.rightBumper().onTrue(superstructure.score());
+    driverController.povLeft().onTrue(superstructure.intake());
+    driverController.povRight().onTrue(superstructure.score());
+
+    driverController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Degrees.of(0.1)))));
+    driverController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Degrees.of(0.1)))));
+    driverController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.25)))));
+    driverController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.25)))));
   }
 
   public Command getAutonomousCommand() {
