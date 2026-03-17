@@ -1,6 +1,5 @@
 package frc.robot.scripting;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -13,41 +12,44 @@ import java.util.function.Function;
 
 public class ObjectiveAutoBuilder {
 
-    public static class AutoComposers {
-
-        public interface AutoComposer extends BinaryOperator<Command> {}
-
-        public static final AutoComposer BEFORE_DRIVING = Command::beforeStarting;
-
-        public static final AutoComposer AFTER_DRIVING = Command::andThen;
-
-        public static final AutoComposer WHILE_DRIVING = Command::deadlineFor;
-
+    @FunctionalInterface
+    public interface DriveCommand {
+        Command build(NamedPose previousPose, NamedPose nextPose);
     }
 
-    private final BiFunction<NamedPose, NamedPose, Command> driveFactory;
+    @FunctionalInterface
+    public interface ActionCommand {
+        Command build(Action action);
+    }
 
-    private final Function<Action, Command> actionFactory;
+    @FunctionalInterface
+    public interface ComposerCommand {
+        Command apply(Command driveCommand, Command actionCommand);
+    }
 
-    private final Function<Action, AutoComposers.AutoComposer> composerFactory;
+    private final DriveCommand drive;
 
-    public ObjectiveAutoBuilder(BiFunction<NamedPose, NamedPose, Command> driveFactory, Function<Action, Command> actionFactory, Function<Action, AutoComposers.AutoComposer> composerFactory) {
-        this.driveFactory = driveFactory;
-        this.actionFactory = actionFactory;
-        this.composerFactory = composerFactory;
+    private final ActionCommand action;
+
+    private final Function<Action, ComposerCommand> composer;
+
+    public ObjectiveAutoBuilder(DriveCommand drive, ActionCommand action, Function<Action, ComposerCommand> composer) {
+        this.drive = drive;
+        this.action = action;
+        this.composer = composer;
     }
 
     public static Command explain(List<Objective> objectives) {
         return Commands.print(Objective.explainAll(objectives));
     }
 
-    private Function<DriverStation.Alliance, Command> driveCommand(Objective objective, NamedPose previousPose) {
-        return alliance -> objective.pose().map(pose -> driveFactory.apply(previousPose, pose)).orElse(Commands.none());
+    private Function<DriverStation.Alliance, Command> driveCommand(Objective objective, NamedPose previous) {
+        return alliance -> objective.pose().map(pose -> drive.build(previous, pose)).orElse(Commands.none());
     }
 
     private Function<Command, Command> actionCommand(Objective objective) {
-        Command action = actionFactory.apply(objective.action());
-        AutoComposers.AutoComposer composer = composerFactory.apply(objective.action());
+        Command action = this.action.build(objective.action());
+        ComposerCommand composer = this.composer.apply(objective.action());
         return drive -> composer.apply(drive, action);
     }
 
@@ -59,11 +61,11 @@ public class ObjectiveAutoBuilder {
         return alliance -> {
             List<Command> commands = new ArrayList<>();
             NamedPose previousPose = initialPose;
-            for (Objective obj : objectives) {
-                Command cmd = createCommand(obj, previousPose).apply(alliance);
+            for (Objective objective : objectives) {
+                Command cmd = createCommand(objective, previousPose).apply(alliance);
                 commands.add(cmd);
-                if (obj.pose().isPresent()) {
-                    previousPose = obj.pose().get();
+                if (objective.pose().isPresent()) {
+                    previousPose = objective.pose().get();
                 }
             }
             return Commands.sequence(commands.toArray(Command[]::new));
