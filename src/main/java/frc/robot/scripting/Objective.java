@@ -1,130 +1,257 @@
 package frc.robot.scripting;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.stream.Stream;
 
+/**
+ * Combines where an action is performed and what action to perform.
+ */
 public enum Objective {
+    /**
+     * Do nothing.
+     */
     NONE,
-    INITIAL_LEFT(NamedPose.FAR_LEFT),
-    INITIAL_RIGHT(NamedPose.FAR_RIGHT),
-    PASS_LEFT(NamedPose.NEUTRAL_LEFT_BACK, Action.PASS),
-    PASS_RIGHT(NamedPose.NEUTRAL_RIGHT_BACK, Action.PASS),
-    SCORE_NEAR_LEFT(NamedPose.NEAR_LEFT, Action.SCORE),
-    SCORE_NEAR_RIGHT(NamedPose.NEAR_RIGHT, Action.SCORE),
-    SCORE_FAR_LEFT(NamedPose.FAR_LEFT, Action.SCORE),
-    SCORE_FAR_RIGHT(NamedPose.FAR_RIGHT, Action.SCORE),
-    INTAKE_NEUTRAL_LEFT(NamedPose.NEUTRAL_LEFT, Action.INTAKE_NEUTRAL),
-    INTAKE_NEUTRAL_RIGHT(NamedPose.NEUTRAL_RIGHT, Action.INTAKE_NEUTRAL),
-    INTAKE_SWEEP_LEFT(NamedPose.NEUTRAL_LEFT_SWEEP, Action.INTAKE_SWEEP),
-    INTAKE_SWEEP_RIGHT(NamedPose.NEUTRAL_RIGHT_SWEEP, Action.INTAKE_SWEEP),
-    INTAKE_ZONE_LEFT(NamedPose.PICKUP_ZONE_LEFT, Action.INTAKE_ZONE),
-    INTAKE_ZONE_RIGHT(NamedPose.PICKUP_ZONE_RIGHT, Action.INTAKE_ZONE),
-    CLIMB_LEFT(NamedPose.CLIMB_LEFT, Action.CLIMB),
-    CLIMB_RIGHT(NamedPose.CLIMB_RIGHT, Action.CLIMB);
+    /**
+     * Initial objective for Depot autos.
+     */
+    DEPOT_INITIAL(NamedPose.DEPOT_BUMP),
+    /**
+     * Initial objective for Outpost autos.
+     */
+    OUTPOST_INITIAL(NamedPose.OUTPOST_BUMP),
+    /**
+     * Score from the bump on the Depot side.
+     */
+    DEPOT_BUMP_SCORE(NamedPose.DEPOT_BUMP, Action.SCORE),
+    /**
+     * Score from the bump on the Outpost side.
+     */
+    OUTPOST_BUMP_SCORE(NamedPose.OUTPOST_BUMP, Action.SCORE),
+    /**
+     * Score from a safe location on the Depot side.
+     */
+    DEPOT_SAFE_SCORE(NamedPose.DEPOT_SAFE_SCORE, Action.SCORE),
+    /**
+     * Score from a safe location on the Outpost side.
+     */
+    OUTPOST_SAFE_SCORE(NamedPose.OUTPOST_SAFE_SCORE, Action.SCORE),
+    /**
+     * Intake from the Depot.
+     */
+    DEPOT_INTAKE(NamedPose.DEPOT, Action.INTAKE_ZONE),
+    /**
+     * Intake from the Outpost.
+     */
+    OUTPOST_INTAKE(NamedPose.OUTPOST, Action.INTAKE_ZONE),
+    /**
+     * Intake from the neutral zone on the Depot side.
+     */
+    DEPOT_NEUTRAL_INTAKE(NamedPose.DEPOT_NEUTRAL, Action.INTAKE_NEUTRAL),
+    /**
+     * Intake from the neutral zone on the Outpost side.
+     */
+    OUTPOST_NEUTRAL_INTAKE(NamedPose.OUTPOST_NEUTRAL, Action.INTAKE_NEUTRAL),
+    /**
+     * Intake across the neutral zone, ending on the Depot side.
+     */
+    DEPOT_SWEEP(NamedPose.DEPOT_NEUTRAL_SWEPT, Action.INTAKE_SWEEP),
+    /**
+     * Intake across the neutral zone, ending on the Outpost side.
+     */
+    OUTPOST_SWEEP(NamedPose.OUTPOST_NEUTRAL_SWEPT, Action.INTAKE_SWEEP),
+    /**
+     * Climb the Tower on the Depot side.
+     */
+    DEPOT_CLIMB(NamedPose.DEPOT_TOWER, Action.CLIMB),
+    /**
+     * Climb the Tower on the Outpost side.
+     */
+    OUTPOST_CLIMB(NamedPose.OUTPOST_TOWER, Action.CLIMB);
 
+    /**
+     * If true, this objective has a pose associated with it.
+     * If false, this objective consists only of an action.
+     */
     private final boolean hasPose;
 
+    /**
+     * The pose of this objective.
+     * Represents where the action is performed.
+     */
     private final NamedPose pose_;
 
+    /**
+     * The action of this objective.
+     * Represents what is being performed.
+     */
     private final Action action_;
 
-    private Function<Action, Objective> next;
+    /**
+     * Defines a transition table on actions from this objective to another objective.
+     */
+    private static final ObjectiveTransitionTable TRANSITIONS = ObjectiveTransitionTable.build(table -> {
+        table.in(NONE).stop();
 
-    private static Function<Action, Objective> none() {
-        return action -> NONE;
-    }
+        table.in(DEPOT_CLIMB).stop();
 
-    private static Function<Action, Objective> create(Objective onScore, Objective onPass, Objective onIntakeNeutral, Objective onIntakeZone, Objective onClimb, Objective onSweep) {
-        return action -> switch (action) {
-            case NONE -> NONE;
-            case SCORE -> onScore;
-            case PASS -> onPass;
-            case INTAKE_NEUTRAL -> onIntakeNeutral;
-            case INTAKE_ZONE -> onIntakeZone;
-            case INTAKE_SWEEP -> onSweep;
-            case CLIMB -> onClimb;
-        };
-    }
+        table.in(OUTPOST_CLIMB).stop();
 
-    private static Function<Action, Objective> create(Objective onScore, Objective onPass, Objective onIntakeNeutral, Objective onIntakeZone, Objective onClimb) {
-        return action -> switch (action) {
-            case NONE, INTAKE_SWEEP -> NONE;
-            case SCORE -> onScore;
-            case PASS -> onPass;
-            case INTAKE_NEUTRAL -> onIntakeNeutral;
-            case INTAKE_ZONE -> onIntakeZone;
-            case CLIMB -> onClimb;
-        };
-    }
+        table.in(DEPOT_INITIAL)
+            .on(Action.SCORE, DEPOT_BUMP_SCORE)
+            .on(Action.INTAKE_NEUTRAL, DEPOT_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, DEPOT_INTAKE)
+            .on(Action.CLIMB, DEPOT_CLIMB)
+            .orNone();
 
-    static {
-        // Terminal objectives: Don't process any more objectives after these
-        NONE.next = none();
-        CLIMB_LEFT.next = none();
-        CLIMB_RIGHT.next = none();
+        table.in(OUTPOST_INITIAL)
+            .on(Action.SCORE, OUTPOST_BUMP_SCORE)
+            .on(Action.INTAKE_NEUTRAL, OUTPOST_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, OUTPOST_INTAKE)
+            .on(Action.CLIMB, OUTPOST_CLIMB)
+            .orNone();
 
-        // Initial objectives
-        INITIAL_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT);
-        INITIAL_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
+        table.in(DEPOT_SAFE_SCORE)
+            .on(Action.SCORE, DEPOT_SAFE_SCORE)
+            .on(Action.INTAKE_NEUTRAL, DEPOT_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, DEPOT_INTAKE)
+            .on(Action.CLIMB, DEPOT_CLIMB)
+            .orNone();
 
-        // Score objectives
-        // Prevent passing when within the zone
-        SCORE_NEAR_LEFT.next = create(SCORE_NEAR_LEFT, NONE, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT);
-        SCORE_NEAR_RIGHT.next = create(SCORE_NEAR_RIGHT, NONE, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
-        SCORE_FAR_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT);
-        SCORE_FAR_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
+        table.in(DEPOT_BUMP_SCORE)
+            .on(Action.SCORE, DEPOT_BUMP_SCORE)
+            .on(Action.INTAKE_NEUTRAL, DEPOT_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, DEPOT_INTAKE)
+            .on(Action.CLIMB, DEPOT_CLIMB)
+            .orNone();
 
-        // Pass objectives
-        PASS_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT);
-        PASS_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
+        table.in(OUTPOST_BUMP_SCORE)
+            .on(Action.SCORE, OUTPOST_BUMP_SCORE)
+            .on(Action.INTAKE_NEUTRAL, OUTPOST_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, OUTPOST_INTAKE)
+            .on(Action.CLIMB, OUTPOST_CLIMB)
+            .orNone();
 
-        // Intake objectives
-        INTAKE_NEUTRAL_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT, INTAKE_SWEEP_RIGHT);
-        INTAKE_NEUTRAL_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT, INTAKE_SWEEP_LEFT);
-        // Prevent passing when within the zone
-        INTAKE_ZONE_LEFT.next = create(SCORE_NEAR_LEFT, NONE, INTAKE_ZONE_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT);
-        INTAKE_ZONE_RIGHT.next = create(SCORE_NEAR_RIGHT, NONE, INTAKE_ZONE_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT);
-        // Intake sweep objectives
-        INTAKE_SWEEP_LEFT.next = create(SCORE_FAR_LEFT, PASS_LEFT, INTAKE_NEUTRAL_LEFT, INTAKE_ZONE_LEFT, CLIMB_LEFT, INTAKE_SWEEP_RIGHT);
-        INTAKE_SWEEP_RIGHT.next = create(SCORE_FAR_RIGHT, PASS_RIGHT, INTAKE_NEUTRAL_RIGHT, INTAKE_ZONE_RIGHT, CLIMB_RIGHT, INTAKE_SWEEP_LEFT);
-    }
+        table.in(OUTPOST_SAFE_SCORE)
+            .on(Action.SCORE, OUTPOST_SAFE_SCORE)
+            .on(Action.INTAKE_NEUTRAL, OUTPOST_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, OUTPOST_INTAKE)
+            .on(Action.CLIMB, OUTPOST_CLIMB)
+            .orNone();
 
+        table.in(DEPOT_INTAKE)
+            .on(Action.SCORE, DEPOT_SAFE_SCORE)
+            .on(Action.INTAKE_NEUTRAL, DEPOT_INTAKE)
+            .on(Action.INTAKE_ZONE, DEPOT_INTAKE)
+            .on(Action.CLIMB, DEPOT_CLIMB)
+            .orNone();
+
+        table.in(OUTPOST_INTAKE)
+            .on(Action.SCORE, OUTPOST_SAFE_SCORE)
+            .on(Action.INTAKE_NEUTRAL, OUTPOST_INTAKE)
+            .on(Action.INTAKE_ZONE, OUTPOST_INTAKE)
+            .on(Action.CLIMB, OUTPOST_CLIMB)
+            .orNone();
+
+        table.in(DEPOT_NEUTRAL_INTAKE)
+            .on(Action.SCORE, DEPOT_BUMP_SCORE)
+            .on(Action.INTAKE_NEUTRAL, DEPOT_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, DEPOT_INTAKE)
+            .on(Action.INTAKE_SWEEP, OUTPOST_SWEEP)
+            .on(Action.CLIMB, DEPOT_CLIMB)
+            .orNone();
+
+        table.in(OUTPOST_NEUTRAL_INTAKE)
+            .on(Action.SCORE, OUTPOST_BUMP_SCORE)
+            .on(Action.INTAKE_NEUTRAL, OUTPOST_NEUTRAL_INTAKE)
+            .on(Action.INTAKE_ZONE, OUTPOST_INTAKE)
+            .on(Action.INTAKE_SWEEP, DEPOT_SWEEP)
+            .on(Action.CLIMB, OUTPOST_CLIMB)
+            .orNone();
+
+        table.in(DEPOT_SWEEP).sameAs(DEPOT_NEUTRAL_INTAKE);
+
+        table.in(OUTPOST_SWEEP).sameAs(OUTPOST_NEUTRAL_INTAKE);
+    });
+
+    /**
+     * Defines an objective with a pose and action.
+     *
+     * @param pose The pose.
+     * @param action The action.
+     */
     Objective(NamedPose pose, Action action) {
         hasPose = pose != null;
         pose_ = pose;
         action_ = action;
     }
 
+    /**
+     * Defines an objective where no action is performed.
+     *
+     * @param pose The pose.
+     */
     Objective(NamedPose pose) {
         this(pose, Action.NONE);
     }
 
+    /**
+     * Defines an objective where only an action is performed.
+     *
+     * @param action The action.
+     */
     Objective(Action action) {
         this(null, action);
     }
 
+    /**
+     * Defines an objective where nothing is performed.
+     */
     Objective() {
         this(Action.NONE);
     }
 
+    /**
+     * Returns the objective's pose.
+     *
+     * @return The objective's pose.
+     */
     public Optional<NamedPose> pose() {
         return Optional.ofNullable(pose_);
     }
 
+    /**
+     * Returns the objective's action.
+     *
+     * @return The objective's action.
+     */
     public Action action() {
         return action_;
     }
 
+    /**
+     * Returns the next objective to perform when a action is requested.
+     *
+     * @param action The requested action.
+     * @return The next objective.
+     */
     public Objective transition(Action action) {
-        return next.apply(action);
+        return TRANSITIONS.apply(this, action);
     }
 
+    /**
+     * Transitions between objectives given actions to perform.
+     * Beginning at an initial objective, transition between objectives based on actions.
+     * The initial objective is not explicitly included in the resulting objectives.
+     *
+     * @param initial The initial objective.
+     * @param actions The actions to perform.
+     * @return The objectives given the actions to perform.
+     */
     public static List<Objective> walk(Objective initial, Action[] actions) {
         ArrayList<Objective> objectives = new ArrayList<>();
-        // NOTE: The initial objective is never present in the final objectives
+        // Don't add the initial objective to the objectives
         Objective objective = initial;
         for (Action action : actions) {
             if (action == null) {
@@ -136,6 +263,11 @@ public enum Objective {
         return objectives;
     }
 
+    /**
+     * Returns a string explaining what this objective does.
+     *
+     * @return A string explaining what the objective does.
+     */
     public String explain() {
         if (!hasPose) {
             return String.format("%s: The robot will %s.", name(), action_.name());
@@ -144,11 +276,13 @@ public enum Objective {
         return String.format("%s: The robot will drive to %s. Then, the robot will %s.", name(), pose_.name(), action_.name());
     }
 
-    public static String explainAll(Objective[] objectives) {
-        return String.join("\n", Arrays.stream(objectives).map(Objective::explain).toList());
-    }
-
-    public static String explainAll(List<Objective> objectives) {
-        return explainAll(objectives.toArray(Objective[]::new));
+    /**
+     * Returns a string explaining what a sequence of objectives do.
+     *
+     * @param objectives A sequence of objectives.
+     * @return A string explaining what a sequences of objectives do.
+     */
+    public static String explainAll(Stream<Objective> objectives) {
+        return String.join("\n", objectives.map(Objective::explain).toList());
     }
 }
