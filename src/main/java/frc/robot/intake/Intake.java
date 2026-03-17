@@ -190,8 +190,8 @@ public class Intake extends Subsystem {
 
     // Define control to use for each state
     if (state == IntakeState.AGITATE) {
-      double oscillationAmplitude = 0.075; // Oscillation amplitude in rotations
-      double oscillationFrequency = 1.5; // Oscillation frequency in cycles per second
+      double oscillationAmplitude = 0.05; // Oscillation amplitude in rotations
+      double oscillationFrequency = 2; // Oscillation frequency in cycles per second
 
       double oscillation = Math.sin(6.28 * oscillationFrequency * RobotController.getMeasureTime().in(Seconds));
       double oscillatingSetpointRotations = oscillation * oscillationAmplitude + IntakeState.OUT.pivotSetpoint.in(Rotations) + oscillationAmplitude;
