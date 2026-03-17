@@ -118,7 +118,6 @@ public class Turret extends MultithreadedSubsystem {
         break;
       case TARGET_HUB:
         faceHub(turretPose);
-        shooter.setSetpoint(RotationsPerSecond.of(40));
         break;
     }
   }
