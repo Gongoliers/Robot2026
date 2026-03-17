@@ -67,8 +67,7 @@ public class Shooter extends MultithreadedSubsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          // .kP(0.12723)
-          .kP(0.135)
+          .kP(0.12723)
           .kI(0.0)
           .kD(0.0)
           .build())
