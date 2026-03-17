@@ -255,16 +255,12 @@ public class Intake extends Subsystem {
 
   public boolean atTargetState() {
     if (state == IntakeState.AGITATE) {
-      return pivotValues.position.lte(Rotations.of(0.2))
-              && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+      return pivotValues.position.lte(Rotations.of(0.2)) 
+          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
     } else {
       return MathUtil.isNear(pivotSetpoint.in(Rotations), pivotValues.position.in(Rotations), 0.05)
-              && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
+          && MathUtil.isNear(rollerSetpoint.in(RotationsPerSecond), rollerValues.velocity.in(RotationsPerSecond), 1);
     }
-  }
-
-  public void stow() {
-    state = IntakeState.STOW;
   }
 
   public IntakeState getState() {

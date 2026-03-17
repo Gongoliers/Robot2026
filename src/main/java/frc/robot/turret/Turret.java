@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
@@ -82,9 +81,6 @@ public class Turret extends MultithreadedSubsystem {
     Pose2d robot = Drive.getInstance().getPose();
     PosePublisher.publish("Turret (Local)", RobotConstants.localTurretPose(azimuth.localPosition()));
     PosePublisher.publish("Turret (Global)", RobotConstants.globalTurretPose(robot, azimuth.localPosition()));
-    if (getCurrentCommand() != null) {
-      SmartDashboard.putString("Turret.RunningCommand", getCurrentCommand().getName());
-    }
   }
 
   @Override
@@ -152,7 +148,7 @@ public class Turret extends MultithreadedSubsystem {
   public Command stow() {
     return Commands.run(() -> {
       state = TurretState.STOW;
-    }, this, azimuth, hood, shooter).withName("stow");
+    }, this, azimuth, hood, shooter);
   }
 
   /**
@@ -174,6 +170,6 @@ public class Turret extends MultithreadedSubsystem {
   public Command faceHub() {
     return Commands.run(() -> {
       state = TurretState.FACE_HUB;
-    }, this, azimuth, hood, shooter).withName("faceHub");
+    }, this, azimuth, hood, shooter);
   }
 }

@@ -4,35 +4,35 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.lib.PosePublisher;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
+import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
-import frc.robot.scripting.*;
+import frc.robot.hood.HoodSysID;
 import frc.robot.intake.Intake;
+import frc.robot.intake.IntakeRollerSysID;
 import frc.robot.intake.IntakeState;
 import frc.robot.kicker.Kicker;
 import frc.robot.kicker.KickerState;
+import frc.robot.kicker.KickerSysID;
 import frc.robot.shooter.Shooter;
+import frc.robot.shooter.ShooterSysID;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
+import frc.robot.spindexer.SpindexerSysID;
 import frc.robot.turret.Turret;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
 
 /** Robot container */
 public class RobotContainer {
@@ -76,8 +76,6 @@ public class RobotContainer {
   /** Kicker */
   private final Kicker kicker;
 
-  private  final ScriptingChooser chooser;
-
   /**
    * Gets robot container instance
    * 
@@ -107,17 +105,7 @@ public class RobotContainer {
     spindexer = Spindexer.getInstance();
     kicker = Kicker.getInstance();
 
-    chooser = new ScriptingChooser(8);
-    chooser.publishActions(SmartDashboard::putData);
-    chooser.publishSide(SmartDashboard::putData);
-    SmartDashboard.putString("Auto/CurrentAction", "");
-
     multithreader.start();
-
-    PosePublisher.publish("Auto/AllNamedPoses", Arrays.stream(NamedPose.values()).map(NamedPose::blue).toArray(Pose2d[]::new));
-
-    PosePublisher.publish("Auto/LeftSweep", NamedPose.NEUTRAL_LEFT_SWEEP.blue());
-    PosePublisher.publish("Auto/RightSweep", NamedPose.NEUTRAL_RIGHT_SWEEP.blue());
 
     Telemetry.initializeTabs();
     configureDefaultCommands();
@@ -147,58 +135,7 @@ public class RobotContainer {
     driverController.y().onTrue(intake.setState(IntakeState.STOW));
   }
 
-  private Command performDrive(Pose2d pose) {
-    return Commands.sequence(
-        Commands.runOnce(() -> PosePublisher.publish("Auto/NextPose", pose)),
-        drive.driveTo(pose)
-    );
-  }
-
-  private Command performAction(Action action) {
-    return switch (action) {
-        case NONE, PASS, CLIMB -> Commands.waitSeconds(2.5);
-        // TODO Implement `intake.intake() -> Command`
-        case INTAKE_NEUTRAL, INTAKE_ZONE, INTAKE_SWEEP -> intake.setState(IntakeState.OUT).repeatedly().finallyDo(intake::stow);
-        // TODO Implement `turret.score() -> Command`
-        case SCORE -> turret.faceHub().withTimeout(2.5);
-    };
-  }
-
-  private Command loggedPerformAction(Action action) {
-    return Commands.sequence(
-            Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", action.name())),
-            performAction(action),
-            Commands.runOnce(() -> SmartDashboard.putString("Auto/CurrentAction", ""))
-    );
-  }
-
-  private ObjectiveAutoBuilder.AutoComposers.AutoComposer compose(Action action) {
-    return switch (action) {
-      case NONE, PASS, CLIMB, SCORE -> ObjectiveAutoBuilder.AutoComposers.AFTER_DRIVING;
-      case INTAKE_NEUTRAL, INTAKE_ZONE, INTAKE_SWEEP -> ObjectiveAutoBuilder.AutoComposers.WHILE_DRIVING;
-    };
-  }
-
   public Command getAutonomousCommand() {
-    DriverStation.Alliance alliance = DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue);
-    Action[] actions = chooser.selectedActions().toArray(Action[]::new);
-    Objective initial = chooser.selectedLeftSide() ? Objective.INITIAL_LEFT : Objective.INITIAL_RIGHT;
-
-    initial.pose().ifPresent(pose -> {
-      if (Robot.isSimulation()) {
-        drive.resetPose(pose.forAlliance(alliance));
-      }
-    });
-
-    List<Objective> objectives = Objective.walk(initial, actions);
-
-    ObjectiveAutoBuilder auto = new ObjectiveAutoBuilder(
-        this::performDrive,
-        this::loggedPerformAction,
-        this::compose
-    );
-
-    Function<DriverStation.Alliance, Command> sequence = auto.createSequence(objectives);
-    return ObjectiveAutoBuilder.explain(objectives).andThen(sequence.apply(alliance));
+    return Commands.print("No autonomous command configured");
   }
 }
