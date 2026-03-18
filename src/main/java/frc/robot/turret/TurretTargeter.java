@@ -30,13 +30,13 @@ public class TurretTargeter {
     hoodMapHub.put(5.07, 0.04944);
 
     shooterMapHub.put(1.46, 24.25);
-    shooterMapHub.put(1.98, 24.25);
-    shooterMapHub.put(2.286, 26.5);
-    shooterMapHub.put(2.638, 28.0);
-    shooterMapHub.put(3.045, 29.75);
-    shooterMapHub.put(3.43, 32.25);
-    shooterMapHub.put(3.9, 33.75);
-    shooterMapHub.put(4.4, 36.0);
+    shooterMapHub.put(2.024, 28.0);
+    shooterMapHub.put(2.65, 30.0);
+    shooterMapHub.put(3.14, 30.25);
+    shooterMapHub.put(3.76, 34.0);
+    shooterMapHub.put(4.21, 36.75);
+    shooterMapHub.put(4.59, 37.25);
+    shooterMapHub.put(5.01, 38.75);
     shooterMapHub.put(5.07, 38.25);
   }
 

@@ -166,6 +166,13 @@ public class Drive extends Subsystem {
     });
   }
 
+  public Command cross() {
+    SwerveRequest.SwerveDriveBrake req = new SwerveRequest.SwerveDriveBrake();
+    return run(() -> {
+      swerve.setControl(req);
+    });
+  }
+
   public void addVisionMeasurement(Pose2d pose, double timestampSeconds) {
     swerve.addVisionMeasurement(pose, timestampSeconds);
   }

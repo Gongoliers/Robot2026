@@ -126,7 +126,9 @@ public class RobotContainer {
     driverController.b().onTrue(superstructure.stow());
     driverController.x().onTrue(superstructure.init());
     driverController.povLeft().onTrue(superstructure.intake());
-    driverController.povRight().onTrue(superstructure.score());
+    driverController.povRight().onTrue(superstructure.score()).whileTrue(drive.cross());
+
+    driverController.povUp().onTrue(superstructure.feed());
 
     driverController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Degrees.of(0.1)))));
     driverController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Degrees.of(0.1)))));

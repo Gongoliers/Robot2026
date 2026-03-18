@@ -97,6 +97,8 @@ public class Turret extends MultithreadedSubsystem {
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
     turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
+    Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
+    SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm());
 
     PosePublisher.publish("Estimated turret pose", turretPose);
   }
@@ -154,6 +156,11 @@ public class Turret extends MultithreadedSubsystem {
     SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm()); // getNorm does return distance in meters it isn't documented but translations are in meters
 
     azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
+
+    Distance turretDistance = Meters.of(translationToHub.getNorm());
+    Angle hoodSetpoint = TurretTargeter.targetHubHood(turretDistance);
+
+    hood.setSetpoint(hoodSetpoint);
   }
 
   private void targetHub(Pose2d turretPose) {
@@ -211,7 +218,7 @@ public class Turret extends MultithreadedSubsystem {
   public Command faceHub() {
     return Commands.runOnce(() -> {
       state = TurretState.FACE_HUB;
-    }, this, azimuth, hood, shooter)
+    }, this, azimuth)
     .andThen(Commands.waitUntil(this::atTargetState));
   }
 

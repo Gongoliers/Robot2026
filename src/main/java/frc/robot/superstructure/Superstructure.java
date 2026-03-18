@@ -139,4 +139,16 @@ public class Superstructure extends Subsystem {
     ))
     .finallyDo(() -> state = SuperstructureState.SCORE);
   }
+
+  public Command feed() {
+    return Commands.parallel(
+      intake.goToState(IntakeState.OUT),
+      kicker.goToState(KickerState.STOP),
+      spindexer.goToState(SpindexerState.STOP)
+    ).andThen(Commands.parallel(
+      intake.goToState(IntakeState.AGITATE),
+      turret.allowExternalControlFacingHub()
+    ))
+    .finallyDo(() -> state = SuperstructureState.SCORE);
+  }
 }
