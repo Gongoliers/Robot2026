@@ -15,6 +15,12 @@
           "data": {
             "pathName": "DEPOT_NEUTRAL to DEPOT_BUMP_ZONE"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score"
+          }
         }
       ]
     }

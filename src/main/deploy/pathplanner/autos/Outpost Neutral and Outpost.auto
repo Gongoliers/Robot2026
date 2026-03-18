@@ -17,6 +17,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Score"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "OUTPOST_BUMP_ZONE to OUTPOST"
@@ -26,6 +32,12 @@
           "type": "path",
           "data": {
             "pathName": "OUTPOST to OUTPOST_SAFE"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score"
           }
         }
       ]

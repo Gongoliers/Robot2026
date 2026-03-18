@@ -15,6 +15,12 @@
           "data": {
             "pathName": "DEPOT to DEPOT_SAFE"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score"
+          }
         }
       ]
     }
