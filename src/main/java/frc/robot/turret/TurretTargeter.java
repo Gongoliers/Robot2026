@@ -1,22 +1,25 @@
 package frc.robot.turret;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.AngularVelocityUnit;
+import edu.wpi.first.units.DistanceUnit;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.InterpolatingMeasureMap;
+
+import static edu.wpi.first.units.Units.*;
 
 /** Class with static methods to get hood and shooter setpoints from distances to the target */
 public class TurretTargeter {
   
   /** Maps projected distances from the hub in meters to hood setpoints in rotations that shoot into the hub */
-  private static final InterpolatingDoubleTreeMap hoodMapHub = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingMeasureMap<DistanceUnit, AngleUnit> hoodMapHub = new InterpolatingMeasureMap<>(Meters, Rotations);
 
   /** Maps projected distances from the hub in meters to shooter setpoints in rotations per second that shoot into the hub */
-  private static final InterpolatingDoubleTreeMap shooterMapHub = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingMeasureMap<DistanceUnit, AngularVelocityUnit> shooterMapHub = new InterpolatingMeasureMap<>(Meters, RotationsPerSecond);
 
   static {
     hoodMapHub.put(1.46, 0.0277);
@@ -47,7 +50,7 @@ public class TurretTargeter {
    * @return a hood angle that will shoot into the hub
    */
   public static Angle targetHubHood(Distance distance) {
-    return Rotations.of(hoodMapHub.get(distance.in(Meters)));
+    return (Angle) hoodMapHub.get(distance);
   }
 
   /**
@@ -57,6 +60,6 @@ public class TurretTargeter {
    * @return a shooter velocity that will shoot into the hub
    */
   public static AngularVelocity targetHubShooter(Distance distance) {
-    return RotationsPerSecond.of(shooterMapHub.get(distance.in(Meters)));
+    return (AngularVelocity) shooterMapHub.get(distance);
   }
 }
