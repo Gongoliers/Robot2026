@@ -27,12 +27,6 @@
           "data": {
             "pathName": "DEPOT to DEPOT_SAFE"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DEPOT_SAFE to DEPOT_TOWER"
-          }
         }
       ]
     }

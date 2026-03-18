@@ -68,7 +68,14 @@
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Intake",
+      "waypointRelativePos": 0.699324103677349,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -79,7 +86,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -88.54916701074033
+    "rotation": -88.54916701074035
   },
   "reversed": false,
   "folder": "DEPOT",

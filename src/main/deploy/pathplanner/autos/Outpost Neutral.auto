@@ -15,12 +15,6 @@
           "data": {
             "pathName": "OUTPOST_NEUTRAL to OUTPOST_BUMP_ZONE"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "OUTPOST_BUMP_NEUTRAL to OUTPOST_TOWER"
-          }
         }
       ]
     }

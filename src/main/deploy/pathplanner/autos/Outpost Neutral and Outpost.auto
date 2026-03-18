@@ -7,19 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "DEPOT_BUMP_NEUTRAL to DEPOT_NEUTRAL"
+            "pathName": "OUTPOST_BUMP_NEUTRAL to OUTPOST_NEUTRAL"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DEPOT_NEUTRAL to DEPOT_BUMP_ZONE"
+            "pathName": "OUTPOST_NEUTRAL to OUTPOST_BUMP_ZONE"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DEPOT_BUMP_ZONE to DEPOT_TOWER"
+            "pathName": "OUTPOST_BUMP_ZONE to OUTPOST"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OUTPOST to OUTPOST_SAFE"
           }
         }
       ]

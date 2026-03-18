@@ -36,7 +36,14 @@
   ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Stow",
+      "waypointRelativePos": 0.2674420593650477,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -53,7 +60,7 @@
   "folder": "DEPOT",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -88.54916701074033
+    "rotation": -88.54916701074035
   },
   "useDefaultConstraints": true
 }

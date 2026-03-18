@@ -7,25 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "DEPOT_BUMP_ZONE to DEPOT"
+            "pathName": "DEPOT_BUMP_NEUTRAL to DEPOT_NEUTRAL"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "DEPOT to DEPOT_SAFE"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DEPOT_SAFE to DEPOT_TOWER"
+            "pathName": "DEPOT_NEUTRAL to DEPOT_BUMP_ZONE"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Zone",
+  "folder": "Neutral",
   "choreoAuto": false
 }
