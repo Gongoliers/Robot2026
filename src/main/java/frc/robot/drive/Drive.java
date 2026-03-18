@@ -145,6 +145,10 @@ public class Drive extends Subsystem {
     return state.Pose;
   }
 
+  public void resetPose(Pose2d newPose) {
+    swerve.resetPose(newPose);
+  }
+
   public SwerveDriveState getState() {
     return state;
   }
