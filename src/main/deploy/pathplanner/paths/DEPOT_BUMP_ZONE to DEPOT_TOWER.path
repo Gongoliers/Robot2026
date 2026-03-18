@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.080242693686072,
-        "y": 4.844584867003337
+        "x": 2.4833292406556233,
+        "y": 5.305243300950597
       },
       "isLocked": false,
       "linkedName": "DEPOT_BUMP_ZONE"
@@ -31,7 +31,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.6808253940542697,
-      "rotationDegrees": 89.71328567651884
+      "rotationDegrees": 114.10997545335131
     }
   ],
   "constraintZones": [
