@@ -1,16 +1,11 @@
 package frc.robot;
 
-import java.util.Optional;
-
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -64,10 +59,12 @@ public class AutonomousHandler {
       drive);
 
     // Set up named commands
-    NamedCommands.registerCommand("FaceHub", superstructure.faceHub());
-    NamedCommands.registerCommand("Intake", superstructure.intake());
-    NamedCommands.registerCommand("Score", superstructure.score().andThen(Commands.waitSeconds(3)));
-    
+    // NamedCommands.registerCommand("FaceHub", superstructure.faceHub());
+    NamedCommands.registerCommand("Score", superstructure.score().asProxy().andThen(Commands.waitSeconds(3)));
+
+    // Set up event triggers
+    new EventTrigger("Intake").onTrue(superstructure.intake());
+
     // Publish auto chooser
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("PathPlanner Auto Chooser", autoChooser);
