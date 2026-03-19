@@ -1,5 +1,6 @@
 package frc.robot.superstructure;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.PosePublisher;
@@ -13,6 +14,8 @@ import frc.robot.kicker.KickerState;
 import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
 import frc.robot.turret.Turret;
+
+import java.util.function.Supplier;
 
 /**
  * Superstructure subsystem
@@ -142,6 +145,18 @@ public class Superstructure extends Subsystem {
       turret.targetHub()
     ))
     .finallyDo(() -> state = SuperstructureState.SCORE);
+  }
+
+  public Command scoreFrom(Supplier<Pose2d> drivePose) {
+    return Commands.parallel(
+                    intake.goToState(IntakeState.OUT),
+                    kicker.goToState(KickerState.STOP),
+                    spindexer.goToState(SpindexerState.STOP)
+            ).andThen(Commands.parallel(
+                    intake.goToState(IntakeState.AGITATE),
+                    turret.targetHubFrom(drivePose)
+            ))
+            .finallyDo(() -> state = SuperstructureState.SCORE);
   }
 
   public Command feed() {

@@ -23,6 +23,8 @@ import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
 
+import java.util.function.Supplier;
+
 /** Turret subsystem */
 public class Turret extends MultithreadedSubsystem {
 
@@ -41,8 +43,14 @@ public class Turret extends MultithreadedSubsystem {
   /** Current turret state */
   private TurretState state;
 
+  /** Cache the drive pose to avoid costly pose estimator recalculation. */
+  private volatile Pose2d drivePose;
+
   /** Estimated turret pose */
   private volatile Pose2d turretPose;
+
+  /** Fixed drive pose, for TARGET_HUB_FIXED_POSE. */
+  private volatile Pose2d fixedDrivePose = new Pose2d();
 
   /**
    * Gets turret subsystem instance
@@ -96,7 +104,8 @@ public class Turret extends MultithreadedSubsystem {
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
-    turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
+    drivePose = Drive.getInstance().getPose();
+    turretPose = RobotConstants.globalTurretPose(drivePose, azimuth.getValues().position).toPose2d();
     Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
     SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm());
 
@@ -125,6 +134,11 @@ public class Turret extends MultithreadedSubsystem {
         faceHub(turretPose);
         targetHub(turretPose);
         break;
+      case TARGET_HUB_FIXED_POSE:
+        Pose2d fixedTurretPose = RobotConstants.globalTurretPose(fixedDrivePose, azimuth.getValues().position).toPose2d();
+        faceHub(fixedTurretPose);
+        targetHub(fixedTurretPose);
+        break;
     }
   }
 
@@ -136,6 +150,7 @@ public class Turret extends MultithreadedSubsystem {
         return azimuth.nearSetpoint(Rotations.of(0.1))
             && azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.2;
       case TARGET_HUB:
+      case TARGET_HUB_FIXED_POSE:
         return azimuth.nearSetpoint(Rotations.of(0.075))
             && shooter.nearSetpoint(RotationsPerSecond.of(4))
             && hood.nearSetpoint(Rotations.of(0.1));
@@ -232,5 +247,13 @@ public class Turret extends MultithreadedSubsystem {
       state = TurretState.TARGET_HUB;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public Command targetHubFrom(Supplier<Pose2d> drivePose) {
+    return Commands.runOnce(() -> {
+              state = TurretState.TARGET_HUB_FIXED_POSE;
+              fixedDrivePose = drivePose.get();
+            }, this, azimuth, hood, shooter)
+            .andThen(Commands.waitUntil(this::atTargetState));
   }
 }

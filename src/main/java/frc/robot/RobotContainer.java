@@ -10,7 +10,9 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,6 +38,8 @@ import frc.robot.spindexer.SpindexerState;
 import frc.robot.spindexer.SpindexerSysID;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.turret.Turret;
+
+import java.util.function.Supplier;
 
 /** Robot container */
 public class RobotContainer {
@@ -140,7 +144,8 @@ public class RobotContainer {
     driverController.leftTrigger().onTrue(superstructure.intake());
     driverController.leftBumper().onTrue(superstructure.stow());
     driverController.rightTrigger().onTrue(superstructure.score()).whileTrue(drive.cross());
-    driverController.rightBumper().onTrue(superstructure.faceHub());
+    Supplier<Pose2d> towerPose = () -> shouldFlip() ? new Pose2d(new Translation2d(14.939, 4.118), Rotation2d.kZero) : new Pose2d(new Translation2d(0.845, 4.118), Rotation2d.k180deg);
+    driverController.rightBumper().onTrue(superstructure.scoreFrom(towerPose)).whileTrue(drive.cross());
   }
 
   public Command getAutonomousCommand() {
