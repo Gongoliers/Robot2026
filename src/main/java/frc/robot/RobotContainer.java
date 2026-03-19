@@ -10,6 +10,8 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -81,7 +83,7 @@ public class RobotContainer {
   private final Superstructure superstructure;
 
   /** Autonomous handler */
-  private final AutonomousHandler autoHandler;
+  // private final AutonomousHandler autoHandler;
 
   /**
    * Gets robot container instance
@@ -112,7 +114,7 @@ public class RobotContainer {
     spindexer = Spindexer.getInstance();
     kicker = Kicker.getInstance();
     superstructure = Superstructure.getInstance();
-    autoHandler = AutonomousHandler.getInstance();
+    // autoHandler = AutonomousHandler.getInstance();
 
     multithreader.start();
 
@@ -125,10 +127,16 @@ public class RobotContainer {
     drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
   }
 
+  private boolean shouldFlip() {
+    return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+  }
+
   private void configureBindings() {
-    driverController.a().onTrue(superstructure.faceHub());
-    driverController.b().onTrue(superstructure.stow());
-    driverController.x().onTrue(superstructure.init());
+    driverController.a().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
+    driverController.y().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
+    driverController.x().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg)));
+    driverController.b().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg)));
+
     driverController.povLeft().onTrue(superstructure.intake());
     driverController.povRight().onTrue(superstructure.score()).whileTrue(drive.cross());
 
@@ -141,6 +149,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return autoHandler.getAutonomousCommand();
+    // return autoHandler.getAutonomousCommand();
+    return Commands.print("none");
   }
 }
