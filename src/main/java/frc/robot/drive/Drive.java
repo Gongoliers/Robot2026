@@ -18,6 +18,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -164,6 +165,10 @@ public class Drive extends Subsystem {
         .withVelocityY(fieldSpeeds.vyMetersPerSecond)
         .withRotationalRate(fieldSpeeds.omegaRadiansPerSecond));
     });
+  }
+
+  public Command driveFacing(CommandXboxController controller, Supplier<Rotation2d> rotation) {
+    return drive(() -> turnTowards(speedsFromController(controller), rotation.get()));
   }
 
   public Command cross() {

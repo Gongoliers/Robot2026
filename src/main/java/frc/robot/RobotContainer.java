@@ -132,10 +132,10 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driverController.a().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)));
-    driverController.y().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero)));
-    driverController.x().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg)));
-    driverController.b().whileTrue(drive.drive(() -> drive.turnTowards(drive.speedsFromController(driverController), shouldFlip() ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg)));
+    driverController.y().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero));
+    driverController.b().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg));
+    driverController.a().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
+    driverController.x().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg));
 
     driverController.povLeft().onTrue(superstructure.intake());
     driverController.povRight().onTrue(superstructure.score()).whileTrue(drive.cross());
