@@ -1,16 +1,21 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -47,12 +52,22 @@ public class AutonomousHandler {
 
   private AutonomousHandler() {
     // Configure AutoBuilder
-    RobotConfig robotConfig = new RobotConfig(1, 1, null, null);
-    try {
-      robotConfig = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      DriverStation.reportError("No autos allowed", true);
-    }
+    RobotConfig robotConfig = new RobotConfig(
+      1, 
+      1, 
+      new ModuleConfig(
+        0.0508, 
+        3, 
+        1, 
+        DCMotor.getKrakenX60Foc(1).withReduction(5.27), 
+        80, 
+        1), 
+      new Translation2d[]{
+        new Translation2d(Inches.of(-10.375), Inches.of(10.375)),
+        new Translation2d(Inches.of(10.375), Inches.of(10.375)),
+        new Translation2d(Inches.of(-10.375), Inches.of(-10.375)),
+        new Translation2d(Inches.of(10.375), Inches.of(-10.375))
+      });
 
     AutoBuilder.configure(
       this::getPose, 
