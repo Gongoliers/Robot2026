@@ -154,6 +154,12 @@ public class Drive extends Subsystem {
     return state;
   }
 
+  private final SwerveRequest.RobotCentric robotCentric = new SwerveRequest.RobotCentric();
+
+  public void driveRobotRelative(ChassisSpeeds speeds) {
+    swerve.setControl(robotCentric.withVelocityX(speeds.vxMetersPerSecond).withVelocityY(speeds.vyMetersPerSecond).withRotationalRate(speeds.omegaRadiansPerSecond));
+  }
+
   public Command drive(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {
     SwerveRequest.FieldCentric request = new SwerveRequest.FieldCentric();
 
@@ -184,5 +190,10 @@ public class Drive extends Subsystem {
 
   public void addVisionMeasurement(Pose2d pose, double timestampSeconds, Matrix<N3, N1> stdDevs) {
     swerve.addVisionMeasurement(pose, timestampSeconds, stdDevs);
+  }
+
+  public ChassisSpeeds getRobotRelativeSpeeds() {
+    SwerveDriveState driveState = getState();
+    return ChassisSpeeds.fromFieldRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
   }
 }
