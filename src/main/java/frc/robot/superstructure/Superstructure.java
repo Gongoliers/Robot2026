@@ -2,7 +2,10 @@ package frc.robot.superstructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.PosePublisher;
 import frc.lib.Subsystem;
+import frc.robot.RobotConstants;
+import frc.robot.azimuth.Azimuth;
 import frc.robot.intake.Intake;
 import frc.robot.intake.IntakeState;
 import frc.robot.kicker.Kicker;
@@ -75,6 +78,7 @@ public class Superstructure extends Subsystem {
         spindexer.setState(SpindexerState.STOP);
       }
     }
+    PosePublisher.publish("Components", RobotConstants.advantageScopeComponents(Azimuth.getInstance().localPosition(), Intake.getInstance().getPivotValues().position));
   }
 
   public Command init() {

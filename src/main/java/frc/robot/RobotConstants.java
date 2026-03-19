@@ -64,6 +64,11 @@ public class RobotConstants {
     return new Pose3d(robot.getTranslation().plus(ROBOT_TO_TURRET.rotateBy(robot.getRotation())), robot.getRotation().plus(yawRotation));
   }
 
+  public static Pose3d[] advantageScopeComponents(Angle azimuth, Angle intake) {
+    Pose3d intakePose = new Pose3d(new Translation3d(Meters.of(0.45), Meters.of(-0.08), Meters.of(0.24)), new Rotation3d(Degrees.zero(), intake, Degrees.of(180)));
+    return new Pose3d[]{localTurretPose(azimuth), intakePose};
+  }
+
   /**
    * Gets the pose representing the turret's position and orientation in the world's global frame.
    *
