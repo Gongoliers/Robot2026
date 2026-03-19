@@ -83,7 +83,7 @@ public class RobotContainer {
   private final Superstructure superstructure;
 
   /** Autonomous handler */
-  // private final AutonomousHandler autoHandler;
+  private final AutonomousHandler autoHandler;
 
   /**
    * Gets robot container instance
@@ -114,7 +114,7 @@ public class RobotContainer {
     spindexer = Spindexer.getInstance();
     kicker = Kicker.getInstance();
     superstructure = Superstructure.getInstance();
-    // autoHandler = AutonomousHandler.getInstance();
+    autoHandler = AutonomousHandler.getInstance();
 
     multithreader.start();
 
@@ -149,7 +149,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    // return autoHandler.getAutonomousCommand();
-    return Commands.print("none");
+    return autoHandler.getAutonomousCommand();
   }
 }
