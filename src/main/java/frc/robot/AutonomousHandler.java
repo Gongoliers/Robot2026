@@ -3,12 +3,12 @@ package frc.robot;
 import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -34,9 +34,6 @@ public class AutonomousHandler {
   /** Used in dashboard to pick what autonomous routine to run */
   private final SendableChooser<Command> autoChooser;
 
-  /** Used during autos to drive the robot with a drive.drive(Supplier<ChassisSpeeds>) commad to override default control */
-  private ChassisSpeeds swerveSpeeds = new ChassisSpeeds();
-
   public static AutonomousHandler getInstance() {
     if (instance == null) {
       instance = new AutonomousHandler();
@@ -46,8 +43,8 @@ public class AutonomousHandler {
   }
 
   private AutonomousHandler() {
-    // Configure AutoBuilder
-    RobotConfig robotConfig = new RobotConfig(1, 1, null, null);
+    // SUPER SKETCHY!!! but `new RobotConfig` crashed because of null args, and robotConfig needs to be defined
+    RobotConfig robotConfig = null;
     try {
       robotConfig = RobotConfig.fromGUISettings();
     } catch (Exception e) {
@@ -55,56 +52,28 @@ public class AutonomousHandler {
     }
 
     AutoBuilder.configure(
-      this::getPose, 
-      this::resetPose, 
-      this::getRobotRelativeSpeeds, 
-      (speeds, feedforwards) -> driveRobotRelative(speeds), 
+      drive::getPose,
+      drive::resetPose,
+      drive::getRobotRelativeSpeeds,
+      (speeds, feedforwards) -> drive.driveRobotRelative(speeds),
       new PPHolonomicDriveController(
-        new PIDConstants(5, 0, 0), 
+        new PIDConstants(5, 0, 0),
         new PIDConstants(5, 0, 0)), 
       robotConfig, 
-      () -> {
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) {
-          return alliance.get() == Alliance.Red;
-        }
-        return false;
-      });
+      () -> DriverStation.getAlliance().filter(value -> value == Alliance.Red).isPresent(),
+      drive);
 
     // Set up named commands
     NamedCommands.registerCommand("FaceHub", superstructure.faceHub());
     NamedCommands.registerCommand("Intake", superstructure.intake());
-    NamedCommands.registerCommand("Score", Commands.sequence(
-      superstructure.score(),
-      Commands.waitSeconds(3)
-    ));
+    NamedCommands.registerCommand("Score", superstructure.score().andThen(Commands.waitSeconds(3)));
     
     // Publish auto chooser
     autoChooser = AutoBuilder.buildAutoChooser();
-    SmartDashboard.putData(autoChooser);
+    SmartDashboard.putData("PathPlanner Auto Chooser", autoChooser);
   }
 
   public Command getAutonomousCommand() {
-    return Commands.race(
-      autoChooser.getSelected(),
-      drive.drive(() -> swerveSpeeds)
-    );
-  }
-
-  private Pose2d getPose() {
-    return drive.getPose();
-  }
-
-  private void resetPose(Pose2d newPose) {
-    drive.resetPose(newPose);
-  }
-
-  private ChassisSpeeds getRobotRelativeSpeeds() {
-    SwerveDriveState driveState = drive.getState();
-    return ChassisSpeeds.fromFieldRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
-  }
-
-  private void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
-    swerveSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, drive.getState().Pose.getRotation());
+    return autoChooser.getSelected();
   }
 }
