@@ -10,6 +10,8 @@ import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -125,10 +127,16 @@ public class RobotContainer {
     drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
   }
 
+  private boolean shouldFlip() {
+    return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+  }
+
   private void configureBindings() {
-    driverController.a().onTrue(superstructure.faceHub());
-    driverController.b().onTrue(superstructure.stow());
-    driverController.x().onTrue(superstructure.init());
+    driverController.y().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero));
+    driverController.b().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg));
+    driverController.a().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
+    driverController.x().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg));
+
     driverController.povLeft().onTrue(superstructure.intake());
     driverController.povRight().onTrue(superstructure.score()).whileTrue(drive.cross());
 
