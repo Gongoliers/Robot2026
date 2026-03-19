@@ -90,10 +90,10 @@ public class AutonomousHandler {
       });
 
     // Set up named commands
-    NamedCommands.registerCommand("FaceHub", superstructure.faceHub());
-    NamedCommands.registerCommand("Intake", superstructure.intake());
+    NamedCommands.registerCommand("FaceHub", superstructure.faceHub().asProxy());
+    NamedCommands.registerCommand("Intake", superstructure.intake().asProxy());
     NamedCommands.registerCommand("Score", Commands.sequence(
-      superstructure.score(),
+      superstructure.score().asProxy(),
       Commands.waitSeconds(3)
     ));
     
