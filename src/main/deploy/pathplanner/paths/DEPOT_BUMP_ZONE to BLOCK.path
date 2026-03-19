@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.7655891752533264,
-        "y": 5.526796154840655
+        "x": 3.778758599098848,
+        "y": 5.570428077024595
       },
       "isLocked": false,
       "linkedName": "DEPOT_BUMP_ZONE"
     },
     {
       "anchor": {
-        "x": 7.02730574150306,
-        "y": 5.29606118924356
+        "x": 5.3339473605293755,
+        "y": 5.57665416210373
       },
       "prevControl": {
-        "x": 4.754858211451182,
-        "y": 5.599466919650922
+        "x": 3.5460092707510222,
+        "y": 5.627722835646679
       },
       "nextControl": {
-        "x": 7.5494679427457685,
-        "y": 5.226344726282788
+        "x": 6.080521993624384,
+        "y": 5.555329835254302
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 5.076153075378065
       },
       "prevControl": {
-        "x": 8.074071890770355,
-        "y": 5.170796780007423
+        "x": 8.05670147249423,
+        "y": 5.113094532847842
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,12 +46,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.6890683063771947,
-      "rotationDegrees": 180.0
-    },
-    {
       "waypointRelativePos": 1.1635824022346368,
-      "rotationDegrees": 144.8451696336247
+      "rotationDegrees": 180.0
     }
   ],
   "constraintZones": [],
