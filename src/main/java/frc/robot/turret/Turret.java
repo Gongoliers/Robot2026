@@ -44,6 +44,11 @@ public class Turret extends MultithreadedSubsystem {
   /** Estimated turret pose */
   private volatile Pose2d turretPose;
 
+  // State specific control variables
+
+  /** Robot pose used by targetHubFromPose */
+  private Pose2d manualRobotPose;
+
   /**
    * Gets turret subsystem instance
    * 
@@ -125,6 +130,11 @@ public class Turret extends MultithreadedSubsystem {
         faceHub(turretPose);
         targetHub(turretPose);
         break;
+      case TARGET_HUB_FROM_POSE:
+        Pose2d manualTurretPose = RobotConstants.globalTurretPose(manualRobotPose, azimuth.getValues().position).toPose2d();
+        faceHub(manualTurretPose);
+        targetHub(manualTurretPose);
+        break;
     }
   }
 
@@ -139,6 +149,8 @@ public class Turret extends MultithreadedSubsystem {
         return azimuth.nearSetpoint(Rotations.of(0.075))
             && shooter.nearSetpoint(RotationsPerSecond.of(4))
             && hood.nearSetpoint(Rotations.of(0.1));
+      case TARGET_HUB_FROM_POSE:
+        return true;
       default:
         return true;
     }
@@ -230,6 +242,14 @@ public class Turret extends MultithreadedSubsystem {
   public Command targetHub() {
     return Commands.runOnce(() -> {
       state = TurretState.TARGET_HUB;
+    }, this, azimuth, hood, shooter)
+    .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public Command targetHubFromPose(Pose2d robotPose) {
+    return Commands.runOnce(() -> {
+      state = TurretState.TARGET_HUB_FROM_POSE;
+      manualRobotPose = robotPose;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
   }

@@ -1,5 +1,6 @@
 package frc.robot.superstructure;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.Subsystem;
@@ -36,6 +37,11 @@ public class Superstructure extends Subsystem {
   /** Superstructure state */
   private SuperstructureState state;
 
+  // State specific control variables
+
+  /** Superstructure trigger used to fire fuel when in a state that allows for manual firing */
+  private SuperstructureTrigger manualFireTrigger;
+
   /**
    * Gets superstructure subsystem instance
    * 
@@ -66,6 +72,26 @@ public class Superstructure extends Subsystem {
 
   @Override
   public void periodic() {
+    switch (state) {
+      case SCORE:
+        if (turret.atTargetState()) {
+          kicker.setState(KickerState.RUN);
+          spindexer.setState(SpindexerState.RUN);
+        } else{
+          kicker.setState(KickerState.STOP);
+          spindexer.setState(SpindexerState.STOP);
+        }
+
+        break;
+      case SCORE_FROM_POSE:
+        if (manualFireTrigger.held()) {
+          kicker.setState(KickerState.RUN);
+          spindexer.setState(SpindexerState.RUN);
+        } else {
+          kicker.setState(KickerState.STOP);
+          spindexer.setState(SpindexerState.STOP);
+        }
+    }
     if (state == SuperstructureState.SCORE) {
       if (turret.atTargetState()) {
         kicker.setState(KickerState.RUN);
@@ -138,6 +164,19 @@ public class Superstructure extends Subsystem {
       turret.targetHub()
     ))
     .finallyDo(() -> state = SuperstructureState.SCORE);
+  }
+
+  public Command scoreFromPose(Pose2d scorePose, SuperstructureTrigger shootTrigger) {
+    return Commands.parallel(
+      Commands.runOnce(() -> manualFireTrigger = shootTrigger),
+      intake.goToState(IntakeState.OUT),
+      kicker.goToState(KickerState.STOP),
+      spindexer.goToState(SpindexerState.STOP)
+    ).andThen(Commands.parallel(
+      intake.goToState(IntakeState.AGITATE),
+      turret.targetHubFromPose(scorePose)
+    ))
+    .finallyDo(() -> state = SuperstructureState.SCORE_FROM_POSE);
   }
 
   public Command feed() {

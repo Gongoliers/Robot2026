@@ -69,13 +69,13 @@ public class Intake extends Subsystem {
           .kV(0)
           .kA(0)
           .kS(0)
-          .kG(0.35)
+          .kG(0.25)
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(20)
+          .kP(10)
           .kI(0)
-          .kD(0.5)
+          .kD(0.25)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
