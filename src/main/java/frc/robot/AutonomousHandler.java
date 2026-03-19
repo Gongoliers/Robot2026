@@ -1,6 +1,9 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramMetersSquaredPerSecond;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Pounds;
 
 import java.util.Optional;
 
@@ -53,8 +56,8 @@ public class AutonomousHandler {
   private AutonomousHandler() {
     // Configure AutoBuilder
     RobotConfig robotConfig = new RobotConfig(
-      1, 
-      1, 
+      Pounds.of(102), 
+      KilogramSquareMeters.of(5.0508516048), 
       new ModuleConfig(
         0.0508, 
         3, 
