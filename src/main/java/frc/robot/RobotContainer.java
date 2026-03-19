@@ -137,15 +137,10 @@ public class RobotContainer {
     driverController.a().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
     driverController.x().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg));
 
-    driverController.povLeft().onTrue(superstructure.intake());
-    driverController.povRight().onTrue(superstructure.score()).whileTrue(drive.cross());
-
-    driverController.povUp().onTrue(superstructure.feed());
-
-    driverController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Degrees.of(0.1)))));
-    driverController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Degrees.of(0.1)))));
-    driverController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.25)))));
-    driverController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.25)))));
+    driverController.leftTrigger().onTrue(superstructure.intake());
+    driverController.leftBumper().onTrue(superstructure.stow());
+    driverController.rightTrigger().onTrue(superstructure.score()).whileTrue(drive.cross());
+    driverController.rightBumper().onTrue(superstructure.faceHub());
   }
 
   public Command getAutonomousCommand() {
