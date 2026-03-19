@@ -43,9 +43,6 @@ public class Turret extends MultithreadedSubsystem {
   /** Current turret state */
   private TurretState state;
 
-  /** Cache the drive pose to avoid costly pose estimator recalculation. */
-  private volatile Pose2d drivePose;
-
   /** Estimated turret pose */
   private volatile Pose2d turretPose;
 
@@ -104,12 +101,16 @@ public class Turret extends MultithreadedSubsystem {
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
-    drivePose = Drive.getInstance().getPose();
-    turretPose = RobotConstants.globalTurretPose(drivePose, azimuth.getValues().position).toPose2d();
+    turretPose = turretPoseFromDrivePose(Drive.getInstance().getPose());
     Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
     SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm());
 
     PosePublisher.publish("Estimated turret pose", turretPose);
+  }
+
+  private Pose2d turretPoseFromDrivePose(Pose2d drivePose) {
+    // TODO For locality, move RobotConstants.globalTurretPose to Turret.globalPose?
+    return RobotConstants.globalTurretPose(drivePose, azimuth.getValues().position).toPose2d();
   }
 
   @Override
@@ -135,7 +136,7 @@ public class Turret extends MultithreadedSubsystem {
         targetHub(turretPose);
         break;
       case TARGET_HUB_FIXED_POSE:
-        Pose2d fixedTurretPose = RobotConstants.globalTurretPose(fixedDrivePose, azimuth.getValues().position).toPose2d();
+        Pose2d fixedTurretPose = turretPoseFromDrivePose(fixedDrivePose);
         faceHub(fixedTurretPose);
         targetHub(fixedTurretPose);
         break;
