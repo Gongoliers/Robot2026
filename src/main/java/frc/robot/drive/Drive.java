@@ -2,6 +2,7 @@ package frc.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.RobotCentric;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
@@ -152,8 +153,18 @@ public class Drive extends Subsystem {
     swerve.resetPose(newPose);
   }
 
+  public ChassisSpeeds getRobotRelativeSpeeds() {
+    return ChassisSpeeds.fromFieldRelativeSpeeds(state.Speeds, state.Pose.getRotation());
+  }
+
   public SwerveDriveState getState() {
     return state;
+  }
+
+  private final SwerveRequest.RobotCentric robotCentric = new SwerveRequest.RobotCentric();
+
+  public void setRobotRelativeSpeeds(ChassisSpeeds robotRelativeSpeeds) {
+    swerve.setControl(robotCentric.withVelocityX(robotRelativeSpeeds.vxMetersPerSecond).withVelocityY(robotRelativeSpeeds.vyMetersPerSecond).withRotationalRate(robotRelativeSpeeds.omegaRadiansPerSecond));
   }
 
   public Command drive(Supplier<ChassisSpeeds> fieldSpeedsSupplier) {

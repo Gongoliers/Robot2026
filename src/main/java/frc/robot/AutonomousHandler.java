@@ -73,10 +73,10 @@ public class AutonomousHandler {
       });
 
     AutoBuilder.configure(
-      this::getPose, 
-      this::resetPose, 
-      this::getRobotRelativeSpeeds, 
-      (speeds, feedforwards) -> driveRobotRelative(speeds), 
+      drive::getPose, 
+      drive::resetPose, 
+      drive::getRobotRelativeSpeeds, 
+      (speeds, feedforwards) -> drive.setRobotRelativeSpeeds(speeds), 
       new PPHolonomicDriveController(
         new PIDConstants(5, 0, 0), 
         new PIDConstants(5, 0, 0)), 
@@ -94,7 +94,8 @@ public class AutonomousHandler {
     NamedCommands.registerCommand("Intake", superstructure.intake().asProxy());
     NamedCommands.registerCommand("Score", Commands.sequence(
       superstructure.score().asProxy(),
-      Commands.waitSeconds(3)
+      Commands.waitSeconds(3),
+      superstructure.faceHub().asProxy()
     ));
     
     // Publish auto chooser
@@ -107,22 +108,5 @@ public class AutonomousHandler {
       autoChooser.getSelected(),
       drive.drive(() -> swerveSpeeds)
     );
-  }
-
-  private Pose2d getPose() {
-    return drive.getPose();
-  }
-
-  private void resetPose(Pose2d newPose) {
-    drive.resetPose(newPose);
-  }
-
-  private ChassisSpeeds getRobotRelativeSpeeds() {
-    SwerveDriveState driveState = drive.getState();
-    return ChassisSpeeds.fromFieldRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
-  }
-
-  private void driveRobotRelative(ChassisSpeeds robotRelativeSpeeds) {
-    swerveSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeSpeeds, drive.getState().Pose.getRotation());
   }
 }
