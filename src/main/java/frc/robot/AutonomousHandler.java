@@ -14,6 +14,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -78,13 +79,7 @@ public class AutonomousHandler {
         new PIDConstants(5, 0, 0), 
         new PIDConstants(5, 0, 0)), 
       robotConfig, 
-      () -> {
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) {
-          return alliance.get() == Alliance.Red;
-        }
-        return false;
-      },
+      () -> DriverStation.getAlliance().filter(value -> value == Alliance.Red).isPresent(),
       drive);
 
     // Set up named commands
@@ -92,9 +87,11 @@ public class AutonomousHandler {
     NamedCommands.registerCommand("Intake", superstructure.intake().asProxy());
     NamedCommands.registerCommand("Score", Commands.sequence(
       superstructure.score().asProxy(),
-      Commands.waitSeconds(3),
+      Commands.waitSeconds(1),
       superstructure.faceHub().asProxy()
     ));
+
+    new EventTrigger("Intake").onTrue(superstructure.intake());
     
     // Publish auto chooser
     autoChooser = AutoBuilder.buildAutoChooser();
