@@ -181,6 +181,7 @@ public class Intake extends Subsystem {
     rollerStateTab.addDouble("Setpoint (rotps)", () -> rollerSetpoint.in(RotationsPerSecond));
 
     tab.addString("Current state", () -> state.name());
+    tab.addBoolean("At target state", () -> atTargetState());
   }
 
   @Override

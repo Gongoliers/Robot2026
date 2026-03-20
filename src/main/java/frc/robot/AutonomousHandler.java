@@ -53,22 +53,7 @@ public class AutonomousHandler {
 
   private AutonomousHandler() {
     // Configure AutoBuilder
-    RobotConfig robotConfig = new RobotConfig(
-      Pounds.of(102), 
-      KilogramSquareMeters.of(5.0508516048), 
-      new ModuleConfig(
-        0.0508, 
-        4, 
-        1, 
-        DCMotor.getKrakenX60Foc(1).withReduction(5.2734375), 
-        80, 
-        1), 
-      new Translation2d[]{
-        new Translation2d(Inches.of(10.375), Inches.of(10.375)),
-        new Translation2d(Inches.of(10.375), Inches.of(-10.375)),
-        new Translation2d(Inches.of(-10.375), Inches.of(10.375)),
-        new Translation2d(Inches.of(-10.375), Inches.of(-10.375))
-      });
+    RobotConfig robotConfig = null;
 
     try {
       robotConfig = RobotConfig.fromGUISettings();
@@ -91,19 +76,11 @@ public class AutonomousHandler {
     // Set up named commands
     NamedCommands.registerCommand("FaceHub", superstructure.faceHub().asProxy());
     NamedCommands.registerCommand("Intake", superstructure.intake().asProxy());
-    NamedCommands.registerCommand("Score3", Commands.sequence(
-      superstructure.score().asProxy(),
-      Commands.waitSeconds(3),
-      superstructure.faceHub().asProxy()
-    ));
-    NamedCommands.registerCommand("Score5", Commands.sequence(
-      superstructure.score().asProxy(),
-      Commands.waitSeconds(5),
-      superstructure.faceHub().asProxy()
-    ));
-    NamedCommands.registerCommand("Score", superstructure.score());
+    NamedCommands.registerCommand("Score3", superstructure.score().asProxy().andThen(Commands.waitSeconds(3)).andThen(superstructure.faceHub().asProxy()));
+    NamedCommands.registerCommand("Score5", superstructure.score().asProxy().andThen(Commands.waitSeconds(5)).andThen(superstructure.faceHub().asProxy()));
+    NamedCommands.registerCommand("Score", superstructure.score().asProxy());
 
-    new EventTrigger("Intake").onTrue(superstructure.intake());
+    new EventTrigger("Intake").onTrue(superstructure.intake().asProxy());
     
     // Publish auto chooser
     autoChooser = AutoBuilder.buildAutoChooser();
