@@ -132,20 +132,16 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driverController.y().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero));
-    driverController.b().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg));
-    driverController.a().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
-    driverController.x().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg));
+    driverController.a().onTrue(superstructure.faceHub());
+    driverController.b().onTrue(superstructure.stow());
+    driverController.x().onTrue(superstructure.intake());
+    driverController.y().onTrue(superstructure.score());
 
-    driverController.povLeft().onTrue(superstructure.intake());
-    driverController.povRight().onTrue(superstructure.score()).whileTrue(drive.cross());
-
-    driverController.povUp().onTrue(superstructure.feed());
-
-    driverController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Degrees.of(0.1)))));
-    driverController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Degrees.of(0.1)))));
-    driverController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.25)))));
-    driverController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.25)))));
+    operatorController.a().onTrue(intake.goToState(IntakeState.OUT));
+    operatorController.b().onTrue(intake.goToState(IntakeState.INTAKE));
+    operatorController.x().onTrue(intake.goToState(IntakeState.AGITATE));
+    operatorController.y().onTrue(intake.goToState(IntakeState.STOW));
+    operatorController.leftBumper().onTrue(intake.goToState(IntakeState.INIT));
   }
 
   public Command getAutonomousCommand() {

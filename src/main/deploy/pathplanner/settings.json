@@ -1,15 +1,16 @@
 {
-  "robotWidth": 0.9,
-  "robotLength": 0.9,
+  "robotWidth": 0.813,
+  "robotLength": 0.813,
   "holonomicMode": true,
   "pathFolders": [
     "DEPOT",
-    "MIDDLE",
+    "TEST",
     "OUTPOST"
   ],
   "autoFolders": [
     "Block",
     "Neutral",
+    "TEST",
     "Zone"
   ],
   "defaultMaxVel": 3.0,

@@ -62,7 +62,7 @@ public class AutonomousHandler {
         0.0508, 
         3, 
         1, 
-        DCMotor.getKrakenX60Foc(1).withReduction(5.27), 
+        DCMotor.getKrakenX60Foc(1).withReduction(5.2734375), 
         80, 
         1), 
       new Translation2d[]{

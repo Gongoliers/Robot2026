@@ -1,6 +1,8 @@
 package frc.robot.superstructure;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.Subsystem;
@@ -67,7 +69,9 @@ public class Superstructure extends Subsystem {
 
   @Override
   public void initializeTab() {
+    ShuffleboardTab tab = Shuffleboard.getTab("superstructure");
 
+    tab.addString("state", () -> state.name());
   }
 
   @Override
@@ -81,7 +85,6 @@ public class Superstructure extends Subsystem {
           kicker.setState(KickerState.STOP);
           spindexer.setState(SpindexerState.STOP);
         }
-
         break;
       case SCORE_FROM_POSE:
         if (manualFireTrigger.held()) {
@@ -91,15 +94,9 @@ public class Superstructure extends Subsystem {
           kicker.setState(KickerState.STOP);
           spindexer.setState(SpindexerState.STOP);
         }
-    }
-    if (state == SuperstructureState.SCORE) {
-      if (turret.atTargetState()) {
-        kicker.setState(KickerState.RUN);
-        spindexer.setState(SpindexerState.RUN);
-      } else{
-        kicker.setState(KickerState.STOP);
-        spindexer.setState(SpindexerState.STOP);
-      }
+        break;
+      default:
+        break;
     }
   }
 

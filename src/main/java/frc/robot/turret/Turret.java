@@ -78,6 +78,7 @@ public class Turret extends MultithreadedSubsystem {
     ShuffleboardTab tab = Shuffleboard.getTab("Turret");
 
     tab.addString("State", () -> state.name());
+    tab.addBoolean("At target state", () -> atTargetState());
   }
 
   @Override

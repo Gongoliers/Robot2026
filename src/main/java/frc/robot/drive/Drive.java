@@ -15,7 +15,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
@@ -94,11 +96,11 @@ public class Drive extends Subsystem {
   }
 
   public ChassisSpeeds speedsFromController(CommandXboxController controller) {
-    LinearVelocity maxVelocity = MetersPerSecond.of(2);
-    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.5);
+    LinearVelocity maxVelocity = MetersPerSecond.of(4);
+    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
 
-    double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.2);
-    double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.2);
+    double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
+    double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
     double omega = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
 
     return new ChassisSpeeds(

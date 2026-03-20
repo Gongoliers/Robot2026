@@ -73,7 +73,7 @@ public class Intake extends Subsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(10)
+          .kP(15)
           .kI(0)
           .kD(0.25)
           .build())
@@ -273,11 +273,9 @@ public class Intake extends Subsystem {
 
   public boolean atTargetState() {
     if (state == IntakeState.AGITATE) {
-      return pivotValues.position.lte(Rotations.of(0.2)) 
-          && rollerValues.velocity.isNear(rollerSetpoint, RotationsPerSecond.of(1));
+      return pivotValues.position.lte(Rotations.of(0.2));
     } else {
-      return pivotValues.position.isNear(pivotSetpoint, Rotations.of(0.05))
-          && rollerValues.velocity.isNear(rollerSetpoint, RotationsPerSecond.of(1));
+      return pivotValues.position.isNear(pivotSetpoint, Rotations.of(0.05));
     }
   }
 
