@@ -42,9 +42,6 @@ public class AutonomousHandler {
   /** Used in dashboard to pick what autonomous routine to run */
   private final SendableChooser<Command> autoChooser;
 
-  /** Used during autos to drive the robot with a drive.drive(Supplier<ChassisSpeeds>) commad to override default control */
-  private ChassisSpeeds swerveSpeeds = new ChassisSpeeds();
-
   public static AutonomousHandler getInstance() {
     if (instance == null) {
       instance = new AutonomousHandler();
@@ -105,9 +102,6 @@ public class AutonomousHandler {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.race(
-      autoChooser.getSelected(),
-      drive.drive(() -> swerveSpeeds)
-    );
+    return autoChooser.getSelected();
   }
 }
