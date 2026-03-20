@@ -87,7 +87,8 @@ public class AutonomousHandler {
           return alliance.get() == Alliance.Red;
         }
         return false;
-      });
+      },
+      drive);
 
     // Set up named commands
     NamedCommands.registerCommand("FaceHub", superstructure.faceHub().asProxy());
