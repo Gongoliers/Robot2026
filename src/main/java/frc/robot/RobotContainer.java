@@ -36,6 +36,7 @@ import frc.robot.spindexer.Spindexer;
 import frc.robot.spindexer.SpindexerState;
 import frc.robot.spindexer.SpindexerSysID;
 import frc.robot.superstructure.Superstructure;
+import frc.robot.superstructure.SuperstructureTrigger;
 import frc.robot.turret.Turret;
 
 /** Robot container */
@@ -137,6 +138,10 @@ public class RobotContainer {
     driverController.b().onTrue(superstructure.stow());
     driverController.x().onTrue(superstructure.intake());
     driverController.y().onTrue(superstructure.score());
+
+    driverController.povUp().onTrue(superstructure.pass(
+      new SuperstructureTrigger(() -> driverController.leftTrigger().getAsBoolean()),
+      new SuperstructureTrigger(() -> driverController.rightTrigger().getAsBoolean())));
 
     operatorController.povDown().onTrue(superstructure.feed());
     operatorController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.025)))));
