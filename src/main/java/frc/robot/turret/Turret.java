@@ -131,6 +131,11 @@ public class Turret extends MultithreadedSubsystem {
         faceHub(turretPose);
         targetHub(turretPose);
         break;
+      case FACE_ALLIANCE_WALL:
+        faceAllianceWall(turretPose);
+        shooter.setSetpoint(RotationsPerSecond.of(40));
+        hood.setSetpoint(Rotations.of(0.075));
+        break;
       case TARGET_HUB_FROM_POSE:
         Pose2d manualTurretPose = RobotConstants.globalTurretPose(manualRobotPose, azimuth.getValues().position).toPose2d();
         faceHub(manualTurretPose);
@@ -150,6 +155,8 @@ public class Turret extends MultithreadedSubsystem {
         return azimuth.nearSetpoint(Rotations.of(0.075))
             && shooter.nearSetpoint(RotationsPerSecond.of(4))
             && hood.nearSetpoint(Rotations.of(0.1));
+      case FACE_ALLIANCE_WALL:
+        return azimuth.nearSetpoint(Rotations.of(0.1));
       case TARGET_HUB_FROM_POSE:
         return true;
       default:
@@ -167,6 +174,12 @@ public class Turret extends MultithreadedSubsystem {
     Rotation2d rotationError = translationToHub.getAngle().minus(turretPose.getRotation());
 
     SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm()); // getNorm does return distance in meters it isn't documented but translations are in meters
+
+    azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
+  }
+
+  private void faceAllianceWall(Pose2d turretPose) {
+    Rotation2d rotationError = TurretTargetsSupplier.faceAllianceWall().minus(turretPose.getRotation());
 
     azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
   }
@@ -238,6 +251,13 @@ public class Turret extends MultithreadedSubsystem {
   public Command targetHub() {
     return Commands.runOnce(() -> {
       state = TurretState.TARGET_HUB;
+    }, this, azimuth, hood, shooter)
+    .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public Command faceAllianceWall() {
+    return Commands.runOnce(() -> {
+      state = TurretState.FACE_ALLIANCE_WALL;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
   }

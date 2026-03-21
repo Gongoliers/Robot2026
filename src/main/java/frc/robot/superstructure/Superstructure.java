@@ -44,6 +44,9 @@ public class Superstructure extends Subsystem {
   /** Superstructure trigger used to fire fuel when in a state that allows for manual firing */
   private SuperstructureTrigger manualFireTrigger;
 
+  /** Superstructure trigger used to agitate fuel when in a state that allows for manual agitation */
+  private SuperstructureTrigger manualAgitateTrigger;
+
   /**
    * Gets superstructure subsystem instance
    * 
@@ -98,6 +101,23 @@ public class Superstructure extends Subsystem {
           kicker.setState(KickerState.STOP);
           spindexer.setState(SpindexerState.STOP);
         }
+        
+        break;
+      case PASS:
+        if (manualFireTrigger.held()) {
+          kicker.setState(KickerState.RUN);
+          spindexer.setState(SpindexerState.RUN);
+        } else {
+          kicker.setState(KickerState.STOP);
+          spindexer.setState(SpindexerState.STOP);
+        }
+
+        if (manualAgitateTrigger.held()) {
+          intake.setState(IntakeState.AGITATE);
+        } else {
+          intake.setState(IntakeState.INTAKE);
+        }
+
         break;
       default:
         break;
@@ -190,5 +210,21 @@ public class Superstructure extends Subsystem {
       turret.allowExternalControlFacingHub()
     ))
     .finallyDo(() -> state = SuperstructureState.FEED);
+  }
+
+  public Command pass(SuperstructureTrigger agitateTrigger, SuperstructureTrigger shootTrigger) {
+    return Commands.parallel(
+      Commands.runOnce(() -> {
+        manualAgitateTrigger = agitateTrigger;
+        manualFireTrigger = shootTrigger;
+      }),
+      intake.goToState(IntakeState.OUT),
+      kicker.goToState(KickerState.STOP),
+      spindexer.goToState(SpindexerState.STOP)
+    ).andThen(Commands.parallel(
+      intake.goToState(IntakeState.INTAKE),
+      turret.faceAllianceWall()
+    ))
+    .finallyDo(() -> state = SuperstructureState.PASS);
   }
 }
