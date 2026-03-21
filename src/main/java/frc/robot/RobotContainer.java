@@ -13,6 +13,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -137,11 +138,13 @@ public class RobotContainer {
     driverController.x().onTrue(superstructure.intake());
     driverController.y().onTrue(superstructure.score());
 
-    operatorController.a().onTrue(intake.goToState(IntakeState.OUT));
-    operatorController.b().onTrue(intake.goToState(IntakeState.INTAKE));
-    operatorController.x().onTrue(intake.goToState(IntakeState.AGITATE));
-    operatorController.y().onTrue(intake.goToState(IntakeState.STOW));
-    operatorController.leftBumper().onTrue(intake.goToState(IntakeState.INIT));
+    operatorController.povDown().onTrue(superstructure.feed());
+    operatorController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.025)))));
+    operatorController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.025)))));
+    operatorController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Rotations.of(0.001)))));
+    operatorController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Rotations.of(0.001)))));
+    
+    operatorController.x().onTrue(Commands.runOnce(() -> superstructure.getCurrentCommand().cancel()));
   }
 
   public Command getAutonomousCommand() {

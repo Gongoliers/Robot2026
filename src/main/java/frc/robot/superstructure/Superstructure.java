@@ -86,6 +86,10 @@ public class Superstructure extends Subsystem {
           spindexer.setState(SpindexerState.STOP);
         }
         break;
+      case FEED:
+        kicker.setState(KickerState.RUN);
+        spindexer.setState(SpindexerState.RUN);
+        break;
       case SCORE_FROM_POSE:
         if (manualFireTrigger.held()) {
           kicker.setState(KickerState.RUN);
@@ -185,6 +189,6 @@ public class Superstructure extends Subsystem {
       intake.goToState(IntakeState.AGITATE),
       turret.allowExternalControlFacingHub()
     ))
-    .finallyDo(() -> state = SuperstructureState.SCORE);
+    .finallyDo(() -> state = SuperstructureState.FEED);
   }
 }

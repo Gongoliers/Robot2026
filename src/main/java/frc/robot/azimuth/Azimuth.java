@@ -151,7 +151,7 @@ public class Azimuth extends MultithreadedSubsystem {
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 2), feedbackVolts);
+      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 2.5), feedbackVolts);
       double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);

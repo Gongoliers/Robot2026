@@ -169,11 +169,6 @@ public class Turret extends MultithreadedSubsystem {
     SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm()); // getNorm does return distance in meters it isn't documented but translations are in meters
 
     azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
-
-    Distance turretDistance = Meters.of(translationToHub.getNorm());
-    Angle hoodSetpoint = TurretTargeter.targetHubHood(turretDistance);
-
-    hood.setSetpoint(hoodSetpoint);
   }
 
   private void targetHub(Pose2d turretPose) {

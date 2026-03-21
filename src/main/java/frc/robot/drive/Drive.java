@@ -97,8 +97,8 @@ public class Drive extends Subsystem {
   }
 
   public ChassisSpeeds speedsFromController(CommandXboxController controller) {
-    LinearVelocity maxVelocity = MetersPerSecond.of(4);
-    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
+    LinearVelocity maxVelocity = MetersPerSecond.of(2.75);
+    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.6);
 
     double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
     double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);

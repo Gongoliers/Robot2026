@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.CAN;
 import frc.lib.configs.AbsoluteEncoderConfig;
 import frc.lib.configs.MotorConfig;
@@ -54,6 +55,10 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
   private final StatusSignal<Current> statorCurrent;
   private final StatusSignal<Current> supplyCurrent;
 
+  // Test
+  private final StatusSignal<Angle> motorPosition;
+  private final StatusSignal<AngularVelocity> motorVelocity;
+
   /** Voltage control request object */
   private VoltageOut voltage = new VoltageOut(0.0);
 
@@ -81,15 +86,20 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
     statorCurrent = motor.getStatorCurrent();
     supplyCurrent = motor.getSupplyCurrent();
 
+    motorPosition = motor.getPosition();
+    motorVelocity = motor.getVelocity();
+
     BaseStatusSignal.setUpdateFrequencyForAll(
-        100,
+        500,
         position,
         velocity,
         acceleration,
         motorVoltage,
         supplyVoltage,
         statorCurrent,
-        supplyCurrent);
+        supplyCurrent,
+        motorPosition,
+        motorVelocity);
         
     ParentDevice.optimizeBusUtilizationForAll(motor, encoder);
   }
@@ -113,7 +123,9 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
         motorVoltage,
         supplyVoltage,
         statorCurrent,
-        supplyCurrent);
+        supplyCurrent,
+        motorPosition,
+        motorVelocity);
 
     values.position.mut_replace(position.getValueAsDouble() / encoderConfig.sensorToMechRatio(), Rotations);
     values.velocity.mut_replace(velocity.getValueAsDouble() / encoderConfig.sensorToMechRatio(), RotationsPerSecond);
@@ -122,6 +134,9 @@ public class MotorOutputTalonFXCANcoder implements MotorOutput {
     values.supplyVoltage.mut_replace(supplyVoltage.getValueAsDouble(), Volts);
     values.statorCurrent.mut_replace(statorCurrent.getValueAsDouble(), Amps);
     values.supplyCurrent.mut_replace(supplyCurrent.getValueAsDouble(), Amps);
+
+    SmartDashboard.putNumber("Motor position", motorPosition.getValue().in(Rotations));
+    SmartDashboard.putNumber("Motor velocity", motorVelocity.getValue().in(RotationsPerSecond));
   }
 
   @Override
