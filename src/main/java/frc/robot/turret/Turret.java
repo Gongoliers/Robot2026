@@ -82,17 +82,27 @@ public class Turret extends MultithreadedSubsystem {
 
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
 
-      turretCamera = new PhotonSim(
-            "turret",
-            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
-            List.of(
-              new PhotonSim.PhotonSimCamera(
-                      new PhotonCameraSim(new PhotonCamera("turret-camera"), new SimCameraProperties()),
-                      camera -> camera.plus(cameraToRobot()),
-                      pose -> pose.plus(cameraToRobot().inverse())
-              )
-            ),
-            () -> new Pose3d(Drive.getInstance().getPose())
+    SimCameraProperties properties = new SimCameraProperties();
+    // AprilTag pipeline properties for a Limelight 3G
+    properties.setCalibration(640, 480, Rotation2d.fromDegrees(82));
+    properties.setFPS(20);
+
+    // Properties for adding noise and variance to the simulation
+    properties.setCalibError(0.25, 0.08);
+    properties.setAvgLatencyMs(35);
+    properties.setLatencyStdDevMs(5);
+
+    turretCamera = new PhotonSim(
+          "turret",
+          AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
+          List.of(
+            new PhotonSim.PhotonSimCamera(
+                    new PhotonCameraSim(new PhotonCamera("turret-camera"), new SimCameraProperties()),
+                    camera -> camera.plus(cameraToRobot()),
+                    pose -> pose.plus(cameraToRobot().inverse())
+            )
+          ),
+          () -> new Pose3d(Drive.getInstance().getPose())
     );
   }
 
@@ -128,7 +138,7 @@ public class Turret extends MultithreadedSubsystem {
     turretCamera.update();
 
     for (var botPoseEstimate : turretCamera.getPoseEstimates()) {
-      PosePublisher.publish("BotPoseEstimate", botPoseEstimate.pose());
+      Drive.getInstance().addVisionMeasurement(botPoseEstimate.pose().toPose2d(), botPoseEstimate.timestamp().in(Seconds));
     }
 
     PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
