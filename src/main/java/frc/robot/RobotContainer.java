@@ -11,35 +11,17 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
-import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodSysID;
-import frc.robot.intake.Intake;
-import frc.robot.intake.IntakeRollerSysID;
-import frc.robot.intake.IntakeState;
-import frc.robot.kicker.Kicker;
-import frc.robot.kicker.KickerState;
-import frc.robot.kicker.KickerSysID;
 import frc.robot.shooter.Shooter;
 import frc.robot.shooter.ShooterSysID;
 import frc.robot.shooter.ShooterTester;
-import frc.robot.spindexer.Spindexer;
-import frc.robot.spindexer.SpindexerState;
-import frc.robot.spindexer.SpindexerSysID;
-import frc.robot.superstructure.Superstructure;
 import frc.robot.turret.Turret;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -81,21 +63,6 @@ public class RobotContainer {
   /** Turret */
   private final Turret turret;
 
-  /** Intake */
-  private final Intake intake;
-
-  /** Spindexer */
-  private final Spindexer spindexer;
-
-  /** Kicker */
-  private final Kicker kicker;
-
-  /** Superstrcture */
-  private final Superstructure superstructure;
-
-  /** Autonomous handler */
-  private final AutonomousHandler autoHandler;
-
   /**
    * Gets robot container instance
    * 
@@ -121,11 +88,6 @@ public class RobotContainer {
     azimuth = Azimuth.getInstance();
     hood = Hood.getInstance();
     turret = Turret.getInstance();
-    intake = Intake.getInstance();
-    spindexer = Spindexer.getInstance();
-    kicker = Kicker.getInstance();
-    superstructure = Superstructure.getInstance();
-    autoHandler = AutonomousHandler.getInstance();
 
     multithreader.start();
 
@@ -138,28 +100,25 @@ public class RobotContainer {
     drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
   }
 
-  private boolean shouldFlip() {
-    return DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
-  }
-
   private void configureBindings() {
-    driverController.y().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero));
-    driverController.b().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg));
-    driverController.a().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
-    driverController.x().whileTrue(drive.driveFacing(driverController, () -> shouldFlip() ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg));
+    operatorController.a().onTrue(ShooterSysID.runFullSysId());
+    
+    operatorController.b().onTrue(shooterTester.findVelocityVariance(RotationsPerSecond.of(40)));
+    operatorController.rightBumper().whileTrue(shooterTester.runTests(RotationsPerSecond.of(40)));
 
-    driverController.povLeft().onTrue(superstructure.intake());
-    driverController.povRight().onTrue(superstructure.score()).whileTrue(drive.cross());
+    operatorController.leftBumper().whileTrue(Commands.run(() ->shooter.setSetpoint(RotationsPerSecond.of(31))).finallyDo(() -> shooter.setSetpoint(RotationsPerSecond.of(0))));
 
-    driverController.povUp().onTrue(superstructure.feed());
+    operatorController.leftTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(-0.5)));
+    operatorController.rightTrigger().whileTrue(hood.runAtVoltage(() -> Volts.of(0.5)));
 
-    driverController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Degrees.of(0.1)))));
-    driverController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Degrees.of(0.1)))));
-    driverController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.25)))));
-    driverController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.25)))));
+    driverController.a().onTrue(HoodSysID.runFullSysId());
+    
+    driverController.rightBumper().whileTrue(Commands.run(() -> hood.setSetpoint(Rotations.of(0.07))).finallyDo(() -> hood.setSetpoint(Rotations.of(0.04))));
+
+    driverController.rightTrigger().onTrue(Commands.runOnce(() -> hood.setSetpoint(hood.getMinPosition())));
   }
 
   public Command getAutonomousCommand() {
-    return autoHandler.getAutonomousCommand();
+    return Commands.print("No autonomous command configured");
   }
 }
