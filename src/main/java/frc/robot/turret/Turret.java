@@ -116,6 +116,10 @@ public class Turret extends MultithreadedSubsystem {
 
     turretCamera.update();
 
+    for (var botPoseEstimate : turretCamera.getPoseEstimates()) {
+      PosePublisher.publish("BotPoseEstimate", botPoseEstimate.pose());
+    }
+
     PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
 
     if (poseEstimate != null && poseEstimate.tagCount > 1) {

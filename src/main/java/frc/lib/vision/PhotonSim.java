@@ -11,6 +11,7 @@ import org.photonvision.simulation.VisionSystemSim;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * A simulated pose estimation system using PhotonVision.
@@ -19,14 +20,14 @@ public class PhotonSim implements Vision {
 
     private final VisionSystemSim sim;
 
-    public record PhotonSimCamera(PhotonCameraSim sim, Supplier<Transform3d> cameraToPose) {
+    public record PhotonSimCamera(PhotonCameraSim sim, UnaryOperator<Pose3d> cameraToPose, UnaryOperator<Pose3d> poseToCamera) {
 
         public PhotonSimCamera(PhotonCamera camera, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {
-            this(new PhotonCameraSim(camera, properties), cameraToPose);
+            this(new PhotonCameraSim(camera, properties), c -> c.plus(cameraToPose.get()), p -> p.plus(cameraToPose.get().inverse()));
         }
 
         public PhotonSimCamera(String name, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {
-            this(new PhotonCameraSim(new PhotonCamera(name), properties), cameraToPose);
+            this(new PhotonCamera(name), properties, cameraToPose);
         }
 
         public PhotonCamera camera() {
@@ -46,13 +47,19 @@ public class PhotonSim implements Vision {
         this.sim.addAprilTags(tags);
 
         for (PhotonSimCamera camera : cameras) {
-            this.sim.addCamera(camera.sim, camera.cameraToPose.get().inverse());
+            this.sim.addCamera(camera.sim, poseToCamera(camera));
         }
 
         this.cameras = cameras;
         this.pose = pose;
 
         this.poseEstimates = new ArrayList<>();
+    }
+
+    private Transform3d poseToCamera(PhotonSimCamera camera) {
+        Pose3d origin = new Pose3d();
+        Pose3d cameraOrigin = camera.poseToCamera.apply(origin);
+        return new Transform3d(origin, cameraOrigin);
     }
 
     @Override
@@ -64,10 +71,11 @@ public class PhotonSim implements Vision {
         poseEstimates.clear();
 
         for (PhotonSimCamera camera : cameras) {
-            sim.adjustCamera(camera.sim, camera.cameraToPose.get().inverse());
+            sim.adjustCamera(camera.sim, poseToCamera(camera));
             publishCameraPose(poseUpdate, camera);
             for (VisionPoseEstimate estimate : PhotonUtil.unreadMultiTagEstimates(camera.camera())) {
-                Pose3d pose = estimate.pose().plus(camera.cameraToPose.get());
+                Pose3d cameraPose = estimate.pose();
+                Pose3d pose = camera.cameraToPose.apply(cameraPose);
                 VisionPoseEstimate poseEstimate = new VisionPoseEstimate(pose, estimate.timestamp());
                 this.poseEstimates.add(poseEstimate);
             }
@@ -76,8 +84,7 @@ public class PhotonSim implements Vision {
 
     private void publishCameraPose(Pose3d pose, PhotonSimCamera camera) {
         String name = String.format("%s Pose", camera.camera().getName());
-        Transform3d poseToCamera = camera.cameraToPose.get().inverse();
-        Pose3d cameraPose = pose.plus(poseToCamera);
+        Pose3d cameraPose = camera.poseToCamera.apply(pose);
         PosePublisher.publish(name, cameraPose);
     }
 
