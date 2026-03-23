@@ -97,7 +97,7 @@ public class Turret extends MultithreadedSubsystem {
 
   private Transform3d turretToRobot() {
     Rotation3d yaw = new Rotation3d(new Rotation2d(azimuth.getValues().position.unaryMinus()));
-    return new Transform3d(new Translation3d(), yaw);
+    return new Transform3d(RobotConstants.ROBOT_TO_TURRET.unaryMinus(), yaw);
   }
 
   @Override 
