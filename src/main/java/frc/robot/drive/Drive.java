@@ -96,18 +96,6 @@ public class Drive extends Subsystem {
     }
   }
 
-  public ChassisSpeeds speedsFromController(CommandXboxController controller) {
-    LinearVelocity maxVelocity = MetersPerSecond.of(2.75);
-    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.6);
-
-    double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
-    double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
-    double omega = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
-
-    return new ChassisSpeeds(
-      maxVelocity.times(x), maxVelocity.times(y), maxAngularVelocity.times(omega));
-  }
-
   /**
    * Takes a ChassisSpeeds object as input, and a target chassis rotation, and changes the angular velocity of
    * the ChassisSpeeds object to turn the robot towards the target rotation
@@ -179,11 +167,7 @@ public class Drive extends Subsystem {
         .withRotationalRate(fieldSpeeds.omegaRadiansPerSecond));
     });
   }
-
-  public Command driveFacing(CommandXboxController controller, Supplier<Rotation2d> rotation) {
-    return drive(() -> turnTowards(speedsFromController(controller), rotation.get()));
-  }
-
+  
   public Command cross() {
     SwerveRequest.SwerveDriveBrake req = new SwerveRequest.SwerveDriveBrake();
     return run(() -> {
