@@ -1,14 +1,15 @@
 package frc.lib.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.*;
+import frc.lib.PosePublisher;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -22,7 +23,7 @@ public class PhotonSim implements Vision {
 
     private final VisionSystemSim sim;
 
-    public record PhotonSimCamera(PhotonCamera camera, SimCameraProperties properties, Transform3d cameraToPose) {
+    public record PhotonSimCamera(PhotonCamera camera, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {
 
         // TODO This functionality isn't simulation-specific; it holds for real cameras, too
         private static final Pose3d CAMERA_POSE_ESTIMATE_ORIGIN = new Pose3d();
@@ -55,30 +56,39 @@ public class PhotonSim implements Vision {
 
         for (PhotonSimCamera camera : cameras) {
             PhotonCameraSim cameraSim = new PhotonCameraSim(camera.camera, camera.properties);
-            Transform3d poseToCamera = camera.cameraToPose.inverse();
+            Transform3d poseToCamera = camera.cameraToPose.get().inverse();
             this.sim.addCamera(cameraSim, poseToCamera);
         }
 
         this.cameras = cameras;
         this.pose = pose;
 
-        this.poseEstimates = List.of();
+        this.poseEstimates = new ArrayList<>();
     }
 
     @Override
     public void update() {
-        sim.update(pose.get());
+        Pose3d poseUpdate = pose.get();
+        sim.update(poseUpdate);
 
         // TODO Determine if all cached pose estimates should be cleared, or just unread ones
         poseEstimates.clear();
 
         for (PhotonSimCamera camera : cameras) {
+            publishCameraPose(poseUpdate, camera);
             for (VisionPoseEstimate estimate : camera.unreadMultiTagEstimates()) {
-                Pose3d pose = estimate.pose().plus(camera.cameraToPose);
+                Pose3d pose = estimate.pose().plus(camera.cameraToPose.get());
                 VisionPoseEstimate poseEstimate = new VisionPoseEstimate(pose, estimate.timestamp());
                 this.poseEstimates.add(poseEstimate);
             }
         }
+    }
+
+    private void publishCameraPose(Pose3d pose, PhotonSimCamera camera) {
+        String name = String.format("%s Pose", camera.camera.getName());
+        Transform3d poseToCamera = camera.cameraToPose.get().inverse();
+        Pose3d cameraPose = pose.plus(poseToCamera);
+        PosePublisher.publish(name, cameraPose);
     }
 
     @Override
