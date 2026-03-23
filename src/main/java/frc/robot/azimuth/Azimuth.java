@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.Angle;
@@ -43,6 +44,9 @@ public class Azimuth extends MultithreadedSubsystem {
 
   /** Target position */
   private final MutAngle setpoint;
+
+  /** Previous target position (used to calculated setpoint velocity for feedforward) */
+  private final MutAngle previousSetpoint;
 
   /** Setpoint optimizer that handles max and min azimuth angle and safe angle wrapping */
   private final SafeAngleOptimizer setpointOptimizer;
@@ -110,6 +114,7 @@ public class Azimuth extends MultithreadedSubsystem {
     motorOutput.setPosition(Rotations.of(0.25));
 
     setpoint = Rotations.mutable(0);
+    previousSetpoint = Rotations.mutable(0);
     setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.25), Rotations.of(0.8125));
     voltageSet = false;
     voltageOut = Volts.mutable(0);
@@ -147,12 +152,14 @@ public class Azimuth extends MultithreadedSubsystem {
     motorOutput.updateValues(motorValues, RobotConstants.FAST_PERIODIC_DURATION);
 
     double setpointRotations = setpoint.in(Rotations);
+    double previousSetpointRotations = previousSetpoint.in(Rotations);
     double positionRotations = motorValues.position.in(Rotations);
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      feedbackVolts = Math.copySign(Math.min(Math.abs(feedbackVolts), 2.5), feedbackVolts);
+      feedbackVolts = MathUtil.clamp(feedbackVolts, -2.5, 2.5);
       double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
+      feedforwardVolts += MathUtil.clamp((setpointRotations - previousSetpointRotations) / RobotConstants.FAST_PERIODIC_RATE * feedforward.getKv(), -1, 1);
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
     }
@@ -197,6 +204,7 @@ public class Azimuth extends MultithreadedSubsystem {
    * @param newSetpoint New local azimuth setpoint
    */
   public void setSetpoint(Angle newSetpoint) {
+    previousSetpoint.mut_replace(setpoint);
     setpoint.mut_replace(setpointOptimizer.optimizeSetpoint(setpoint, newSetpoint));
   }
 
