@@ -24,9 +24,12 @@ import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
+import org.photonvision.PhotonCamera;
+import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 /** Turret subsystem */
 public class Turret extends MultithreadedSubsystem {
@@ -79,11 +82,15 @@ public class Turret extends MultithreadedSubsystem {
 
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
 
-    turretCamera = new PhotonSim(
+      turretCamera = new PhotonSim(
             "turret",
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
             List.of(
-              new PhotonSim.PhotonSimCamera("turret-camera", new SimCameraProperties(), () -> cameraToTurret().plus(turretToRobot()))
+              new PhotonSim.PhotonSimCamera(
+                      new PhotonCameraSim(new PhotonCamera("turret-camera"), new SimCameraProperties()),
+                      camera -> camera.plus(cameraToRobot()),
+                      pose -> pose.plus(cameraToRobot().inverse())
+              )
             ),
             () -> new Pose3d(Drive.getInstance().getPose())
     );
@@ -98,6 +105,10 @@ public class Turret extends MultithreadedSubsystem {
   private Transform3d turretToRobot() {
     Rotation3d yaw = new Rotation3d(new Rotation2d(azimuth.getValues().position.unaryMinus()));
     return new Transform3d(RobotConstants.ROBOT_TO_TURRET.unaryMinus(), yaw);
+  }
+
+  private Transform3d cameraToRobot() {
+    return cameraToTurret().plus(turretToRobot());
   }
 
   @Override 
