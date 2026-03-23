@@ -19,7 +19,17 @@ public class PhotonSim implements Vision {
 
     private final VisionSystemSim sim;
 
-    public record PhotonSimCamera(PhotonCamera camera, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {}
+    public record PhotonSimCamera(PhotonCameraSim sim, Supplier<Transform3d> cameraToPose) {
+
+        public PhotonSimCamera(PhotonCamera camera, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {
+            this(new PhotonCameraSim(camera, properties), cameraToPose);
+        }
+
+        public PhotonCamera camera() {
+            return sim.getCamera();
+        }
+
+    }
 
     private final List<PhotonSimCamera> cameras;
 
@@ -32,9 +42,7 @@ public class PhotonSim implements Vision {
         this.sim.addAprilTags(tags);
 
         for (PhotonSimCamera camera : cameras) {
-            PhotonCameraSim cameraSim = new PhotonCameraSim(camera.camera, camera.properties);
-            Transform3d poseToCamera = camera.cameraToPose.get().inverse();
-            this.sim.addCamera(cameraSim, poseToCamera);
+            this.sim.addCamera(camera.sim, camera.cameraToPose.get().inverse());
         }
 
         this.cameras = cameras;
@@ -52,8 +60,9 @@ public class PhotonSim implements Vision {
         poseEstimates.clear();
 
         for (PhotonSimCamera camera : cameras) {
+            sim.adjustCamera(camera.sim, camera.cameraToPose.get().inverse());
             publishCameraPose(poseUpdate, camera);
-            for (VisionPoseEstimate estimate : PhotonUtil.unreadMultiTagEstimates(camera.camera)) {
+            for (VisionPoseEstimate estimate : PhotonUtil.unreadMultiTagEstimates(camera.camera())) {
                 Pose3d pose = estimate.pose().plus(camera.cameraToPose.get());
                 VisionPoseEstimate poseEstimate = new VisionPoseEstimate(pose, estimate.timestamp());
                 this.poseEstimates.add(poseEstimate);
@@ -62,7 +71,7 @@ public class PhotonSim implements Vision {
     }
 
     private void publishCameraPose(Pose3d pose, PhotonSimCamera camera) {
-        String name = String.format("%s Pose", camera.camera.getName());
+        String name = String.format("%s Pose", camera.camera().getName());
         Transform3d poseToCamera = camera.cameraToPose.get().inverse();
         Pose3d cameraPose = pose.plus(poseToCamera);
         PosePublisher.publish(name, cameraPose);
