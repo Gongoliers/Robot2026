@@ -25,6 +25,10 @@ public class PhotonSim implements Vision {
             this(new PhotonCameraSim(camera, properties), cameraToPose);
         }
 
+        public PhotonSimCamera(String name, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {
+            this(new PhotonCameraSim(new PhotonCamera(name), properties), cameraToPose);
+        }
+
         public PhotonCamera camera() {
             return sim.getCamera();
         }

@@ -2,9 +2,9 @@ package frc.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -16,12 +16,18 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
 import frc.lib.PosePublisher;
 import frc.lib.vision.LimelightHelpers;
+import frc.lib.vision.PhotonSim;
+import frc.lib.vision.Vision;
 import frc.robot.RobotConstants;
 import frc.lib.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
+import org.photonvision.PhotonCamera;
+import org.photonvision.simulation.SimCameraProperties;
+
+import java.util.List;
 
 /** Turret subsystem */
 public class Turret extends MultithreadedSubsystem {
@@ -49,6 +55,8 @@ public class Turret extends MultithreadedSubsystem {
   /** Robot pose used by targetHubFromPose */
   private Pose2d manualRobotPose;
 
+  private Vision turretCamera;
+
   /**
    * Gets turret subsystem instance
    * 
@@ -71,6 +79,15 @@ public class Turret extends MultithreadedSubsystem {
     state = TurretState.STOW;
 
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
+
+    turretCamera = new PhotonSim(
+            "turret",
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
+            List.of(
+              new PhotonSim.PhotonSimCamera("turret-camera", new SimCameraProperties(), Transform3d::new)
+            ),
+            () -> new Pose3d(Drive.getInstance().getPose())
+    );
   }
 
   @Override 
@@ -86,6 +103,8 @@ public class Turret extends MultithreadedSubsystem {
     Pose2d robot = Drive.getInstance().getPose();
     PosePublisher.publish("Turret (Local)", RobotConstants.localTurretPose(azimuth.localPosition()));
     PosePublisher.publish("Turret (Global)", RobotConstants.globalTurretPose(robot, azimuth.localPosition()));
+
+    turretCamera.update();
 
     PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
 
