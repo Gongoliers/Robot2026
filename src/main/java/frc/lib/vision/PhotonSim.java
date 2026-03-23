@@ -7,14 +7,10 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
-
-import static edu.wpi.first.units.Units.Microseconds;
 
 /**
  * A simulated pose estimation system using PhotonVision.
@@ -23,26 +19,7 @@ public class PhotonSim implements Vision {
 
     private final VisionSystemSim sim;
 
-    public record PhotonSimCamera(PhotonCamera camera, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {
-
-        // TODO This functionality isn't simulation-specific; it holds for real cameras, too
-        private static final Pose3d CAMERA_POSE_ESTIMATE_ORIGIN = new Pose3d();
-
-        // TODO This functionality isn't simulation-specific; it holds for real cameras, too
-        public static Optional<VisionPoseEstimate> multiTagEstimate(PhotonPipelineResult result) {
-            return result.multitagResult.map(multiTag -> {
-                // The camera's estimated pose is relative to the coordinate frame of the AprilTags
-                var pose = CAMERA_POSE_ESTIMATE_ORIGIN.plus(multiTag.estimatedPose.best);
-                var timestamp = Microseconds.of(result.metadata.captureTimestampMicros);
-                return new VisionPoseEstimate(pose, timestamp);
-            });
-        }
-
-        // TODO This functionality isn't simulation-specific; it holds for real cameras, too
-        public List<VisionPoseEstimate> unreadMultiTagEstimates() {
-            return camera.getAllUnreadResults().stream().map(PhotonSimCamera::multiTagEstimate).filter(Optional::isPresent).map(Optional::get).toList();
-        }
-    }
+    public record PhotonSimCamera(PhotonCamera camera, SimCameraProperties properties, Supplier<Transform3d> cameraToPose) {}
 
     private final List<PhotonSimCamera> cameras;
 
@@ -76,7 +53,7 @@ public class PhotonSim implements Vision {
 
         for (PhotonSimCamera camera : cameras) {
             publishCameraPose(poseUpdate, camera);
-            for (VisionPoseEstimate estimate : camera.unreadMultiTagEstimates()) {
+            for (VisionPoseEstimate estimate : PhotonUtil.unreadMultiTagEstimates(camera.camera)) {
                 Pose3d pose = estimate.pose().plus(camera.cameraToPose.get());
                 VisionPoseEstimate poseEstimate = new VisionPoseEstimate(pose, estimate.timestamp());
                 this.poseEstimates.add(poseEstimate);
