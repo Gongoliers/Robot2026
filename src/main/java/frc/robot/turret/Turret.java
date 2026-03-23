@@ -24,7 +24,6 @@ import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
-import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.SimCameraProperties;
 
 import java.util.List;
@@ -84,10 +83,21 @@ public class Turret extends MultithreadedSubsystem {
             "turret",
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
             List.of(
-              new PhotonSim.PhotonSimCamera("turret-camera", new SimCameraProperties(), Transform3d::new)
+              new PhotonSim.PhotonSimCamera("turret-camera", new SimCameraProperties(), () -> cameraToTurret().plus(turretToRobot()))
             ),
             () -> new Pose3d(Drive.getInstance().getPose())
     );
+  }
+
+  private Transform3d cameraToTurret() {
+    // TODO This feels backwards... it feels like this pitch should be negative instead of positive
+    Rotation3d pitch = new Rotation3d(Degrees.zero(), Degrees.of(15), Degrees.zero());
+    return new Transform3d(new Translation3d(), pitch);
+  }
+
+  private Transform3d turretToRobot() {
+    Rotation3d yaw = new Rotation3d(new Rotation2d(azimuth.getValues().position.unaryMinus()));
+    return new Transform3d(new Translation3d(), yaw);
   }
 
   @Override 
