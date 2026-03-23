@@ -165,6 +165,8 @@ public class Azimuth extends MultithreadedSubsystem {
     }
 
     motorOutput.setVoltage(voltageOut);
+
+    previousSetpoint.mut_replace(setpoint);
   }
 
   /**
@@ -204,7 +206,6 @@ public class Azimuth extends MultithreadedSubsystem {
    * @param newSetpoint New local azimuth setpoint
    */
   public void setSetpoint(Angle newSetpoint) {
-    previousSetpoint.mut_replace(setpoint);
     setpoint.mut_replace(setpointOptimizer.optimizeSetpoint(setpoint, newSetpoint));
   }
 
