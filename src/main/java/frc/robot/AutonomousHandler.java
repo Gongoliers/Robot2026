@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramMetersSquaredPerSecond;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Rotations;
 
 import java.util.Optional;
 
@@ -26,8 +27,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.superstructure.Superstructure;
+import frc.robot.superstructure.SuperstructureTrigger;
 
 public class AutonomousHandler {
   
@@ -39,6 +42,9 @@ public class AutonomousHandler {
 
   /** Superstructure reference */
   private final Superstructure superstructure = Superstructure.getInstance();
+
+  /** Azimuth reference */
+  private final Azimuth azimuth = Azimuth.getInstance();
 
   /** Used in dashboard to pick what autonomous routine to run */
   private final SendableChooser<Command> autoChooser;
@@ -76,9 +82,14 @@ public class AutonomousHandler {
     // Set up named commands
     NamedCommands.registerCommand("FaceHub", superstructure.faceHub().asProxy());
     NamedCommands.registerCommand("Intake", superstructure.intake().asProxy());
+    NamedCommands.registerCommand("Score1", superstructure.score().asProxy().andThen(Commands.waitSeconds(1)).andThen(superstructure.faceHub().asProxy()));
     NamedCommands.registerCommand("Score3", superstructure.score().asProxy().andThen(Commands.waitSeconds(3)).andThen(superstructure.faceHub().asProxy()));
     NamedCommands.registerCommand("Score5", superstructure.score().asProxy().andThen(Commands.waitSeconds(5)).andThen(superstructure.faceHub().asProxy()));
     NamedCommands.registerCommand("Score", superstructure.score().asProxy());
+    NamedCommands.registerCommand("Pass", superstructure.pass(
+      new SuperstructureTrigger(() -> true), 
+      new SuperstructureTrigger(() -> azimuth.nearSetpoint(Rotations.of(0.1)))
+    ).asProxy());
 
     new EventTrigger("Intake").onTrue(superstructure.intake().asProxy());
     
