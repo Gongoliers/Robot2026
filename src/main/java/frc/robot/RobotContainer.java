@@ -21,6 +21,7 @@ import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
+import frc.robot.drive.DriveSpeedsUtils;
 import frc.robot.hood.Hood;
 import frc.robot.hood.HoodSysID;
 import frc.robot.intake.Intake;
@@ -126,7 +127,7 @@ public class RobotContainer {
   }
 
   private void configureDefaultCommands() {
-    drive.setDefaultCommand(drive.drive(() -> drive.speedsFromController(driverController)));
+    drive.setDefaultCommand(drive.drive(() -> DriveSpeedsUtils.fromController(driverController, MetersPerSecond.of(2.75), RotationsPerSecond.of(0.75), 0.1)));
   }
 
   private boolean shouldFlip() {
