@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.RobotConstants;
 
@@ -32,7 +33,8 @@ public class DriveSpeedsUtils {
     Translation2d translation = new Translation2d(-controller.getLeftY(), -controller.getLeftX());
     double deadzoneSlope = 1/(1-deadzone);
     double deadzonedTranslationMagnitude = Math.max(0, deadzoneSlope * translation.getNorm() - deadzoneSlope * deadzone);
-    Translation2d deadzonedTranslation = translation.div(translation.getNorm() * deadzonedTranslationMagnitude);
+    SmartDashboard.putNumber("DEADZONED VELOCITY MAG", deadzonedTranslationMagnitude);
+    Translation2d deadzonedTranslation = translation.div(translation.getNorm() / deadzonedTranslationMagnitude);
 
     LinearVelocity vx = maxLinearVelocity.times(deadzonedTranslation.getX());
     LinearVelocity vy = maxLinearVelocity.times(deadzonedTranslation.getY());

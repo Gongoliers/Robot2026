@@ -127,7 +127,13 @@ public class RobotContainer {
   }
 
   private void configureDefaultCommands() {
-    drive.setDefaultCommand(drive.drive(() -> DriveSpeedsUtils.fromController(driverController, MetersPerSecond.of(2.75), RotationsPerSecond.of(0.75), 0.1)));
+    drive.setDefaultCommand(drive.drive(() -> {
+      return DriveSpeedsUtils.fromController(
+        driverController, 
+        MetersPerSecond.of(2.75), 
+        RotationsPerSecond.of(0.75), 
+        0.1);
+    }));
   }
 
   private boolean shouldFlip() {

@@ -9,8 +9,12 @@ import frc.lib.motors.LossyMotorOutputSim;
 import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorOutputSim;
 import frc.lib.motors.MotorOutputTalonFXCANcoder;
+import frc.lib.sensors.Gyroscope;
+import frc.lib.sensors.GyroscopePigeon2;
+import frc.lib.sensors.GyroscopeSim;
 import frc.robot.Robot;
 import frc.robot.RobotConstants;
+import frc.robot.drive.Drive;
 
 /** Creates azimuth hardware abstractions */
 public class AzimuthFactory {
@@ -28,5 +32,13 @@ public class AzimuthFactory {
     return new LossyMotorOutputSim(
       losslessSim, 
       Volts.of(config.feedforwardControllerConfig().kS()));
+  }
+
+  public static Gyroscope createDrivePigeon() {
+    if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.SWERVE)) {
+      return new GyroscopePigeon2(new CAN(0, "swerve"));
+    }
+
+    return new GyroscopeSim(() -> RadiansPerSecond.of(-Drive.getInstance().getState().Speeds.omegaRadiansPerSecond));
   }
 }
