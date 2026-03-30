@@ -124,12 +124,12 @@ public class Hood extends MultithreadedSubsystem {
     ShuffleboardLayout stateTab = tab.getLayout("Current state", BuiltInLayouts.kList);
 
     stateTab.addDouble("Motor voltage (V)", () -> motorValues.motorVoltage.in(Volts));
-    stateTab.addDouble("Supply voltage (V)", () -> motorValues.supplyVoltage.in(Volts));
-    stateTab.addDouble("Stator current (A)", () -> motorValues.statorCurrent.in(Amps));
-    stateTab.addDouble("Supply current (A)", () -> motorValues.supplyCurrent.in(Amps));
+    //stateTab.addDouble("Supply voltage (V)", () -> motorValues.supplyVoltage.in(Volts));
+    //stateTab.addDouble("Stator current (A)", () -> motorValues.statorCurrent.in(Amps));
+    //stateTab.addDouble("Supply current (A)", () -> motorValues.supplyCurrent.in(Amps));
     stateTab.addDouble("Position (rot)", () -> motorValues.position.in(Rotations));
-    stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
-    stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
+    //stateTab.addDouble("Velocity (rotps)", () -> motorValues.velocity.in(RotationsPerSecond));
+    //stateTab.addDouble("Acceleration (rotpsps)", () -> motorValues.acceleration.in(RotationsPerSecondPerSecond));
     stateTab.addBoolean("At setpoint", () -> nearSetpoint(Rotations.of(0.01)));
 
     tab.addDouble("Setpoint (rot)", () -> setpoint.in(Rotations));
