@@ -7,6 +7,8 @@ import static edu.wpi.first.units.Units.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /** Class that handles calling fastPeriodic methods in multithreaded classes */
 public class Multithreader extends Thread {
 
@@ -56,7 +58,10 @@ public class Multithreader extends Thread {
 
       // Pause the thread just long enough for every loop of the thread to last exactly as long as
       // expected
-      long sleepTime = nanoTime - System.nanoTime() + startTime;
+      long fastPeriodicDuration = System.nanoTime() - startTime;
+      long sleepTime = nanoTime - fastPeriodicDuration;
+
+      SmartDashboard.putNumber("fastPeriodic (ns)", fastPeriodicDuration);
 
       if (sleepTime > 0) {
         try {
@@ -75,7 +80,9 @@ public class Multithreader extends Thread {
 
   private void fastPeriodic() {
     for (Multithreaded multithreaded : multithreadeds) {
+      long start = System.nanoTime();
       multithreaded.fastPeriodic();
+      SmartDashboard.putNumber(multithreaded.getClass().getTypeName()+" fastPeriodic (ns)", System.nanoTime() - start);
     }
   }
 }
