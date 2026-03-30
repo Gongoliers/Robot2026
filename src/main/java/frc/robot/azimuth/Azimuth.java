@@ -130,7 +130,7 @@ public class Azimuth extends MultithreadedSubsystem {
     gyro = AzimuthFactory.createDrivePigeon();
 
     setpoint = Rotations.mutable(0);
-    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.25), Rotations.of(0.8125));
+    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.75), Rotations.of(0.6));
     voltageSet = false;
     voltageOut = Volts.mutable(0);
 
