@@ -37,6 +37,7 @@ public class Multithreader extends Thread {
   private Multithreader() {
     setName("Multithreader");
     setDaemon(true);
+    setPriority(MAX_PRIORITY);
   }
 
   /**
@@ -61,6 +62,7 @@ public class Multithreader extends Thread {
       long fastPeriodicDuration = System.nanoTime() - startTime;
       long sleepTime = nanoTime - fastPeriodicDuration;
 
+      SmartDashboard.putNumber("target fastPeriodic duration (ns)", RobotConstants.FAST_PERIODIC_DURATION.in(Microsecond)*1000);
       SmartDashboard.putNumber("fastPeriodic (ns)", fastPeriodicDuration);
 
       if (sleepTime > 0) {
