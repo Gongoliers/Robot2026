@@ -89,7 +89,7 @@ public class Turret extends MultithreadedSubsystem {
               this::cameraToRobot
             )
           ),
-          () -> new Pose3d(Drive.getInstance().getPose())
+          () -> Drive.getInstance().getPose3d()
     );
   }
 
@@ -125,23 +125,9 @@ public class Turret extends MultithreadedSubsystem {
     turretCamera.update();
 
     for (var botPoseEstimate : turretCamera.getPoseEstimates()) {
-      // Drive.getInstance().addVisionMeasurement(botPoseEstimate.pose().toPose2d(), botPoseEstimate.timestamp().in(Seconds));
+      Drive.getInstance().addVisionMeasurement(botPoseEstimate.pose().toPose2d(), botPoseEstimate.timestamp());
     }
 
-    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
-
-    if (poseEstimate != null && poseEstimate.tagCount > 1) {
-      Pose2d estimated = poseEstimate.pose;
-      PosePublisher.publish("Camera estimated turret pose", estimated);
-      Angle azimuthAngle = azimuth.getValues().position;
-      Pose2d robotPose = new Pose2d(
-        estimated.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d()),
-        estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
-
-      PosePublisher.publish("Camera estimated bot pose", robotPose);
-      // Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
-    }
-    
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
     turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
     Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
