@@ -16,12 +16,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearAcceleration;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -96,18 +92,6 @@ public class Drive extends Subsystem {
     }
   }
 
-  public ChassisSpeeds speedsFromController(CommandXboxController controller) {
-    LinearVelocity maxVelocity = MetersPerSecond.of(2.75);
-    AngularVelocity maxAngularVelocity = RotationsPerSecond.of(0.6);
-
-    double x = MathUtil.applyDeadband(-controller.getLeftY(), 0.1);
-    double y = MathUtil.applyDeadband(-controller.getLeftX(), 0.1);
-    double omega = MathUtil.applyDeadband(-controller.getRightX(), 0.1);
-
-    return new ChassisSpeeds(
-      maxVelocity.times(x), maxVelocity.times(y), maxAngularVelocity.times(omega));
-  }
-
   /**
    * Takes a ChassisSpeeds object as input, and a target chassis rotation, and changes the angular velocity of
    * the ChassisSpeeds object to turn the robot towards the target rotation
@@ -178,10 +162,6 @@ public class Drive extends Subsystem {
         .withVelocityY(fieldSpeeds.vyMetersPerSecond)
         .withRotationalRate(fieldSpeeds.omegaRadiansPerSecond));
     });
-  }
-
-  public Command driveFacing(CommandXboxController controller, Supplier<Rotation2d> rotation) {
-    return drive(() -> turnTowards(speedsFromController(controller), rotation.get()));
   }
 
   public Command cross() {

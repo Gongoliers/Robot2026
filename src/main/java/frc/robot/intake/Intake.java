@@ -161,23 +161,23 @@ public class Intake extends Subsystem {
     ShuffleboardLayout pivotStateTab = tab.getLayout("Current pivot state", BuiltInLayouts.kList);
 
     pivotStateTab.addDouble("Motor voltage (V)", () -> pivotValues.motorVoltage.in(Volts));
-    pivotStateTab.addDouble("Supply voltage (V)", () -> pivotValues.supplyVoltage.in(Volts));
+    //pivotStateTab.addDouble("Supply voltage (V)", () -> pivotValues.supplyVoltage.in(Volts));
     pivotStateTab.addDouble("Stator current (A)", () -> pivotValues.statorCurrent.in(Amps));
-    pivotStateTab.addDouble("Supply current (A)", () -> pivotValues.supplyCurrent.in(Amps));
+    //pivotStateTab.addDouble("Supply current (A)", () -> pivotValues.supplyCurrent.in(Amps));
     pivotStateTab.addDouble("Position (rot)", () -> pivotValues.position.in(Rotations));
-    pivotStateTab.addDouble("Velocity (rotps)", () -> pivotValues.velocity.in(RotationsPerSecond));
-    pivotStateTab.addDouble("Acceleration (rotpsps)", () -> pivotValues.acceleration.in(RotationsPerSecondPerSecond));
+    //pivotStateTab.addDouble("Velocity (rotps)", () -> pivotValues.velocity.in(RotationsPerSecond));
+    //pivotStateTab.addDouble("Acceleration (rotpsps)", () -> pivotValues.acceleration.in(RotationsPerSecondPerSecond));
     pivotStateTab.addDouble("Setpoint (rot)", () -> pivotSetpoint.in(Rotations));
 
     ShuffleboardLayout rollerStateTab = tab.getLayout("Current roller state", BuiltInLayouts.kList);
 
     rollerStateTab.addDouble("Motor voltage (V)", () -> rollerValues.motorVoltage.in(Volts));
-    rollerStateTab.addDouble("Supply voltage (V)", () -> rollerValues.supplyVoltage.in(Volts));
-    rollerStateTab.addDouble("Stator current (A)", () -> rollerValues.statorCurrent.in(Amps));
-    rollerStateTab.addDouble("Supply current (A)", () -> rollerValues.supplyCurrent.in(Amps));
-    rollerStateTab.addDouble("Position (rot)", () -> rollerValues.position.in(Rotations));
+    //rollerStateTab.addDouble("Supply voltage (V)", () -> rollerValues.supplyVoltage.in(Volts));
+    //rollerStateTab.addDouble("Stator current (A)", () -> rollerValues.statorCurrent.in(Amps));
+    //rollerStateTab.addDouble("Supply current (A)", () -> rollerValues.supplyCurrent.in(Amps));
+    //rollerStateTab.addDouble("Position (rot)", () -> rollerValues.position.in(Rotations));
     rollerStateTab.addDouble("Velocity (rotps)", () -> rollerValues.velocity.in(RotationsPerSecond));
-    rollerStateTab.addDouble("Acceleration (rotpsps)", () -> rollerValues.acceleration.in(RotationsPerSecondPerSecond));
+    //rollerStateTab.addDouble("Acceleration (rotpsps)", () -> rollerValues.acceleration.in(RotationsPerSecondPerSecond));
     rollerStateTab.addDouble("Setpoint (rotps)", () -> rollerSetpoint.in(RotationsPerSecond));
 
     tab.addString("Current state", () -> state.name());
@@ -191,7 +191,7 @@ public class Intake extends Subsystem {
 
     // Define control to use for each state
     if (state == IntakeState.AGITATE) {
-      double oscillationAmplitude = 0.05; // Oscillation amplitude in rotations
+      double oscillationAmplitude = 0.075; // Oscillation amplitude in rotations
       double oscillationFrequency = 2; // Oscillation frequency in cycles per second
 
       double oscillation = Math.sin(6.28 * oscillationFrequency * RobotController.getMeasureTime().in(Seconds));

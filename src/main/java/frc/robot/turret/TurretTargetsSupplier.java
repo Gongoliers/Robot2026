@@ -25,9 +25,9 @@ public class TurretTargetsSupplier {
 
   public static Rotation2d faceAllianceWall() {
     if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-      return Rotation2d.fromDegrees(180);
+      return Rotation2d.fromDegrees(0);
     }
 
-    return Rotation2d.fromDegrees(0);
+    return Rotation2d.fromDegrees(180);
   }
 }

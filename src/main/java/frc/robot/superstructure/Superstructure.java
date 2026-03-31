@@ -75,6 +75,8 @@ public class Superstructure extends Subsystem {
     ShuffleboardTab tab = Shuffleboard.getTab("superstructure");
 
     tab.addString("state", () -> state.name());
+    tab.addString("safe state", () -> getSafeState().name());
+    tab.addBoolean("at target state", () -> atTargetState());
   }
 
   @Override
@@ -122,6 +124,25 @@ public class Superstructure extends Subsystem {
       default:
         break;
     }
+  }
+
+  public boolean atTargetState() {
+    return turret.atTargetState()
+        && intake.atTargetState()
+        && kicker.atTargetState()
+        && spindexer.atTargetState();
+  }
+
+  public SuperstructureState getState() {
+    return state;
+  }
+
+  public SuperstructureState getSafeState() {
+    if (atTargetState()) {
+      return state;
+    }
+
+    return SuperstructureState.UNSAFE;
   }
 
   public Command init() {

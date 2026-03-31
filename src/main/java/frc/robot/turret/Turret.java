@@ -203,8 +203,7 @@ public class Turret extends MultithreadedSubsystem {
       case STOW:
         return azimuth.nearSetpoint(Rotations.of(0.01));
       case FACE_HUB:
-        return azimuth.nearSetpoint(Rotations.of(0.1))
-            && azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.2;
+        return azimuth.nearSetpoint(Rotations.of(0.1));
       case TARGET_HUB:
         return azimuth.nearSetpoint(Rotations.of(0.075))
             && shooter.nearSetpoint(RotationsPerSecond.of(4))
