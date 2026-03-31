@@ -151,8 +151,9 @@ public class RobotContainer {
       new SuperstructureTrigger(() -> driverController.rightTrigger().getAsBoolean())));
 
     operatorController.povDown().onTrue(superstructure.feed());
-    operatorController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.025)))));
-    operatorController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.025)))));
+    operatorController.povRight().onTrue(Commands.runOnce(() -> shooter.setSetpoint(RotationsPerSecond.of(15))));
+    operatorController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.1)))));
+    operatorController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.1)))));
     operatorController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Rotations.of(0.001)))));
     operatorController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Rotations.of(0.001)))));
     

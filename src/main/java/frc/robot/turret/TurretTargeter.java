@@ -21,21 +21,26 @@ public class TurretTargeter {
   static {
     hoodMapHub.put(1.46, 0.0277);
     hoodMapHub.put(1.98, 0.0277);
-    hoodMapHub.put(2.02, 0.0277);
-    hoodMapHub.put(2.286, 0.0277);
-    hoodMapHub.put(2.56, 0.0277);
-    hoodMapHub.put(3.04, 0.03177);
-    hoodMapHub.put(3.56, 0.04377);
-    hoodMapHub.put(4.11, 0.04877);
-    hoodMapHub.put(4.83, 0.05277);
+    hoodMapHub.put(2.14, 0.0277);
+    hoodMapHub.put(2.61, 0.0277);
+    hoodMapHub.put(3.25, 0.0277);
+    hoodMapHub.put(3.03, 0.0277);
+    hoodMapHub.put(4.0, 0.03377);
+    hoodMapHub.put(4.65, 0.03577);
+    hoodMapHub.put(5.2, 0.04077);
+    hoodMapHub.put(5.7, 0.04777);
+    hoodMapHub.put(6.5, 0.04777);
 
-    shooterMapHub.put(1.46, 24.25);
-    shooterMapHub.put(2.02, 28.1);
-    shooterMapHub.put(2.56, 32.775);
-    shooterMapHub.put(3.04, 34.1);
-    shooterMapHub.put(3.56, 34.4);
-    shooterMapHub.put(4.11, 36.775);
-    shooterMapHub.put(4.83, 39.625);
+    shooterMapHub.put(1.75, 28.525);
+    shooterMapHub.put(2.14, 28.525);
+    shooterMapHub.put(2.61, 32.4);
+    shooterMapHub.put(3.25, 36.525);
+    shooterMapHub.put(3.03, 35.7);
+    shooterMapHub.put(4.0, 40.275);
+    shooterMapHub.put(4.65, 42.875);
+    shooterMapHub.put(5.2, 44.075);
+    shooterMapHub.put(5.7, 46.95);
+    shooterMapHub.put(6.5, 47.35);
   }
 
   /**

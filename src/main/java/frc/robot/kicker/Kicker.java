@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.MutVoltage;
@@ -53,7 +54,7 @@ public class Kicker extends Subsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0.27307)
+          .kP(0.8)
           .kI(0)
           .kD(0)
           .build())
@@ -120,7 +121,7 @@ public class Kicker extends Subsystem {
     double velocityRotationsPerSecond = motorValues.velocity.in(RotationsPerSecond);
 
     if (!voltageSet) {
-      double feedbackVolts = feedback.calculate(velocityRotationsPerSecond, setpointRotationsPerSecond);
+      double feedbackVolts = MathUtil.clamp(feedback.calculate(velocityRotationsPerSecond, setpointRotationsPerSecond), -6, 6);
       double feedforwardVolts = feedforward.calculate(setpointRotationsPerSecond);
 
       voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);

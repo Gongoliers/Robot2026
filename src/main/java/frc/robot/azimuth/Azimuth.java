@@ -88,7 +88,7 @@ public class Azimuth extends MultithreadedSubsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(75)
+          .kP(100)
           .kI(0.0)
           .kD(0.5)
           .build())
