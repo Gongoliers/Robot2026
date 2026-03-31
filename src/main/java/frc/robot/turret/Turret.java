@@ -17,6 +17,7 @@ import frc.lib.MultithreadedSubsystem;
 import frc.lib.PosePublisher;
 import frc.lib.vision.LimelightHelpers;
 import frc.lib.vision.PhotonSim;
+import frc.lib.vision.PhotonSimCamera;
 import frc.lib.vision.Vision;
 import frc.robot.RobotConstants;
 import frc.lib.vision.LimelightHelpers.PoseEstimate;
@@ -24,12 +25,8 @@ import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
-import org.photonvision.PhotonCamera;
-import org.photonvision.simulation.PhotonCameraSim;
-import org.photonvision.simulation.SimCameraProperties;
 
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 /** Turret subsystem */
 public class Turret extends MultithreadedSubsystem {
@@ -82,24 +79,14 @@ public class Turret extends MultithreadedSubsystem {
 
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
 
-    SimCameraProperties properties = new SimCameraProperties();
-    // AprilTag pipeline properties for a Limelight 3G
-    properties.setCalibration(640, 480, Rotation2d.fromDegrees(82));
-    properties.setFPS(20);
-
-    // Properties for adding noise and variance to the simulation
-    properties.setCalibError(0.25, 0.08);
-    properties.setAvgLatencyMs(35);
-    properties.setLatencyStdDevMs(5);
-
     turretCamera = new PhotonSim(
           "turret",
           AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
           List.of(
-            new PhotonSim.PhotonSimCamera(
-                    new PhotonCameraSim(new PhotonCamera("turret-camera"), properties),
-                    camera -> camera.plus(cameraToRobot()),
-                    pose -> pose.plus(cameraToRobot().inverse())
+            new PhotonSimCamera(
+              "turret-camera",
+              PhotonSimCamera.limelight3gProperties(),
+              this::cameraToRobot
             )
           ),
           () -> new Pose3d(Drive.getInstance().getPose())
