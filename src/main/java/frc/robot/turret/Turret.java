@@ -97,7 +97,7 @@ public class Turret extends MultithreadedSubsystem {
           AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
           List.of(
             new PhotonSim.PhotonSimCamera(
-                    new PhotonCameraSim(new PhotonCamera("turret-camera"), new SimCameraProperties()),
+                    new PhotonCameraSim(new PhotonCamera("turret-camera"), properties),
                     camera -> camera.plus(cameraToRobot()),
                     pose -> pose.plus(cameraToRobot().inverse())
             )
@@ -138,7 +138,7 @@ public class Turret extends MultithreadedSubsystem {
     turretCamera.update();
 
     for (var botPoseEstimate : turretCamera.getPoseEstimates()) {
-      Drive.getInstance().addVisionMeasurement(botPoseEstimate.pose().toPose2d(), botPoseEstimate.timestamp().in(Seconds));
+      // Drive.getInstance().addVisionMeasurement(botPoseEstimate.pose().toPose2d(), botPoseEstimate.timestamp().in(Seconds));
     }
 
     PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
@@ -152,7 +152,7 @@ public class Turret extends MultithreadedSubsystem {
         estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
 
       PosePublisher.publish("Camera estimated bot pose", robotPose);
-      Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
+      // Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
