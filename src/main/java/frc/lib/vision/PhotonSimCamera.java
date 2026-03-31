@@ -40,6 +40,7 @@ public record PhotonSimCamera(PhotonCameraSim sim, UnaryOperator<Pose3d> cameraT
         properties.setCalibError(0.25, 0.08);
         properties.setAvgLatencyMs(35);
         properties.setLatencyStdDevMs(5);
+        return properties;
     }
 
 }
