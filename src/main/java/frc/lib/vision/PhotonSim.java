@@ -34,6 +34,12 @@ public class PhotonSim implements Vision {
             return sim.getCamera();
         }
 
+        public Transform3d poseToCameraTransform() {
+            Pose3d origin = new Pose3d();
+            Pose3d cameraOrigin = poseToCamera.apply(origin);
+            return new Transform3d(origin, cameraOrigin);
+        }
+
     }
 
     private final List<PhotonSimCamera> cameras;
@@ -47,19 +53,13 @@ public class PhotonSim implements Vision {
         this.sim.addAprilTags(tags);
 
         for (PhotonSimCamera camera : cameras) {
-            this.sim.addCamera(camera.sim, poseToCamera(camera));
+            this.sim.addCamera(camera.sim, camera.poseToCameraTransform());
         }
 
         this.cameras = cameras;
         this.pose = pose;
 
         this.poseEstimates = new ArrayList<>();
-    }
-
-    private Transform3d poseToCamera(PhotonSimCamera camera) {
-        Pose3d origin = new Pose3d();
-        Pose3d cameraOrigin = camera.poseToCamera.apply(origin);
-        return new Transform3d(origin, cameraOrigin);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class PhotonSim implements Vision {
         poseEstimates.clear();
 
         for (PhotonSimCamera camera : cameras) {
-            sim.adjustCamera(camera.sim, poseToCamera(camera));
+            sim.adjustCamera(camera.sim, camera.poseToCameraTransform());
             publishCameraPose(poseUpdate, camera);
             for (VisionPoseEstimate estimate : PhotonUtil.unreadMultiTagEstimates(camera.camera())) {
                 Pose3d cameraPose = estimate.pose();
