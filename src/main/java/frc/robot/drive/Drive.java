@@ -11,12 +11,14 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -133,6 +135,10 @@ public class Drive extends Subsystem {
     return state.Pose;
   }
 
+  public Pose3d getPose3d() {
+    return new Pose3d(state.Pose);
+  }
+
   public void resetPose(Pose2d newPose) {
     swerve.resetPose(newPose);
   }
@@ -169,6 +175,10 @@ public class Drive extends Subsystem {
     return run(() -> {
       swerve.setControl(req);
     });
+  }
+
+  public void addVisionMeasurement(Pose2d pose, Time timestamp) {
+    swerve.addVisionMeasurement(pose, timestamp.in(Seconds));
   }
 
   public void addVisionMeasurement(Pose2d pose, double timestampSeconds) {

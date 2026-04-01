@@ -2,9 +2,9 @@ package frc.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -15,13 +15,18 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.MultithreadedSubsystem;
 import frc.lib.PosePublisher;
-import frc.robot.LimelightHelpers;
+import frc.lib.vision.LimelightHelpers;
+import frc.lib.vision.PhotonSim;
+import frc.lib.vision.PhotonSimCamera;
+import frc.lib.vision.Vision;
 import frc.robot.RobotConstants;
-import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.lib.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
+
+import java.util.List;
 
 /** Turret subsystem */
 public class Turret extends MultithreadedSubsystem {
@@ -49,6 +54,8 @@ public class Turret extends MultithreadedSubsystem {
   /** Robot pose used by targetHubFromPose */
   private Pose2d manualRobotPose;
 
+  private Vision turretCamera;
+
   /**
    * Gets turret subsystem instance
    * 
@@ -71,6 +78,34 @@ public class Turret extends MultithreadedSubsystem {
     state = TurretState.STOW;
 
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
+
+    turretCamera = new PhotonSim(
+          "turret",
+          AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
+          List.of(
+            new PhotonSimCamera(
+              "turret-camera",
+              PhotonSimCamera.limelight3gProperties(),
+              this::cameraToRobot
+            )
+          ),
+          () -> Drive.getInstance().getPose3d()
+    );
+  }
+
+  private Transform3d cameraToTurret() {
+    // TODO This feels backwards... it feels like this pitch should be negative instead of positive
+    Rotation3d pitch = new Rotation3d(Degrees.zero(), Degrees.of(15), Degrees.zero());
+    return new Transform3d(new Translation3d(), pitch);
+  }
+
+  private Transform3d turretToRobot() {
+    Rotation3d yaw = new Rotation3d(new Rotation2d(azimuth.getValues().position.unaryMinus()));
+    return new Transform3d(RobotConstants.ROBOT_TO_TURRET.unaryMinus(), yaw);
+  }
+
+  private Transform3d cameraToRobot() {
+    return cameraToTurret().plus(turretToRobot());
   }
 
   @Override 
@@ -87,20 +122,12 @@ public class Turret extends MultithreadedSubsystem {
     PosePublisher.publish("Turret (Local)", RobotConstants.localTurretPose(azimuth.localPosition()));
     PosePublisher.publish("Turret (Global)", RobotConstants.globalTurretPose(robot, azimuth.localPosition()));
 
-    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
+    turretCamera.update();
 
-    if (poseEstimate != null && poseEstimate.tagCount > 1) {
-      Pose2d estimated = poseEstimate.pose;
-      PosePublisher.publish("Camera estimated turret pose", estimated);
-      Angle azimuthAngle = azimuth.getValues().position;
-      Pose2d robotPose = new Pose2d(
-        estimated.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d()),
-        estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
-
-      PosePublisher.publish("Camera estimated bot pose", robotPose);
-      Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
+    for (var botPoseEstimate : turretCamera.getPoseEstimates()) {
+      Drive.getInstance().addVisionMeasurement(botPoseEstimate.pose().toPose2d(), botPoseEstimate.timestamp());
     }
-    
+
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
     turretPose = RobotConstants.globalTurretPose(Drive.getInstance().getPose(), azimuth.getValues().position).toPose2d();
     Translation2d translationToHub = TurretTargetsSupplier.projectedAllianceHub().minus(turretPose.getTranslation());
