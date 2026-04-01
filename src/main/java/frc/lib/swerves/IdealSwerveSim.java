@@ -2,6 +2,7 @@ package frc.lib.swerves;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.Matrix;
@@ -60,6 +61,11 @@ public class IdealSwerveSim implements SwerveOutput {
   @Override
   public SwerveDrivetrain.SwerveDriveState getState() {
     return state;
+  }
+
+  @Override
+  public Pigeon2 getPigeon2() {
+    return new Pigeon2(0); //TODO: This is bad (we aren't using/are getting rid of this sim anyways?)
   }
 
   public void setVisionMeasurementStdDevs(Matrix<N3, N1> visionStdDevs) {

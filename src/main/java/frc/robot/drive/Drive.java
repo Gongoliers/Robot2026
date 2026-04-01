@@ -2,6 +2,7 @@ package frc.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.RobotCentric;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -143,6 +144,10 @@ public class Drive extends Subsystem {
 
   public SwerveDriveState getState() {
     return state;
+  }
+
+  public Pigeon2 getPigeon2() {
+    return swerve.getPigeon2();
   }
 
   private final SwerveRequest.RobotCentric robotCentric = new SwerveRequest.RobotCentric();
