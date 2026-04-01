@@ -40,10 +40,12 @@ public class LimelightProfiler {
     this(limelightName, 100);
   }
 
-  /** Gets a new pose estimate and logs new analysis */
-  public void update() {
-    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
-
+  /** 
+   * Given a pose estimate logs analysis (If you already got a pose estimate from the limelight recently, why do it again just for analysis)
+   * 
+   * @param poseEstimate to perform analysis on
+   */
+  public void update(PoseEstimate poseEstimate) {
     if (poseEstimate != null) {
       posesWindow.add(0, poseEstimate);
 
@@ -93,6 +95,12 @@ public class LimelightProfiler {
       SmartDashboard.putNumber(name+"/Translational Std Deviation (m)", Math.hypot(xStdDev, yStdDev));
       SmartDashboard.putNumber(name+"/Angular Std Deviation (rad)", circularStdDev);
     }
+  }
+
+  /** Gets a new pose estimate and logs new analysis */
+  public void update() {
+    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
+    update(poseEstimate);
   }
 
   /**
