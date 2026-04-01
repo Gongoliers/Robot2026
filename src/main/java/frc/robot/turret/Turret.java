@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.LimelightProfiler;
 import frc.lib.MultithreadedSubsystem;
 import frc.lib.PosePublisher;
 import frc.robot.LimelightHelpers;
@@ -48,6 +49,12 @@ public class Turret extends MultithreadedSubsystem {
   /** Estimated turret pose */
   private volatile Pose2d turretPose;
 
+  /** Turret limelight profiler */
+  private final LimelightProfiler limelightProfiler;
+
+  /** Enables/disables limelight profiling (when enabled can cause performance issues) */
+  private boolean limelightProfilingEnabled = false;
+
   // State specific control variables
 
   /** Robot pose used by targetHubFromPose */
@@ -76,6 +83,7 @@ public class Turret extends MultithreadedSubsystem {
     state = TurretState.STOW;
 
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
+    limelightProfiler = new LimelightProfiler("limelight-turret");
   }
 
   @Override 
@@ -93,6 +101,9 @@ public class Turret extends MultithreadedSubsystem {
     PosePublisher.publish("Turret (Global)", RobotConstants.globalTurretPose(robot, azimuth.localPosition()));
 
     PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
+    if (limelightProfilingEnabled) {
+      limelightProfiler.update(poseEstimate);
+    }
 
     if (poseEstimate != null && poseEstimate.tagCount > 1) {
       Pose2d estimated = poseEstimate.pose;
@@ -272,5 +283,9 @@ public class Turret extends MultithreadedSubsystem {
       manualRobotPose = robotPose;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public void setLimelightProfilingEnabled(boolean enabled) {
+    limelightProfilingEnabled = enabled;
   }
 }
