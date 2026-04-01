@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.Subsystem;
 import frc.lib.sendables.SwerveDriveSendable;
+import frc.lib.sensors.Gyroscope;
+import frc.lib.sensors.Gyroscope.GyroscopeValues;
 import frc.lib.swerves.SwerveOutput;
 import java.util.function.Supplier;
 
@@ -43,6 +45,10 @@ public class Drive extends Subsystem {
 
   private PIDController yawPID;
 
+  private final Gyroscope gyro;
+
+  private final GyroscopeValues gyroValues = new GyroscopeValues();
+
   public static Drive getInstance() {
     if (instance == null) {
       instance = new Drive();
@@ -55,6 +61,7 @@ public class Drive extends Subsystem {
     swerve = DriveFactory.createSwerve();
     state = new SwerveDrivetrain.SwerveDriveState();
     field = new Field2d();
+    gyro = DriveFactory.createGyroscope();
 
     yawPID = new PIDController(6, 0.0, 0.0);
     yawPID.enableContinuousInput(-0.5, 0.5);
@@ -73,6 +80,7 @@ public class Drive extends Subsystem {
   public void periodic() {
     state = swerve.getState();
     field.setRobotPose(state.Pose);
+    gyro.periodic();
 
     // NOTE This was taken from the generated project, unsure if it is needed
     trySettingPerspective();
@@ -143,6 +151,11 @@ public class Drive extends Subsystem {
 
   public SwerveDriveState getState() {
     return state;
+  }
+
+  public GyroscopeValues getGyroValues() {
+    gyro.getUpdatedVals(gyroValues);
+    return gyroValues;
   }
 
   private final SwerveRequest.RobotCentric robotCentric = new SwerveRequest.RobotCentric();

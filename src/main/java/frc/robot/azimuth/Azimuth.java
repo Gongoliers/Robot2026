@@ -70,12 +70,6 @@ public class Azimuth extends MultithreadedSubsystem {
 
   /** Feedforward controller */
   private SimpleMotorFeedforward feedforward;
-  
-  /** Azimuth uses gyroscope measured angular velocity and acceleration for feedforward */
-  private final Gyroscope gyro;
-
-  /** Azimuth uses gyroscope measured angular velocity and acceleration for feedforward */
-  private final GyroscopeValues gyroValues = new GyroscopeValues();
 
   /** Shooter mechanism configuration that provides default values for motor control configuration and motor configuration */
   private MechanismConfig config =
@@ -127,8 +121,6 @@ public class Azimuth extends MultithreadedSubsystem {
     motorOutput.configure();
     motorOutput.setPosition(Rotations.of(0.25));
 
-    gyro = AzimuthFactory.createDrivePigeon();
-
     setpoint = Rotations.mutable(0);
     setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.75), Rotations.of(0.6));
     voltageSet = false;
@@ -165,7 +157,6 @@ public class Azimuth extends MultithreadedSubsystem {
   @Override
   public void fastPeriodic() {
     motorOutput.updateValues(motorValues, RobotConstants.FAST_PERIODIC_DURATION);
-    gyro.getUpdatedVals(gyroValues);
 
     double setpointRotations = setpoint.in(Rotations);
     double positionRotations = motorValues.position.in(Rotations);
@@ -177,7 +168,7 @@ public class Azimuth extends MultithreadedSubsystem {
       
       SuperstructureState superstructureState = Superstructure.getInstance().getSafeState();
       if (superstructureState != SuperstructureState.STOW && superstructureState != SuperstructureState.INIT && superstructureState != SuperstructureState.UNSAFE) {
-        double ff = -gyroValues.yawVelociy.in(RotationsPerSecond) * feedforward.getKv();
+        double ff = -Drive.getInstance().getGyroValues().yawVelociy.in(RotationsPerSecond) * feedforward.getKv();
 
         feedforwardVolts += MathUtil.clamp(ff, -3, 3);
       }

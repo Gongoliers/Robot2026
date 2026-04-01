@@ -33,12 +33,4 @@ public class AzimuthFactory {
       losslessSim, 
       Volts.of(config.feedforwardControllerConfig().kS()));
   }
-
-  public static Gyroscope createDrivePigeon() {
-    if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.SWERVE)) {
-      return new GyroscopePigeon2(new CAN(0, "swerve"));
-    }
-
-    return new GyroscopeSim(() -> RadiansPerSecond.of(-Drive.getInstance().getState().Speeds.omegaRadiansPerSecond));
-  }
 }
