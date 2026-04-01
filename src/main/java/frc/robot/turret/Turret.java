@@ -2,6 +2,7 @@ package frc.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -38,6 +39,9 @@ public class Turret extends MultithreadedSubsystem {
   /** Shooter subsystem reference */
   private final Shooter shooter;
 
+  /** Drive subsystem reference */
+  private final Drive drive;
+
   /** Current turret state */
   private TurretState state;
 
@@ -67,6 +71,7 @@ public class Turret extends MultithreadedSubsystem {
     azimuth = Azimuth.getInstance();
     hood = Hood.getInstance();
     shooter = Shooter.getInstance();
+    drive = Drive.getInstance();
 
     state = TurretState.STOW;
 
@@ -98,7 +103,7 @@ public class Turret extends MultithreadedSubsystem {
         estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
 
       PosePublisher.publish("Camera estimated bot pose", robotPose);
-      Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
+      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(0.5, 0.5, 100*drive.getGyroValues().yawVelociy.in(RotationsPerSecond)));
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
