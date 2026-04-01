@@ -19,18 +19,18 @@ public class TurretTargetsSupplier {
   private static boolean isRed() {
     return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
   }
-  
-  /** Gets the 2d translation of your alliance hub */
-  public static Translation2d projectedAllianceHub() {
-    if (isRed()) {
-      return new Translation2d(
-        Inches.of(468.56),
-        Inches.of(158.32));
-    }
 
-    return new Translation2d(
+  public static final Translation2d RED_HUB = new Translation2d(
+      Inches.of(468.56),
+      Inches.of(158.32));
+
+  public static final Translation2d BLUE_HUB = new Translation2d(
       Inches.of(181.56),
       Inches.of(158.32));
+
+  /** Gets the 2d translation of your alliance hub */
+  public static Translation2d projectedAllianceHub() {
+    return isRed() ? RED_HUB : BLUE_HUB;
   }
 
   public static Rotation2d faceAllianceWall() {
