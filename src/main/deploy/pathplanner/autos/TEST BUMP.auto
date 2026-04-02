@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "TEST3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score"
+            "pathName": "TEST BUMP"
           }
         }
       ]

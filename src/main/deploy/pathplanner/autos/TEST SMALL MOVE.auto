@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "TEST3"
+            "pathName": "TEST SMALL MOVE"
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Score"
+            "pathName": "TEST SMALL MOVE 2.0"
           }
         }
       ]

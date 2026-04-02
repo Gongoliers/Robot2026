@@ -2,9 +2,16 @@ package frc.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -136,6 +143,13 @@ public class Turret extends MultithreadedSubsystem {
         shooter.setSetpoint(RotationsPerSecond.of(40));
         hood.setSetpoint(Rotations.of(0.075));
         break;
+      case FACE_ALLIANCE_WALL_SOTM:
+        SwerveDriveState driveState = Drive.getInstance().getState();
+        ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
+        faceAllianceWallSOTM(turretPose, new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond));
+        shooter.setSetpoint(RotationsPerSecond.of(40));
+        hood.setSetpoint(Rotations.of(0.075));
+        break;
       case TARGET_HUB_FROM_POSE:
         Pose2d manualTurretPose = RobotConstants.globalTurretPose(manualRobotPose, azimuth.getValues().position).toPose2d();
         faceHub(manualTurretPose);
@@ -156,8 +170,8 @@ public class Turret extends MultithreadedSubsystem {
             && hood.nearSetpoint(Rotations.of(0.1));
       case FACE_ALLIANCE_WALL:
         return azimuth.nearSetpoint(Rotations.of(0.1));
-      case TARGET_HUB_FROM_POSE:
-        return true;
+      case FACE_ALLIANCE_WALL_SOTM:
+        return azimuth.nearSetpoint(Rotations.of(0.2));
       default:
         return true;
     }
@@ -179,6 +193,13 @@ public class Turret extends MultithreadedSubsystem {
 
   private void faceAllianceWall(Pose2d turretPose) {
     Rotation2d rotationError = TurretTargetsSupplier.faceAllianceWall().minus(turretPose.getRotation());
+
+    azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
+  }
+
+  private void faceAllianceWallSOTM(Pose2d turretPose, Translation2d turretVelocity) {
+    Translation2d shotVelocity = new Translation2d(8, turretPose.getRotation()).plus(turretVelocity);
+    Rotation2d rotationError = TurretTargetsSupplier.faceAllianceWall().minus(shotVelocity.getAngle());
 
     azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
   }
@@ -259,6 +280,13 @@ public class Turret extends MultithreadedSubsystem {
       state = TurretState.FACE_ALLIANCE_WALL;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public Command faceAllianceWallSOTM() {
+    return Commands.runOnce(() -> {
+      state = TurretState.FACE_ALLIANCE_WALL_SOTM;
+    }, this, azimuth, hood, shooter)
+    .andThen(Commands.waitUntil(this::atTargetState)); 
   }
 
   public Command targetHubFromPose(Pose2d robotPose) {

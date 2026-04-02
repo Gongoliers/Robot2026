@@ -73,8 +73,8 @@ public class AutonomousHandler {
       drive::getRobotRelativeSpeeds, 
       (speeds, feedforwards) -> drive.setRobotRelativeSpeeds(speeds), 
       new PPHolonomicDriveController(
-        new PIDConstants(5, 0, 0), 
-        new PIDConstants(5, 0, 0)), 
+        new PIDConstants(10, 0, 0), 
+        new PIDConstants(7, 0, 0)), 
       robotConfig, 
       () -> DriverStation.getAlliance().filter(value -> value == Alliance.Red).isPresent(),
       drive);

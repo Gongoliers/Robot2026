@@ -105,7 +105,7 @@ public class Superstructure extends Subsystem {
         }
         
         break;
-      case PASS:
+      case PASS, PASS_SOTM:
         if (manualFireTrigger.held()) {
           kicker.setState(KickerState.RUN);
           spindexer.setState(SpindexerState.RUN);
@@ -247,5 +247,21 @@ public class Superstructure extends Subsystem {
       turret.faceAllianceWall()
     ))
     .finallyDo(() -> state = SuperstructureState.PASS);
+  }
+
+  public Command passSOTM(SuperstructureTrigger agitateTrigger, SuperstructureTrigger shootTrigger) {
+    return Commands.parallel(
+      Commands.runOnce(() -> {
+        manualAgitateTrigger = agitateTrigger;
+        manualFireTrigger = shootTrigger;
+      }),
+      intake.goToState(IntakeState.OUT),
+      kicker.goToState(KickerState.STOP),
+      spindexer.goToState(SpindexerState.STOP)
+    ).andThen(Commands.parallel(
+      intake.goToState(IntakeState.INTAKE),
+      turret.faceAllianceWallSOTM()
+    ))
+    .finallyDo(() -> state = SuperstructureState.PASS_SOTM);
   }
 }
