@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -20,6 +19,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.LimelightProfiler;
 import frc.lib.MultithreadedSubsystem;
 import frc.lib.PosePublisher;
 import frc.robot.LimelightHelpers;
@@ -45,11 +45,20 @@ public class Turret extends MultithreadedSubsystem {
   /** Shooter subsystem reference */
   private final Shooter shooter;
 
+  /** Drive subsystem reference */
+  private final Drive drive;
+
   /** Current turret state */
   private TurretState state;
 
   /** Estimated turret pose */
   private volatile Pose2d turretPose;
+
+  /** Turret limelight profiler */
+  private final LimelightProfiler limelightProfiler;
+
+  /** Enables/disables limelight profiling (when enabled can cause performance issues) */
+  private boolean limelightProfilingEnabled = false;
 
   // State specific control variables
 
@@ -74,10 +83,12 @@ public class Turret extends MultithreadedSubsystem {
     azimuth = Azimuth.getInstance();
     hood = Hood.getInstance();
     shooter = Shooter.getInstance();
+    drive = Drive.getInstance();
 
     state = TurretState.STOW;
 
     LimelightHelpers.setCameraPose_RobotSpace("limelight-turret", -0.115913, 0.080866, 0.734112, 0, 15, 0);
+    limelightProfiler = new LimelightProfiler("limelight-turret");
   }
 
   @Override 
@@ -95,6 +106,9 @@ public class Turret extends MultithreadedSubsystem {
     PosePublisher.publish("Turret (Global)", RobotConstants.globalTurretPose(robot, azimuth.localPosition()));
 
     PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
+    if (limelightProfilingEnabled) {
+      limelightProfiler.update(poseEstimate);
+    }
 
     if (poseEstimate != null && poseEstimate.tagCount > 1) {
       Pose2d estimated = poseEstimate.pose;
@@ -105,7 +119,7 @@ public class Turret extends MultithreadedSubsystem {
         estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
 
       PosePublisher.publish("Camera estimated bot pose", robotPose);
-      Drive.getInstance().addVisionMeasurement(robotPose, poseEstimate.timestampSeconds);
+      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(0.5, 0.5, 100*drive.getGyroValues().yawVelociy.in(RotationsPerSecond)));
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
@@ -295,5 +309,9 @@ public class Turret extends MultithreadedSubsystem {
       manualRobotPose = robotPose;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public void setLimelightProfilingEnabled(boolean enabled) {
+    limelightProfilingEnabled = enabled;
   }
 }
