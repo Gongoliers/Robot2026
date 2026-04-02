@@ -27,6 +27,6 @@ public class DriveFactory {
       return new GyroscopePigeon2(new CAN(0, "swerve"));
     }
 
-    return new GyroscopeSim(() -> RadiansPerSecond.of(-Drive.getInstance().getState().Speeds.omegaRadiansPerSecond));
+    return new GyroscopeSim(() -> RadiansPerSecond.of(Drive.getInstance().getState().Speeds.omegaRadiansPerSecond));
   }
 }
