@@ -106,7 +106,7 @@ public class Superstructure extends Subsystem {
         
         break;
       case PASS, PASS_SOTM:
-        if (manualFireTrigger.held()) {
+        if (manualFireTrigger.held() && turret.atTargetState()) {
           kicker.setState(KickerState.RUN);
           spindexer.setState(SpindexerState.RUN);
         } else {

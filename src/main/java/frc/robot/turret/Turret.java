@@ -212,7 +212,7 @@ public class Turret extends MultithreadedSubsystem {
   }
 
   private void faceAllianceWallSOTM(Pose2d turretPose, Translation2d turretVelocity) {
-    Translation2d shotVelocity = new Translation2d(8, turretPose.getRotation()).plus(turretVelocity);
+    Translation2d shotVelocity = new Translation2d(4, turretPose.getRotation()).plus(turretVelocity);
     Rotation2d rotationError = TurretTargetsSupplier.faceAllianceWall().minus(shotVelocity.getAngle());
 
     azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
