@@ -82,9 +82,9 @@ public class Azimuth extends MultithreadedSubsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(100)
+          .kP(75)
           .kI(0.0)
-          .kD(0.5)
+          .kD(1.5)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -122,7 +122,7 @@ public class Azimuth extends MultithreadedSubsystem {
     motorOutput.setPosition(Rotations.of(0.25));
 
     setpoint = Rotations.mutable(0);
-    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.75), Rotations.of(0.6));
+    setpointOptimizer = new SafeAngleOptimizer(Rotations.of(-0.6), Rotations.of(0.6));
     voltageSet = false;
     voltageOut = Volts.mutable(0);
 

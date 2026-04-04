@@ -145,6 +145,7 @@ public class RobotContainer {
     driverController.b().onTrue(superstructure.stow());
     driverController.x().onTrue(superstructure.intake());
     driverController.y().onTrue(superstructure.score());
+    driverController.leftBumper().onTrue(superstructure.init());
 
     driverController.povUp().onTrue(superstructure.pass(
       new SuperstructureTrigger(() -> driverController.leftTrigger().getAsBoolean()),

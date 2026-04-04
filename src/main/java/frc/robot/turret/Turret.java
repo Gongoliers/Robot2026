@@ -119,7 +119,7 @@ public class Turret extends MultithreadedSubsystem {
         estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
 
       PosePublisher.publish("Camera estimated bot pose", robotPose);
-      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(0.5, 0.5, 100*drive.getGyroValues().yawVelociy.in(RotationsPerSecond)));
+      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(1.5, 1.5, 10+10*drive.getGyroValues().yawVelociy.in(RotationsPerSecond)));
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
@@ -154,15 +154,15 @@ public class Turret extends MultithreadedSubsystem {
         break;
       case FACE_ALLIANCE_WALL:
         faceAllianceWall(turretPose);
-        shooter.setSetpoint(RotationsPerSecond.of(40));
-        hood.setSetpoint(Rotations.of(0.075));
+        shooter.setSetpoint(RotationsPerSecond.of(50));
+        hood.setSetpoint(Rotations.of(0.065));
         break;
       case FACE_ALLIANCE_WALL_SOTM:
         SwerveDriveState driveState = Drive.getInstance().getState();
         ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
         faceAllianceWallSOTM(turretPose, new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond));
-        shooter.setSetpoint(RotationsPerSecond.of(40));
-        hood.setSetpoint(Rotations.of(0.075));
+        shooter.setSetpoint(RotationsPerSecond.of(50));
+        hood.setSetpoint(Rotations.of(0.065));
         break;
       case TARGET_HUB_FROM_POSE:
         Pose2d manualTurretPose = RobotConstants.globalTurretPose(manualRobotPose, azimuth.getValues().position).toPose2d();
