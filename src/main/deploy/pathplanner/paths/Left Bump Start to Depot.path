@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.517271529181155,
-        "y": 5.57665416210373
+        "x": 3.55,
+        "y": 5.75
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3787015635223057,
-        "y": 5.723437427938345
+        "x": 2.4476034236804565,
+        "y": 5.830513552068473
       },
       "isLocked": false,
-      "linkedName": "DEPOT_BUMP_ZONE"
+      "linkedName": "LEFT_BUMP_START"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 5.956390870185448
       },
       "prevControl": {
-        "x": 1.4130514231819542,
-        "y": 5.819299874625504
+        "x": 1.3995720399429386,
+        "y": 5.917574893009986
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,14 +34,14 @@
   "eventMarkers": [
     {
       "name": "Intake",
-      "waypointRelativePos": 0.1,
+      "waypointRelativePos": 0.2079675894665732,
       "endWaypointRelativePos": null,
       "command": null
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 3.5,
+    "maxAcceleration": 7.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -52,10 +52,10 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": "DEPOT",
+  "folder": "LEFT",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

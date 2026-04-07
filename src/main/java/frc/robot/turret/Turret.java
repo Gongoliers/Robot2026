@@ -2,6 +2,8 @@ package frc.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.io.Externalizable;
+
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.VecBuilder;
@@ -14,6 +16,7 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.MutAngularVelocity;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -64,6 +67,9 @@ public class Turret extends MultithreadedSubsystem {
 
   /** Robot pose used by targetHubFromPose */
   private Pose2d manualRobotPose;
+
+  /** Used when targetting hub and shots are falling short for some reason */
+  private final MutAngularVelocity extraShotVelocity = RotationsPerSecond.mutable(1.0); // TODO: I HATE THIS
 
   /**
    * Gets turret subsystem instance
@@ -155,14 +161,14 @@ public class Turret extends MultithreadedSubsystem {
       case FACE_ALLIANCE_WALL:
         faceAllianceWall(turretPose);
         shooter.setSetpoint(RotationsPerSecond.of(50));
-        hood.setSetpoint(Rotations.of(0.065));
+        hood.setSetpoint(Rotations.of(0.07));
         break;
       case FACE_ALLIANCE_WALL_SOTM:
         SwerveDriveState driveState = Drive.getInstance().getState();
         ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
         faceAllianceWallSOTM(turretPose, new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond));
         shooter.setSetpoint(RotationsPerSecond.of(50));
-        hood.setSetpoint(Rotations.of(0.065));
+        hood.setSetpoint(Rotations.of(0.07));
         break;
       case TARGET_HUB_FROM_POSE:
         Pose2d manualTurretPose = RobotConstants.globalTurretPose(manualRobotPose, azimuth.getValues().position).toPose2d();
@@ -226,7 +232,7 @@ public class Turret extends MultithreadedSubsystem {
     AngularVelocity shooterSetpoint = TurretTargeter.targetHubShooter(turretDistance);
 
     hood.setSetpoint(hoodSetpoint);
-    shooter.setSetpoint(shooterSetpoint);
+    shooter.setSetpoint(shooterSetpoint.plus(extraShotVelocity)); // TODO: I HATE THIS
   }
 
   /**
@@ -309,6 +315,14 @@ public class Turret extends MultithreadedSubsystem {
       manualRobotPose = robotPose;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public void changeShotVelocity(AngularVelocity change) {
+    extraShotVelocity.mut_plus(change);
+  }
+
+  public void setExtraShotVelocity(AngularVelocity newExtraShotVelocity) {
+    extraShotVelocity.mut_replace(newExtraShotVelocity);
   }
 
   public void setLimelightProfilingEnabled(boolean enabled) {

@@ -163,7 +163,7 @@ public class Azimuth extends MultithreadedSubsystem {
 
     if (!voltageSet) {
       double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      feedbackVolts = MathUtil.clamp(feedbackVolts, -4, 4);
+      feedbackVolts = MathUtil.clamp(feedbackVolts, -2, 2);
       double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
       
       SuperstructureState superstructureState = Superstructure.getInstance().getSafeState();

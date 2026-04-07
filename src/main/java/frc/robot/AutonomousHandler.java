@@ -83,6 +83,7 @@ public class AutonomousHandler {
     NamedCommands.registerCommand("FaceHub", superstructure.faceHub().asProxy());
     NamedCommands.registerCommand("Intake", superstructure.intake().asProxy());
     NamedCommands.registerCommand("Score1", superstructure.score().asProxy().andThen(Commands.waitSeconds(1)).andThen(superstructure.faceHub().asProxy()));
+    NamedCommands.registerCommand("Score2", superstructure.score().asProxy().andThen(Commands.waitSeconds(2)).andThen(superstructure.faceHub().asProxy()));
     NamedCommands.registerCommand("Score3", superstructure.score().asProxy().andThen(Commands.waitSeconds(3)).andThen(superstructure.faceHub().asProxy()));
     NamedCommands.registerCommand("Score5", superstructure.score().asProxy().andThen(Commands.waitSeconds(5)).andThen(superstructure.faceHub().asProxy()));
     NamedCommands.registerCommand("Score", superstructure.score().asProxy());

@@ -4,12 +4,16 @@
   "holonomicMode": true,
   "pathFolders": [
     "DEPOT",
-    "TEST",
-    "OUTPOST"
+    "LEFT",
+    "RIGHT",
+    "OUTPOST",
+    "TEST"
   ],
   "autoFolders": [
     "Block",
     "Neutral",
+    "Left",
+    "Right",
     "TEST",
     "Zone"
   ],

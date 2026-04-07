@@ -155,14 +155,20 @@ public class RobotContainer {
       new SuperstructureTrigger(() -> driverController.leftTrigger().getAsBoolean()),
       new SuperstructureTrigger(() -> driverController.rightTrigger().getAsBoolean())));
 
+    /**
     operatorController.povDown().onTrue(superstructure.feed());
     operatorController.povRight().onTrue(Commands.runOnce(() -> shooter.setSetpoint(RotationsPerSecond.of(15))));
     operatorController.rightBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().plus(RotationsPerSecond.of(0.1)))));
     operatorController.leftBumper().whileTrue(Commands.run(() -> shooter.setSetpoint(shooter.getSetpoint().minus(RotationsPerSecond.of(0.1)))));
     operatorController.rightTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().plus(Rotations.of(0.001)))));
     operatorController.leftTrigger().whileTrue(Commands.run(() -> hood.setSetpoint(hood.getSetpoint().minus(Rotations.of(0.001)))));
-    
+    */
     operatorController.x().onTrue(Commands.runOnce(() -> superstructure.getCurrentCommand().cancel()));
+    operatorController.b().onTrue(Commands.runOnce(() -> turret.changeShotVelocity(RotationsPerSecond.of(1))));
+    operatorController.a().onTrue(Commands.runOnce(() -> turret.changeShotVelocity(RotationsPerSecond.of(-1))));
+    operatorController.y().onTrue(Commands.runOnce(() -> turret.setExtraShotVelocity(RotationsPerSecond.of(0))));
+
+    operatorController.leftBumper().onTrue(Commands.runOnce(() -> azimuth.resetPosition(Rotations.of(0.25))));
   }
 
   public Command getAutonomousCommand() {
