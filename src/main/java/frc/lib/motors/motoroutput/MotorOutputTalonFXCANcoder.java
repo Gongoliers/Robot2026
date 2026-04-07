@@ -1,4 +1,4 @@
-package frc.lib.motors;
+package frc.lib.motors.motoroutput;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.CAN;
 import frc.lib.configs.AbsoluteEncoderConfig;
 import frc.lib.configs.MotorConfig;
+import frc.lib.motors.MotorValues;
 
 /** Motor output implementation for a single TalonFX controlled motor using a CANcoder for position and velocity measurements */
 public class MotorOutputTalonFXCANcoder implements MotorOutput {

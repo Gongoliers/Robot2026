@@ -1,15 +1,20 @@
-package frc.lib.motors;
+package frc.lib.motors.talonfxoutput;
 
 import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.controls.ControlRequest;
+import com.ctre.phoenix6.controls.VoltageOut;
+
 import edu.wpi.first.units.measure.*;
+import frc.lib.motors.MotorValues;
 
-public class DiscreteMotorOutputSim implements MotorOutput {
+public class DiscreteTalonFXOutputSim implements TalonFXOutput {
+  
+  private MutVoltage voltage;
 
-  /** Output voltage set by setVoltage method */
-  private MutVoltage outputVoltage;
+  private MutAngle position;
 
   private Supplier<Angle> positionSupplier;
 
@@ -25,25 +30,30 @@ public class DiscreteMotorOutputSim implements MotorOutput {
 
   private Supplier<Current> supplyCurrentSupplier;
 
-  public DiscreteMotorOutputSim() {
-    outputVoltage = Volts.mutable(0);
+  public DiscreteTalonFXOutputSim() {
+    voltage = Volts.mutable(0);
+    position = Rotations.mutable(0);
 
-    positionSupplier = () -> Rotations.of(0);
+    positionSupplier = () -> position;
     velocitySupplier = () -> RotationsPerSecond.of(0);
     accelerationSupplier = () -> RotationsPerSecondPerSecond.of(0);
-    motorVoltageSupplier = () -> outputVoltage;
+    motorVoltageSupplier = () -> voltage;
     supplyVoltageSupplier = () -> Volts.of(0);
     statorCurrentSupplier = () -> Amps.of(0);
     supplyCurrentSupplier = () -> Amps.of(0);
   }
 
   @Override
-  public void setVoltage(Voltage voltage) {
-    outputVoltage.mut_replace(voltage);
+  public void setControl(ControlRequest request) {
+    if (request instanceof VoltageOut) {
+      voltage.mut_replace(Double.parseDouble(request.getControlInfo().get("Output")), Volts);
+    }
   }
 
   @Override
-  public void setPosition(Angle newPosition) { }
+  public void setPosition(Angle newPosition) {
+    position.mut_replace(newPosition);
+  }
 
   @Override
   public void updateValues(MotorValues values, Time dt) {

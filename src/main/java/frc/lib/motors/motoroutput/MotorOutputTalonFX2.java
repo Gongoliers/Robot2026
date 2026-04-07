@@ -1,27 +1,33 @@
-package frc.lib.motors;
+package frc.lib.motors.motoroutput;
 
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.*;
 import frc.lib.CAN;
 import frc.lib.configs.MotorConfig;
+import frc.lib.motors.MotorValues;
 
-/** Motor output implementation for a single TalonFX controlled motor */
-public class MotorOutputTalonFX implements MotorOutput {
+/** Motor output implementation for two TalonFX controlled motors */
+public class MotorOutputTalonFX2 implements MotorOutput {
 
   /** Motor config */
   private final MotorConfig config;
 
-  /** TalonFX hardware */
-  private final TalonFX motor;
+  /** Leader motor */
+  private final TalonFX leader;
+
+  /** Follower motor */
+  private final TalonFX follower;
 
   /** Position offset */
   private final MutAngle positionOffset;
@@ -42,25 +48,30 @@ public class MotorOutputTalonFX implements MotorOutput {
    * Motor output constructor
    *
    * @param config motor config used to configure motor
-   * @param motorCAN CAN id and bus for TalonFX motor
+   * @param leaderCAN CAN id and bus for leader motor
+   * @param followerCAN CAN id and bus for follower motor
    */
-  public MotorOutputTalonFX(MotorConfig config, CAN motorCAN) {
+  public MotorOutputTalonFX2(
+      MotorConfig config, CAN leaderCAN, CAN followerCAN, MotorAlignmentValue motorAlignment) {
 
     // set config
     this.config = config;
 
     // create hardware and status signals
-    motor = new TalonFX(motorCAN.id(), motorCAN.bus());
+    leader = new TalonFX(leaderCAN.id(), leaderCAN.bus());
+    follower = new TalonFX(followerCAN.id(), followerCAN.bus());
+
+    follower.setControl(new Follower(leaderCAN.id(), motorAlignment));
 
     positionOffset = Rotations.mutable(0.0);
 
-    position = motor.getPosition();
-    velocity = motor.getVelocity();
-    acceleration = motor.getAcceleration();
-    motorVoltage = motor.getMotorVoltage();
-    supplyVoltage = motor.getSupplyVoltage();
-    statorCurrent = motor.getStatorCurrent();
-    supplyCurrent = motor.getSupplyCurrent();
+    position = leader.getPosition();
+    velocity = leader.getVelocity();
+    acceleration = leader.getAcceleration();
+    motorVoltage = leader.getMotorVoltage();
+    supplyVoltage = leader.getSupplyVoltage();
+    statorCurrent = leader.getStatorCurrent();
+    supplyCurrent = leader.getSupplyCurrent();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         100,
@@ -71,13 +82,12 @@ public class MotorOutputTalonFX implements MotorOutput {
         supplyVoltage,
         statorCurrent,
         supplyCurrent);
-        
-    ParentDevice.optimizeBusUtilizationForAll(motor);
+    ParentDevice.optimizeBusUtilizationForAll(leader, follower);
   }
 
   @Override
   public void setVoltage(Voltage voltage) {
-    motor.setControl(this.voltage.withOutput(voltage));
+    leader.setControl(this.voltage.withOutput(voltage));
   }
 
   @Override
@@ -109,7 +119,8 @@ public class MotorOutputTalonFX implements MotorOutput {
   @Override
   public boolean configure() {
     // TODO Allow failed configurations to return false
-    TalonFXConfigurator motorConfigurator = motor.getConfigurator();
+    TalonFXConfigurator leaderConfigurator = leader.getConfigurator();
+    TalonFXConfigurator followerConfigurator = follower.getConfigurator();
 
     TalonFXConfiguration motorConfiguration =
         new TalonFXConfiguration()
@@ -130,7 +141,8 @@ public class MotorOutputTalonFX implements MotorOutput {
                     .withRotorToSensorRatio(1)
                     .withSensorToMechanismRatio(config.rotorToSensorRatio()*config.sensorToMechRatio()));
 
-    motorConfigurator.apply(motorConfiguration);
+    leaderConfigurator.apply(motorConfiguration);
+    followerConfigurator.apply(motorConfiguration);
 
     return true;
   }

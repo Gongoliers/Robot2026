@@ -1,4 +1,4 @@
-package frc.lib.motors;
+package frc.lib.motors.motoroutput;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -8,6 +8,7 @@ import edu.wpi.first.units.*;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.lib.motors.MotorValues;
 
 public class MotorOutputSim implements MotorOutput {
 
