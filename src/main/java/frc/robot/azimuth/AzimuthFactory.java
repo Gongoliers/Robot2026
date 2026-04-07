@@ -9,6 +9,9 @@ import frc.lib.motors.motoroutput.LossyMotorOutputSim;
 import frc.lib.motors.motoroutput.MotorOutput;
 import frc.lib.motors.motoroutput.MotorOutputSim;
 import frc.lib.motors.motoroutput.MotorOutputTalonFXCANcoder;
+import frc.lib.motors.talonfxoutput.DiscreteTalonFXOutputSim;
+import frc.lib.motors.talonfxoutput.TalonFXOutput;
+import frc.lib.motors.talonfxoutput.TalonFXOutput1;
 import frc.lib.sensors.Gyroscope;
 import frc.lib.sensors.GyroscopePigeon2;
 import frc.lib.sensors.GyroscopeSim;
@@ -19,18 +22,11 @@ import frc.robot.drive.Drive;
 /** Creates azimuth hardware abstractions */
 public class AzimuthFactory {
   
-  public static MotorOutput createAzimuthMotor(MechanismConfig config) {
+  public static TalonFXOutput createAzimuthMotor(MechanismConfig config) {
     if (Robot.isReal() && RobotConstants.ENABLED_SUBSYSTEMS.contains(RobotConstants.Subsystem.AZIMUTH)) {
-      return new MotorOutputTalonFXCANcoder(config.motorConfig(), config.absoluteEncoderConfig(), new CAN(0), new CAN(37));
+      return new TalonFXOutput1(config, new CAN(0));
     }
 
-    MotorOutputSim losslessSim = new MotorOutputSim(
-      Volts.per(RotationsPerSecond).ofNative(config.feedforwardControllerConfig().kV()),
-      Volts.per(RotationsPerSecondPerSecond).ofNative(config.feedforwardControllerConfig().kA()),
-      DCMotor.getKrakenX60(1));
-
-    return new LossyMotorOutputSim(
-      losslessSim, 
-      Volts.of(config.feedforwardControllerConfig().kS()));
+    return new DiscreteTalonFXOutputSim();
   }
 }
