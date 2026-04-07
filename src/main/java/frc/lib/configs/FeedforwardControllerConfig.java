@@ -11,8 +11,9 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
  * @param kG voltage to overcome gravity
  * @param kV voltage to overcome friction or drag that reduces velocity
  * @param kA voltage to overcome inertia or other resistive forces that reduce acceleration
+ * @param armGravity if true, use arm gravity, if falls, use elevator
  */
-public record FeedforwardControllerConfig(double kS, double kG, double kV, double kA) {
+public record FeedforwardControllerConfig(double kS, double kG, double kV, double kA, boolean armGravity) {
 
   /**
    * Construct simple feedforward without kG
@@ -22,7 +23,7 @@ public record FeedforwardControllerConfig(double kS, double kG, double kV, doubl
    * @param kA voltage to overcome inertia or other resistive forces that reduce acceleration
    */
   public FeedforwardControllerConfig(double kS, double kV, double kA) {
-    this(kS, 0.0, kV, kA);
+    this(kS, 0.0, kV, kA, false);
   }
 
   /**
@@ -58,12 +59,14 @@ public record FeedforwardControllerConfig(double kS, double kG, double kV, doubl
     private double kG;
     private double kV;
     private double kA;
+    private boolean armGravity;
 
-    private FeedforwardControllerBuilder(double kS, double kG, double kV, double kA) {
+    private FeedforwardControllerBuilder(double kS, double kG, double kV, double kA, boolean armGravity) {
       this.kS = kS;
       this.kG = kG;
       this.kV = kV;
       this.kA = kA;
+      this.armGravity = armGravity;
     }
 
     /**
@@ -72,7 +75,7 @@ public record FeedforwardControllerConfig(double kS, double kG, double kV, doubl
      * @return a builder with default values
      */
     public static FeedforwardControllerBuilder defaults() {
-      return new FeedforwardControllerBuilder(0.0, 0.0, 0.0, 0.0);
+      return new FeedforwardControllerBuilder(0.0, 0.0, 0.0, 0.0, false);
     }
 
     /**
@@ -82,7 +85,7 @@ public record FeedforwardControllerConfig(double kS, double kG, double kV, doubl
      * @return a builder with values copied from the input config
      */
     public static FeedforwardControllerBuilder edit(FeedforwardControllerConfig config) {
-      return new FeedforwardControllerBuilder(config.kS(), config.kG(), config.kV(), config.kA());
+      return new FeedforwardControllerBuilder(config.kS(), config.kG(), config.kV(), config.kA(), config.armGravity());
     }
 
     public FeedforwardControllerBuilder kS(double kS) {
@@ -105,13 +108,18 @@ public record FeedforwardControllerConfig(double kS, double kG, double kV, doubl
       return this;
     }
 
+    public FeedforwardControllerBuilder armGravity(boolean armGravity) {
+      this.armGravity = armGravity;
+      return this;
+    }
+
     /**
      * Returns the builder as a config with private immutable values
      *
      * @return the builder as a config with private immutable values
      */
     public FeedforwardControllerConfig build() {
-      return new FeedforwardControllerConfig(this.kS, this.kG, this.kV, this.kA);
+      return new FeedforwardControllerConfig(this.kS, this.kG, this.kV, this.kA, this.armGravity);
     }
   }
 }
