@@ -10,8 +10,6 @@ import edu.wpi.first.units.measure.Voltage;
  */
 public interface MotorOutput {
 
-  // TODO: In the future, maybe find a way to allow for other kinds of phoenix specific control
-  // requests for things like PositionVoltage for swerve steer motors
   /**
    * Sets the voltage of the motor output
    *
