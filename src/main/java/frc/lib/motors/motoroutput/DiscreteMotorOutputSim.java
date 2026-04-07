@@ -1,10 +1,11 @@
-package frc.lib.motors;
+package frc.lib.motors.motoroutput;
 
 import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
 import edu.wpi.first.units.measure.*;
+import frc.lib.motors.MotorValues;
 
 public class DiscreteMotorOutputSim implements MotorOutput {
 

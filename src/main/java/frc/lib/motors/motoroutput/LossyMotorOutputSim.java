@@ -1,8 +1,10 @@
-package frc.lib.motors;
+package frc.lib.motors.motoroutput;
 
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.*;
+import frc.lib.motors.MotorValues;
+
 import java.util.function.Function;
 
 /** This class is a decorator around a simulated motor output that adds static friction and gravity. */

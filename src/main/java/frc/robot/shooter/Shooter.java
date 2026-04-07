@@ -24,9 +24,9 @@ import frc.lib.configs.MechanismConfig;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.MechanismConfig.MechanismBuilder;
 import frc.lib.configs.MotorConfig.MotorBuilder;
-import frc.lib.motors.DiscreteMotorOutputSim;
-import frc.lib.motors.MotorOutput;
 import frc.lib.motors.MotorValues;
+import frc.lib.motors.motoroutput.DiscreteMotorOutputSim;
+import frc.lib.motors.motoroutput.MotorOutput;
 import frc.robot.RobotConstants;
 
 /** Shooter subsystem (handles velocity control of shooter rollers */

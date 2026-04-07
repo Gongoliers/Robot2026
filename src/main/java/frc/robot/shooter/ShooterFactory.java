@@ -5,10 +5,10 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import frc.lib.CAN;
 import frc.lib.configs.MechanismConfig;
-import frc.lib.motors.LossyMotorOutputSim;
-import frc.lib.motors.MotorOutput;
-import frc.lib.motors.MotorOutputSim;
-import frc.lib.motors.MotorOutputTalonFX;
+import frc.lib.motors.motoroutput.LossyMotorOutputSim;
+import frc.lib.motors.motoroutput.MotorOutput;
+import frc.lib.motors.motoroutput.MotorOutputSim;
+import frc.lib.motors.motoroutput.MotorOutputTalonFX;
 import frc.robot.Robot;
 import frc.robot.RobotConstants;
 

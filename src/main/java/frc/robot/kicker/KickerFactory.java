@@ -2,9 +2,9 @@ package frc.robot.kicker;
 
 import frc.lib.CAN;
 import frc.lib.configs.MechanismConfig;
-import frc.lib.motors.DiscreteMotorOutputSim;
-import frc.lib.motors.MotorOutput;
-import frc.lib.motors.MotorOutputTalonFX;
+import frc.lib.motors.motoroutput.DiscreteMotorOutputSim;
+import frc.lib.motors.motoroutput.MotorOutput;
+import frc.lib.motors.motoroutput.MotorOutputTalonFX;
 import frc.robot.Robot;
 import frc.robot.RobotConstants;
 

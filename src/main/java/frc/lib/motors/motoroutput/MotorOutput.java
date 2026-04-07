@@ -1,8 +1,9 @@
-package frc.lib.motors;
+package frc.lib.motors.motoroutput;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+import frc.lib.motors.MotorValues;
 
 /**
  * Simple interface that abstracts motor hardware (allowing us to sent a control request to a motor
