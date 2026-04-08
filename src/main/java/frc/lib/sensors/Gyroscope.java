@@ -3,6 +3,7 @@ package frc.lib.sensors;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 
 /**
@@ -32,7 +33,16 @@ public interface Gyroscope {
     public AngularVelocity pitchVelocity = RotationsPerSecond.of(0.0);
 
     /** Yaw angle velocity */
-    public AngularVelocity yawVelociy = RotationsPerSecond.of(0.0);
+    public AngularVelocity yawVelocity = RotationsPerSecond.of(0.0);
+
+    /** Roll angle acceleration */
+    public AngularAcceleration rollAcceleration = RotationsPerSecondPerSecond.of(0.0);
+
+    /** Pitch angle acceleration */
+    public AngularAcceleration pitchAcceleration = RotationsPerSecondPerSecond.of(0.0);
+
+    /** Yaw angle accleration */
+    public AngularAcceleration yawAcceleration = RotationsPerSecondPerSecond.of(0.0);
   }
 
   /** Configures the gyroscope */

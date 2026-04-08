@@ -9,6 +9,7 @@ package frc.lib.configs;
  * @param sensorTOMechRatio ratio of sensor rotations to mechanism rotations
  * @param statorCurrentLimit current limit in the stator
  * @param supplyCurrentLimit supply current limit
+ * @param voltageLimit voltage limit
  */
 public record MotorConfig(
     boolean neutralBrake,
@@ -16,7 +17,8 @@ public record MotorConfig(
     double rotorToSensorRatio,
     double sensorToMechRatio,
     double statorCurrentLimit,
-    double supplyCurrentLimit) {
+    double supplyCurrentLimit,
+    double voltageLimit) {
 
   /** Easier and more modular way to construct a motor config */
   public static class MotorBuilder {
@@ -26,6 +28,7 @@ public record MotorConfig(
     private double sensorToMechRatio;
     private double statorCurrentLimit;
     private double supplyCurrentLimit;
+    private double voltageLimit;
 
     private MotorBuilder(
         boolean neutralBrake,
@@ -33,13 +36,15 @@ public record MotorConfig(
         double rotorToSensorRatio,
         double sensorToMechRatio,
         double statorCurrentLimit,
-        double supplyCurrentLimit) {
+        double supplyCurrentLimit,
+        double voltageLimit) {
       this.neutralBrake = neutralBrake;
       this.ccwPositive = ccwPositive;
       this.rotorToSensorRatio = rotorToSensorRatio;
       this.sensorToMechRatio = sensorToMechRatio;
       this.statorCurrentLimit = statorCurrentLimit;
       this.supplyCurrentLimit = supplyCurrentLimit;
+      this.voltageLimit = voltageLimit;
     }
 
     /**
@@ -48,7 +53,7 @@ public record MotorConfig(
      * @return a builder with default values
      */
     public static MotorBuilder defaults() {
-      return new MotorBuilder(false, true, 1.0, 1.0, 80.0, 40.0);
+      return new MotorBuilder(false, true, 1.0, 1.0, 80.0, 40.0, 12);
     }
 
     /**
@@ -64,7 +69,8 @@ public record MotorConfig(
           config.rotorToSensorRatio(),
           config.sensorToMechRatio(),
           config.statorCurrentLimit(),
-          config.supplyCurrentLimit());
+          config.supplyCurrentLimit(),
+          config.voltageLimit());
     }
 
     public MotorBuilder neutralBrake(boolean neutralBrake) {
@@ -97,6 +103,11 @@ public record MotorConfig(
       return this;
     }
 
+    public MotorBuilder voltageLimit(double voltageLimit) {
+      this.voltageLimit = voltageLimit;
+      return this;
+    }
+
     /**
      * Returns the builder as a config with private immutable values
      *
@@ -109,7 +120,8 @@ public record MotorConfig(
           this.rotorToSensorRatio,
           this.sensorToMechRatio,
           this.statorCurrentLimit,
-          this.supplyCurrentLimit);
+          this.supplyCurrentLimit,
+          this.voltageLimit);
     }
   }
 }

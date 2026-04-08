@@ -85,7 +85,7 @@ public class Azimuth extends Subsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(0.0)
+          .kP(70.0)
           .kI(0.0)
           .kD(0.0)
           .build())
@@ -97,6 +97,7 @@ public class Azimuth extends Subsystem {
           .neutralBrake(true)
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
+          .voltageLimit(3)
           .build())
       .absoluteEncoderConfig(
         AbsoluteEncoderBuilder.defaults()
@@ -156,7 +157,16 @@ public class Azimuth extends Subsystem {
     motorOutput.updateValues(motorValues, RobotConstants.PERIODIC_DURATION);
 
     if (!voltageSet) {
-      motorOutput.setControl(new PositionVoltage(setpoint));
+      double ff = 0.0;
+      if (Superstructure.getInstance().getSafeState().azimuthSafe) {
+        GyroscopeValues gyroVals = Drive.getInstance().getGyroValues();
+
+        ff = -gyroVals.yawVelocity.in(RotationsPerSecond) * config.feedforwardControllerConfig().kV();
+        ff += -gyroVals.yawAcceleration.in(RotationsPerSecondPerSecond) * config.feedforwardControllerConfig().kA();
+        ff += Math.copySign(config.feedforwardControllerConfig().kS(), -gyroVals.yawVelocity.in(RotationsPerSecond));
+      }
+
+      motorOutput.setControl(new PositionVoltage(setpoint).withUpdateFreqHz(1000).withFeedForward(ff));
     } else {
       motorOutput.setControl(new VoltageOut(voltageOut));
     }
