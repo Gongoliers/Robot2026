@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.ParentDevice;
@@ -148,7 +149,11 @@ public class TalonFXOutput2 implements TalonFXOutput {
                     .withKG(config.feedforwardControllerConfig().kG())
                     .withGravityType((config.feedforwardControllerConfig().armGravity()
                         ? GravityTypeValue.Arm_Cosine
-                        : GravityTypeValue.Elevator_Static)));
+                        : GravityTypeValue.Elevator_Static)))
+            .withVoltage(
+                new VoltageConfigs()
+                    .withPeakForwardVoltage(config.motorConfig().voltageLimit())
+                    .withPeakReverseVoltage(-config.motorConfig().voltageLimit()));
 
     leaderConfigurator.apply(motorConfiguration);
     followerConfigurator.apply(motorConfiguration);

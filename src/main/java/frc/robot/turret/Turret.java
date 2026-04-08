@@ -125,7 +125,7 @@ public class Turret extends MultithreadedSubsystem {
         estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
 
       PosePublisher.publish("Camera estimated bot pose", robotPose);
-      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(1.5, 1.5, 10+10*drive.getGyroValues().yawVelociy.in(RotationsPerSecond)));
+      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(1.5, 1.5, 10+10*drive.getGyroValues().yawVelocity.in(RotationsPerSecond)));
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit

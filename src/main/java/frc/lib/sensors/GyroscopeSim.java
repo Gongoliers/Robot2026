@@ -24,7 +24,7 @@ public class GyroscopeSim implements Gyroscope {
   @Override
   public void getUpdatedVals(GyroscopeValues values) {
     values.yaw = yaw;
-    values.yawVelociy = yawVelocity.get();
+    values.yawVelocity = yawVelocity.get();
   }
 
   @Override

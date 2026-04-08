@@ -48,7 +48,6 @@ public class AzimuthSysID {
   }
 
   private static void setVoltage(Voltage volts) {
-    System.out.println("it's trying");
     voltageOut.mut_replace(volts);
   }
 

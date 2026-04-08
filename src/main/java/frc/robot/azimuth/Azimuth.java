@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
@@ -23,7 +25,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.MultithreadedSubsystem;
+import frc.lib.Subsystem;
 import frc.lib.SafeAngleOptimizer;
 import frc.lib.configs.FeedbackControllerConfig.FeedbackControllerBuilder;
 import frc.lib.configs.FeedforwardControllerConfig.FeedforwardControllerBuilder;
@@ -34,6 +36,7 @@ import frc.lib.configs.MotorConfig.MotorBuilder;
 import frc.lib.motors.MotorValues;
 import frc.lib.motors.motoroutput.DiscreteMotorOutputSim;
 import frc.lib.motors.motoroutput.MotorOutput;
+import frc.lib.motors.talonfxoutput.TalonFXOutput;
 import frc.lib.sensors.Gyroscope;
 import frc.lib.sensors.Gyroscope.GyroscopeValues;
 import frc.robot.RobotConstants;
@@ -42,13 +45,13 @@ import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.SuperstructureState;
 
 /** Azimuth (turret yaw control) subsystem */
-public class Azimuth extends MultithreadedSubsystem {
+public class Azimuth extends Subsystem {
   
   /** Azimuth subsystem singleton */
   private static Azimuth instance = null;
 
   /** Azimuth motor output */
-  private final MotorOutput motorOutput;
+  private final TalonFXOutput motorOutput;
 
   /** Azimuth motor output values */
   private MotorValues motorValues = new MotorValues();
@@ -82,9 +85,9 @@ public class Azimuth extends MultithreadedSubsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(75)
+          .kP(70.0)
           .kI(0.0)
-          .kD(1.5)
+          .kD(0.0)
           .build())
       .motorConfig(
         MotorBuilder.defaults()
@@ -94,6 +97,7 @@ public class Azimuth extends MultithreadedSubsystem {
           .neutralBrake(true)
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
+          .voltageLimit(3)
           .build())
       .absoluteEncoderConfig(
         AbsoluteEncoderBuilder.defaults()
@@ -126,9 +130,6 @@ public class Azimuth extends MultithreadedSubsystem {
     voltageSet = false;
     voltageOut = Volts.mutable(0);
 
-    feedback = config.feedbackControllerConfig().createPIDController();
-    feedforward = config.feedforwardControllerConfig().createSimpleMotorFeedforward();
-
     if (motorOutput instanceof DiscreteMotorOutputSim discreteSim) {
       discreteSim.usePosition(() -> setpoint);
     }
@@ -152,31 +153,23 @@ public class Azimuth extends MultithreadedSubsystem {
   }
 
   @Override
-  public void periodic() {}
-
-  @Override
-  public void fastPeriodic() {
-    motorOutput.updateValues(motorValues, RobotConstants.FAST_PERIODIC_DURATION);
-
-    double setpointRotations = setpoint.in(Rotations);
-    double positionRotations = motorValues.position.in(Rotations);
+  public void periodic() {
+    motorOutput.updateValues(motorValues, RobotConstants.PERIODIC_DURATION);
 
     if (!voltageSet) {
-      double feedbackVolts = feedback.calculate(positionRotations, setpointRotations);
-      feedbackVolts = MathUtil.clamp(feedbackVolts, -2, 2);
-      double feedforwardVolts = Math.copySign(feedforward.getKs(), setpointRotations - positionRotations);
-      
-      SuperstructureState superstructureState = Superstructure.getInstance().getSafeState();
-      if (superstructureState != SuperstructureState.STOW && superstructureState != SuperstructureState.INIT && superstructureState != SuperstructureState.UNSAFE) {
-        double ff = -Drive.getInstance().getGyroValues().yawVelociy.in(RotationsPerSecond) * feedforward.getKv();
+      double ff = 0.0;
+      if (Superstructure.getInstance().getSafeState().azimuthSafe) {
+        GyroscopeValues gyroVals = Drive.getInstance().getGyroValues();
 
-        feedforwardVolts += MathUtil.clamp(ff, -3, 3);
+        ff = -gyroVals.yawVelocity.in(RotationsPerSecond) * config.feedforwardControllerConfig().kV();
+        ff += -gyroVals.yawAcceleration.in(RotationsPerSecondPerSecond) * config.feedforwardControllerConfig().kA();
+        ff += Math.copySign(config.feedforwardControllerConfig().kS(), -gyroVals.yawVelocity.in(RotationsPerSecond));
       }
 
-      voltageOut.mut_replace(feedbackVolts + feedforwardVolts, Volts);
+      motorOutput.setControl(new PositionVoltage(setpoint).withUpdateFreqHz(1000).withFeedForward(ff));
+    } else {
+      motorOutput.setControl(new VoltageOut(voltageOut));
     }
-
-    motorOutput.setVoltage(voltageOut);
   }
 
   /**
