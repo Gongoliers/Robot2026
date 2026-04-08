@@ -85,7 +85,7 @@ public class Azimuth extends Subsystem {
           .build())
       .feedbackControllerConfig(
         FeedbackControllerBuilder.defaults()
-          .kP(70.0)
+          .kP(90.0)
           .kI(0.0)
           .kD(0.0)
           .build())
@@ -168,7 +168,7 @@ public class Azimuth extends Subsystem {
 
       motorOutput.setControl(new PositionVoltage(setpoint).withUpdateFreqHz(1000).withFeedForward(ff));
     } else {
-      motorOutput.setControl(new VoltageOut(voltageOut));
+      motorOutput.setControl(new VoltageOut(voltageOut).withLimitForwardMotion(false).withLimitReverseMotion(false));
     }
   }
 

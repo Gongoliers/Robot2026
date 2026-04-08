@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.lib.LimelightProfiler;
-import frc.lib.MultithreadedSubsystem;
+import frc.lib.Subsystem;
 import frc.lib.PosePublisher;
 import frc.robot.LimelightHelpers;
 import frc.robot.RobotConstants;
@@ -34,7 +34,7 @@ import frc.robot.hood.Hood;
 import frc.robot.shooter.Shooter;
 
 /** Turret subsystem */
-public class Turret extends MultithreadedSubsystem {
+public class Turret extends Subsystem {
 
   /** Turret subsystem singleton */
   private static Turret instance = null;
@@ -134,10 +134,11 @@ public class Turret extends MultithreadedSubsystem {
     SmartDashboard.putNumber("Turret distance (meters)", translationToHub.getNorm());
 
     PosePublisher.publish("Estimated turret pose", turretPose);
+
+    controlSubsystems();
   }
 
-  @Override
-  public void fastPeriodic() {
+  private void controlSubsystems() {
     switch (state) {
       case STOW:
         azimuth.setSetpoint(Rotations.of(0.25));

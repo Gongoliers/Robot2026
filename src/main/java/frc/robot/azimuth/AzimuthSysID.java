@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.commands.runFullSysId;
 import frc.lib.motors.MotorValues;
+import frc.robot.turret.Turret;
 
 /** Class with methods to run sysid with azimuth */
 public class AzimuthSysID {
@@ -64,6 +65,7 @@ public class AzimuthSysID {
 
   public static Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return Commands.race(
+      Commands.print(voltageOut.toString()),
       azimuth.runAtVoltage(() -> voltageOut).asProxy(),
       routine.quasistatic(direction)
     );
@@ -71,6 +73,7 @@ public class AzimuthSysID {
 
   public static Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return Commands.race(
+      Commands.print(voltageOut.toString()),
       azimuth.runAtVoltage(() -> voltageOut).asProxy(),
       routine.dynamic(direction)
     );
@@ -82,10 +85,13 @@ public class AzimuthSysID {
    * @return a command that runs quasistatic and dynamic sysid forwards and backwards
    */
   public static Command runFullSysId() {
-    return new runFullSysId(
+    return Turret.getInstance().allowExternalControl()
+    .andThen(Commands.runOnce(() -> azimuth.setAbsoluteSetpoint(azimuth.getMinPosition().plus(Rotations.of(0.01)))))
+    .andThen(Commands.waitUntil(() -> azimuth.nearSetpoint(Rotations.of(0.01))))
+    .andThen(new runFullSysId(
       AzimuthSysID::sysIdQuasistatic, 
       AzimuthSysID::sysIdDynamic, 
       () -> azimuth.getValues().velocity.abs(RotationsPerSecond) < 0.1,
-      azimuth);
+      azimuth));
   }
 }
