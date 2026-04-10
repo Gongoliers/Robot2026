@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -206,6 +207,9 @@ public class Intake extends Subsystem {
 
     // Pivot control
     double pivotSetpointRotations = pivotSetpoint.in(Rotations);
+    // Clamp the pivot setpoint to prevent going too far.
+    pivotSetpointRotations = MathUtil.clamp(pivotSetpointRotations, IntakeState.OUT.pivotSetpoint.in(Rotations), IntakeState.STOW.pivotSetpoint.in(Rotations));
+
     double pivotPositionRotations = pivotValues.position.in(Rotations);
 
     if (!pivotVoltageSet) {
