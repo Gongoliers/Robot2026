@@ -26,6 +26,7 @@ import frc.lib.motors.MotorValues;
 import frc.lib.motors.motoroutput.DiscreteMotorOutputSim;
 import frc.lib.motors.motoroutput.MotorOutput;
 import frc.robot.RobotConstants;
+import frc.robot.TuningConstants;
 
 /** Intake subsystem */
 public class Intake extends Subsystem {
@@ -192,13 +193,25 @@ public class Intake extends Subsystem {
 
     // Define control to use for each state
     if (state == IntakeState.AGITATE) {
-      double oscillationAmplitude = 0.075; // Oscillation amplitude in rotations
-      double oscillationFrequency = 2; // Oscillation frequency in cycles per second
+      if (TuningConstants.ENABLE_AGITATION_CHANGES) {
+        double oscillationAmplitude = TuningConstants.AGITATION_AMPLITUDE.in(Rotations);
+        double oscillationFrequency = TuningConstants.AGITATION_FREQUENCY;
 
-      double oscillation = Math.sin(6.28 * oscillationFrequency * RobotController.getMeasureTime().in(Seconds));
-      double oscillatingSetpointRotations = oscillation * oscillationAmplitude + IntakeState.OUT.pivotSetpoint.in(Rotations) + oscillationAmplitude;
+        double oscillation = Math.sin(6.28 * oscillationFrequency * RobotController.getMeasureTime().in(Seconds));
+        double oscillatingSetpointRotations = oscillation * oscillationAmplitude + IntakeState.OUT.pivotSetpoint.in(Rotations) + oscillationAmplitude;
+        // Clamp the pivot setpoint to prevent going too far.
+        oscillatingSetpointRotations = MathUtil.clamp(oscillatingSetpointRotations, IntakeState.OUT.pivotSetpoint.in(Rotations), IntakeState.STOW.pivotSetpoint.in(Rotations));
 
-      pivotSetpoint.mut_replace(oscillatingSetpointRotations, Rotations);
+        pivotSetpoint.mut_replace(oscillatingSetpointRotations, Rotations);
+      } else {
+        double oscillationAmplitude = 0.075; // Oscillation amplitude in rotations
+        double oscillationFrequency = 2; // Oscillation frequency in cycles per second
+
+        double oscillation = Math.sin(6.28 * oscillationFrequency * RobotController.getMeasureTime().in(Seconds));
+        double oscillatingSetpointRotations = oscillation * oscillationAmplitude + IntakeState.OUT.pivotSetpoint.in(Rotations) + oscillationAmplitude;
+
+        pivotSetpoint.mut_replace(oscillatingSetpointRotations, Rotations);
+      }
       rollerSetpoint.mut_replace(state.rollerSetpoint);
     } else {
       pivotSetpoint.mut_replace(state.pivotSetpoint);
@@ -207,8 +220,6 @@ public class Intake extends Subsystem {
 
     // Pivot control
     double pivotSetpointRotations = pivotSetpoint.in(Rotations);
-    // Clamp the pivot setpoint to prevent going too far.
-    pivotSetpointRotations = MathUtil.clamp(pivotSetpointRotations, IntakeState.OUT.pivotSetpoint.in(Rotations), IntakeState.STOW.pivotSetpoint.in(Rotations));
 
     double pivotPositionRotations = pivotValues.position.in(Rotations);
 
