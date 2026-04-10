@@ -1,19 +1,16 @@
 package frc.robot;
 
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearAcceleration;
-import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.*;
 
 import static edu.wpi.first.units.Units.*;
 
 public class TuningConstants {
 
     /**
-     * Set to true to enable use of the SWERVE_MAX_ACCEL_LIMIT.
+     * Set to true to enable use of swerve acceleration and velocity limits.
      * If false, previous behavior will be used.
      */
-    public static final boolean ENABLE_SWERVE_MAX_ACCEL_LIMIT = false;
+    public static final boolean ENABLE_SWERVE_LIMITS = false;
 
     /**
      * Set to true to enable pass-on-the-move (POTM) changes.
@@ -28,14 +25,30 @@ public class TuningConstants {
     public static final boolean ENABLE_AGITATION_CHANGES = false;
 
     /**
+     * The maximum translation velocity.
+     * CTRE's swerve project generator reports that our theoretical top speed is 5.85 m/s.
+     */
+    public static final LinearVelocity SWERVE_VELOCITY_LIMIT = MetersPerSecond.of(2.75);
+
+    /**
+     * The maximum angular velocity.
+     */
+    public static final AngularVelocity SWERVE_ANGULAR_VELOCITY_LIMIT = RotationsPerSecond.of(0.75);
+
+    /**
      * The maximum translation acceleration.
      * To start tuning this value, take the maximum drive speed and divide it by the desired time to reach maximum speed.
      * For a top speed of 5.85 m/s (our theoretical top speed) and a desired acceleration in 0.1 seconds, this
      * acceleration should be set to 58.5 m/s².
      * In previous years I have found that tuning the maximum acceleration isn't too helpful, because there is a fine
-     * line between negatively impacting driver performance ("driving on ice") and being current-limited anyways.
+     * line between negatively impacting driver performance ("driving on ice") and being current-limited.
      */
-    public static final LinearAcceleration SWERVE_MAX_ACCEL_LIMIT = MetersPerSecondPerSecond.of(0.0);
+    public static final LinearAcceleration SWERVE_LINEAR_ACCEL_LIMIT = MetersPerSecondPerSecond.of(0.0);
+
+    /**
+     * The maximum rotation acceleration.
+     */
+    public static final AngularAcceleration SWERVE_ANGULAR_ACCEL_LIMIT = RotationsPerSecondPerSecond.of(0.0);
 
     /**
      * The angle of the hood when passing in the POTM state.
