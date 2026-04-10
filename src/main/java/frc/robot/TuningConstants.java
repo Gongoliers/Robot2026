@@ -65,7 +65,7 @@ public class TuningConstants {
      * If the POTM shot is leading the intended target, decrease this scalar.
      * That guide might be backwards, use your intution / try a few values to determine the right order.0
      */
-    public static final double POTM_ANGLE_OFFSET_SCALAR = 1.0;
+    public static final double POTM_ANGLE_OFFSET_SCALAR_FUDGE = 1.0;
 
     /**
      * How far the intake agitation comes up.

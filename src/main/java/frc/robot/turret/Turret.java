@@ -28,6 +28,7 @@ import frc.lib.PosePublisher;
 import frc.robot.LimelightHelpers;
 import frc.robot.RobotConstants;
 import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.robot.TuningConstants;
 import frc.robot.azimuth.Azimuth;
 import frc.robot.drive.Drive;
 import frc.robot.hood.Hood;
@@ -167,8 +168,13 @@ public class Turret extends MultithreadedSubsystem {
         SwerveDriveState driveState = Drive.getInstance().getState();
         ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
         faceAllianceWallSOTM(turretPose, new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond));
-        shooter.setSetpoint(RotationsPerSecond.of(50));
-        hood.setSetpoint(Rotations.of(0.07));
+        if (TuningConstants.ENABLE_POTM_CHANGES) {
+          shooter.setSetpoint(TuningConstants.POTM_FLYWHEEL_SETPOINT);
+          hood.setSetpoint(TuningConstants.POTM_HOOD_SETPOINT);
+        } else {
+          shooter.setSetpoint(RotationsPerSecond.of(50));
+          hood.setSetpoint(Rotations.of(0.07));
+        }
         break;
       case TARGET_HUB_FROM_POSE:
         Pose2d manualTurretPose = RobotConstants.globalTurretPose(manualRobotPose, azimuth.getValues().position).toPose2d();
@@ -218,10 +224,17 @@ public class Turret extends MultithreadedSubsystem {
   }
 
   private void faceAllianceWallSOTM(Pose2d turretPose, Translation2d turretVelocity) {
-    Translation2d shotVelocity = new Translation2d(4, turretPose.getRotation()).plus(turretVelocity);
-    Rotation2d rotationError = TurretTargetsSupplier.faceAllianceWall().minus(shotVelocity.getAngle());
+    if (TuningConstants.ENABLE_POTM_CHANGES) {
+      Translation2d shotVelocity = new Translation2d(TuningConstants.POTM_FUEL_EXIT_VELOCITY_FUDGE.in(MetersPerSecond), turretPose.getRotation()).plus(turretVelocity);
+      Rotation2d rotationError = TurretTargetsSupplier.faceAllianceWall().minus(shotVelocity.getAngle().times(TuningConstants.POTM_ANGLE_OFFSET_SCALAR_FUDGE));
 
-    azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
+      azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
+    } else {
+      Translation2d shotVelocity = new Translation2d(4, turretPose.getRotation()).plus(turretVelocity);
+      Rotation2d rotationError = TurretTargetsSupplier.faceAllianceWall().minus(shotVelocity.getAngle());
+
+      azimuth.setSetpoint(azimuth.getValues().position.plus(rotationError.getMeasure()));
+    }
   }
 
   private void targetHub(Pose2d turretPose) {
