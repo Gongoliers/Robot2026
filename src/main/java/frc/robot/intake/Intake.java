@@ -291,7 +291,7 @@ public class Intake extends Subsystem {
     if (state == IntakeState.AGITATE) {
       return pivotValues.position.lte(Rotations.of(0.2));
     } else {
-      return pivotValues.position.isNear(pivotSetpoint, Rotations.of(0.05));
+      return pivotValues.position.isNear(pivotSetpoint, Rotations.of(0.075));
     }
   }
 
