@@ -81,9 +81,9 @@ public class TuningConstants {
     public static final double POTM_ANGLE_OFFSET_SCALAR_FUDGE = 1.0;
 
     /**
-     * How far the intake agitation comes up.
+     * How far the intake agitation comes up. NOTE: CANNOT HAVE AN AGITATION OVER .1 BECAUSE FUEL WILL DO BAD THINGS
      */
-    public static final Angle AGITATION_AMPLITUDE = Rotations.of(0.075);
+    public static final Angle AGITATION_AMPLITUDE = Rotations.of(0.1);
 
     /**
      * How many times the intake agitates per second.
