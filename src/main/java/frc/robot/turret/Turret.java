@@ -70,7 +70,7 @@ public class Turret extends MultithreadedSubsystem {
   private Pose2d manualRobotPose;
 
   /** Used when targetting hub and shots are falling short for some reason */
-  private final MutAngularVelocity extraShotVelocity = RotationsPerSecond.mutable(1.0); // TODO: I HATE THIS
+  private final MutAngularVelocity extraShotVelocity = RotationsPerSecond.mutable(0.0); // TODO: I HATE THIS
 
   /**
    * Gets turret subsystem instance
@@ -122,11 +122,11 @@ public class Turret extends MultithreadedSubsystem {
       PosePublisher.publish("Camera estimated turret pose", estimated);
       Angle azimuthAngle = azimuth.getValues().position;
       Pose2d robotPose = new Pose2d(
-        estimated.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d()),
+        estimated.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d().rotateBy(drive.getPose().getRotation())),
         estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
 
       PosePublisher.publish("Camera estimated bot pose", robotPose);
-      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(1.5, 1.5, 10+10*drive.getGyroValues().yawVelocity.in(RotationsPerSecond)));
+      drive.addVisionMeasurement(robotPose, poseEstimate.timestampSeconds, VecBuilder.fill(1.5, 1.5, 9999));
     }
     
     //TODO: Maybe try moving this to fastPeriodic() if it isn't too much of a performance hit
@@ -159,12 +159,16 @@ public class Turret extends MultithreadedSubsystem {
         faceHub(turretPose);
         targetHub(turretPose);
         break;
-      case FACE_ALLIANCE_WALL:
+      case PASS:
         faceAllianceWall(turretPose);
-        shooter.setSetpoint(RotationsPerSecond.of(50));
-        hood.setSetpoint(Rotations.of(0.07));
+        shooter.setSetpoint(RotationsPerSecond.of(45));
+        hood.setSetpoint(Rotations.of(0.06));
         break;
-      case FACE_ALLIANCE_WALL_SOTM:
+      case PASS_FAR:
+        faceAllianceWall(turretPose);
+        shooter.setSetpoint(RotationsPerSecond.of(70));
+        hood.setSetpoint(Rotations.of(0.07));
+      case PASS_SOTM:
         SwerveDriveState driveState = Drive.getInstance().getState();
         ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());
         faceAllianceWallSOTM(turretPose, new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond));
@@ -184,6 +188,21 @@ public class Turret extends MultithreadedSubsystem {
     }
   }
 
+  /** For testing, trust limelight measurement 100% and reset odometry */
+  public void trustLimelightMeasurement() {
+    PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-turret");
+
+    if (poseEstimate != null && poseEstimate.tagCount > 1) {
+      Pose2d estimated = poseEstimate.pose;
+      Angle azimuthAngle = azimuth.getValues().position;
+      Pose2d robotPose = new Pose2d(
+        estimated.getTranslation().minus(RobotConstants.ROBOT_TO_TURRET.toTranslation2d().rotateBy(drive.getPose().getRotation())),
+        estimated.getRotation().minus(new Rotation2d(azimuthAngle)));
+
+      drive.resetPose(robotPose);
+    }
+  }
+
   public boolean atTargetState() {
     switch (state) {
       case STOW:
@@ -194,10 +213,14 @@ public class Turret extends MultithreadedSubsystem {
         return azimuth.nearSetpoint(Rotations.of(0.075))
             && shooter.nearSetpoint(RotationsPerSecond.of(4))
             && hood.nearSetpoint(Rotations.of(0.1));
-      case FACE_ALLIANCE_WALL:
-        return azimuth.nearSetpoint(Rotations.of(0.1));
-      case FACE_ALLIANCE_WALL_SOTM:
-        return azimuth.nearSetpoint(Rotations.of(0.2));
+      case PASS, PASS_FAR:
+        return azimuth.nearSetpoint(Rotations.of(0.1))
+            && shooter.nearSetpoint(RotationsPerSecond.of(4))
+            && hood.nearSetpoint(Rotations.of(0.1));
+      case PASS_SOTM:
+        return azimuth.nearSetpoint(Rotations.of(0.2))
+            && shooter.nearSetpoint(RotationsPerSecond.of(4))
+            && hood.nearSetpoint(Rotations.of(0.1));
       default:
         return true;
     }
@@ -308,16 +331,23 @@ public class Turret extends MultithreadedSubsystem {
     .andThen(Commands.waitUntil(this::atTargetState));
   }
 
-  public Command faceAllianceWall() {
+  public Command pass() {
     return Commands.runOnce(() -> {
-      state = TurretState.FACE_ALLIANCE_WALL;
+      state = TurretState.PASS;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState));
   }
 
-  public Command faceAllianceWallSOTM() {
+  public Command passFar() {
     return Commands.runOnce(() -> {
-      state = TurretState.FACE_ALLIANCE_WALL_SOTM;
+      state = TurretState.PASS_FAR;
+    }, this, azimuth, hood, shooter)
+    .andThen(Commands.waitUntil(this::atTargetState));
+  }
+
+  public Command passSOTM() {
+    return Commands.runOnce(() -> {
+      state = TurretState.PASS_SOTM;
     }, this, azimuth, hood, shooter)
     .andThen(Commands.waitUntil(this::atTargetState)); 
   }

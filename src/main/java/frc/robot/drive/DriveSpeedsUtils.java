@@ -74,6 +74,7 @@ public class DriveSpeedsUtils {
     Translation2d requestedVelocity = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     Translation2d botVelocity = new Translation2d(botSpeeds.vxMetersPerSecond, botSpeeds.vyMetersPerSecond);
     Translation2d requestedAcceleration = requestedVelocity.minus(botVelocity).div(dt.in(Seconds));
+    System.out.println(requestedAcceleration.getNorm());
     if (requestedAcceleration.getNorm() > maxLinearAcceleration.in(MetersPerSecondPerSecond)) {
       requestedAcceleration = requestedAcceleration.div(requestedAcceleration.getNorm()).times(maxLinearAcceleration.in(MetersPerSecondPerSecond));
     }

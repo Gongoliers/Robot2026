@@ -9,6 +9,7 @@ public enum SuperstructureState {
   SCORE(true),
   FEED(true),
   PASS(true),
+  PASS_FAR(true),
   PASS_SOTM(true),
   SCORE_FROM_POSE(true),
   ALLOW_EXTERNAL_TURRET_CONTROL(true),

@@ -43,12 +43,12 @@ public class TuningConstants {
      * In previous years I have found that tuning the maximum acceleration isn't too helpful, because there is a fine
      * line between negatively impacting driver performance ("driving on ice") and being current-limited.
      */
-    public static final LinearAcceleration SWERVE_LINEAR_ACCEL_LIMIT = MetersPerSecondPerSecond.of(0.0);
+    public static final LinearAcceleration SWERVE_LINEAR_ACCEL_LIMIT = MetersPerSecondPerSecond.of(6.0);
 
     /**
      * The maximum rotation acceleration.
      */
-    public static final AngularAcceleration SWERVE_ANGULAR_ACCEL_LIMIT = RotationsPerSecondPerSecond.of(0.0);
+    public static final AngularAcceleration SWERVE_ANGULAR_ACCEL_LIMIT = RotationsPerSecondPerSecond.of(6.0);
 
     /**
      * The angle of the hood when passing in the POTM state.
