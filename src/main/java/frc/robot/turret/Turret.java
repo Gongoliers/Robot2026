@@ -166,8 +166,9 @@ public class Turret extends MultithreadedSubsystem {
         break;
       case PASS_FAR:
         faceAllianceWall(turretPose);
-        shooter.setSetpoint(RotationsPerSecond.of(70));
-        hood.setSetpoint(Rotations.of(0.07));
+        shooter.setSetpoint(RotationsPerSecond.of(60));
+        hood.setSetpoint(Rotations.of(0.075));
+        break;
       case PASS_SOTM:
         SwerveDriveState driveState = Drive.getInstance().getState();
         ChassisSpeeds fieldRelativeSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(driveState.Speeds, driveState.Pose.getRotation());

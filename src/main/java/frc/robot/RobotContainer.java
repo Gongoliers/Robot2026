@@ -147,7 +147,7 @@ public class RobotContainer {
       new SuperstructureTrigger(() -> driverController.leftTrigger().getAsBoolean()),
       new SuperstructureTrigger(() -> driverController.rightTrigger().getAsBoolean())));
 
-    driverController.povDown().onTrue(superstructure.passSOTM(
+    driverController.povDown().onTrue(superstructure.passFar(
       new SuperstructureTrigger(() -> driverController.leftTrigger().getAsBoolean()),
       new SuperstructureTrigger(() -> driverController.rightTrigger().getAsBoolean())));
 
@@ -165,6 +165,8 @@ public class RobotContainer {
     operatorController.y().onTrue(Commands.runOnce(() -> turret.setExtraShotVelocity(RotationsPerSecond.of(0))));
 
     operatorController.leftBumper().onTrue(Commands.runOnce(() -> azimuth.resetPosition(Rotations.of(0.25))));
+
+    operatorController.leftStick().onTrue(Commands.runOnce(() -> turret.trustLimelightMeasurement()));
   }
 
   public Command getAutonomousCommand() {
