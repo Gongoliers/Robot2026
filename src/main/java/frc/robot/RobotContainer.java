@@ -6,36 +6,21 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.Telemetry;
 import frc.robot.azimuth.Azimuth;
-import frc.robot.azimuth.AzimuthSysID;
 import frc.robot.drive.Drive;
 import frc.robot.drive.DriveSpeedsUtils;
 import frc.robot.hood.Hood;
-import frc.robot.hood.HoodSysID;
 import frc.robot.intake.Intake;
-import frc.robot.intake.IntakeRollerSysID;
-import frc.robot.intake.IntakeState;
 import frc.robot.kicker.Kicker;
-import frc.robot.kicker.KickerState;
-import frc.robot.kicker.KickerSysID;
 import frc.robot.shooter.Shooter;
-import frc.robot.shooter.ShooterSysID;
 import frc.robot.shooter.ShooterTester;
 import frc.robot.spindexer.Spindexer;
-import frc.robot.spindexer.SpindexerState;
-import frc.robot.spindexer.SpindexerSysID;
 import frc.robot.superstructure.Superstructure;
 import frc.robot.superstructure.SuperstructureTrigger;
 import frc.robot.turret.Turret;
@@ -127,13 +112,24 @@ public class RobotContainer {
   }
 
   private void configureDefaultCommands() {
-    drive.setDefaultCommand(drive.drive(() -> {
-      return DriveSpeedsUtils.fromController(
-        driverController, 
-        MetersPerSecond.of(2.75), 
-        RotationsPerSecond.of(0.75), 
-        0.1);
-    }));
+    if (TuningConstants.ENABLE_SWERVE_LIMITS) {
+      drive.setDefaultCommand(drive.drive(() -> {
+        ChassisSpeeds driverSpeeds = DriveSpeedsUtils.fromController(
+                driverController,
+                TuningConstants.SWERVE_VELOCITY_LIMIT,
+                TuningConstants.SWERVE_ANGULAR_VELOCITY_LIMIT,
+                0.1);
+        return DriveSpeedsUtils.limitAcceleration(driverSpeeds, TuningConstants.SWERVE_LINEAR_ACCEL_LIMIT, TuningConstants.SWERVE_ANGULAR_ACCEL_LIMIT);
+      }));
+    } else {
+      drive.setDefaultCommand(drive.drive(() -> {
+        return DriveSpeedsUtils.fromController(
+                driverController,
+                MetersPerSecond.of(2.75),
+                RotationsPerSecond.of(0.75),
+                0.1);
+      }));
+    }
   }
 
   private boolean shouldFlip() {
@@ -151,7 +147,7 @@ public class RobotContainer {
       new SuperstructureTrigger(() -> driverController.leftTrigger().getAsBoolean()),
       new SuperstructureTrigger(() -> driverController.rightTrigger().getAsBoolean())));
 
-    driverController.povDown().onTrue(superstructure.passSOTM(
+    driverController.povDown().onTrue(superstructure.passFar(
       new SuperstructureTrigger(() -> driverController.leftTrigger().getAsBoolean()),
       new SuperstructureTrigger(() -> driverController.rightTrigger().getAsBoolean())));
 
@@ -169,6 +165,8 @@ public class RobotContainer {
     operatorController.y().onTrue(Commands.runOnce(() -> turret.setExtraShotVelocity(RotationsPerSecond.of(0))));
 
     operatorController.leftBumper().onTrue(Commands.runOnce(() -> azimuth.resetPosition(Rotations.of(0.25))));
+
+    operatorController.leftStick().onTrue(Commands.runOnce(() -> turret.trustLimelightMeasurement()));
   }
 
   public Command getAutonomousCommand() {

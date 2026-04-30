@@ -5,14 +5,16 @@
   "pathFolders": [
     "DEPOT",
     "LEFT",
-    "RIGHT",
+    "CENTER",
     "OUTPOST",
+    "RIGHT",
     "TEST"
   ],
   "autoFolders": [
     "Block",
-    "Neutral",
     "Left",
+    "Neutral",
+    "Center",
     "Right",
     "TEST",
     "Zone"

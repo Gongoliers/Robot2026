@@ -93,7 +93,7 @@ public class Azimuth extends Subsystem {
         MotorBuilder.defaults()
           .ccwPositive(true)
           .rotorToSensorRatio(1)
-          .sensorToMechRatio((50/12)*10)
+          .sensorToMechRatio((50/12)*10*1.04)
           .neutralBrake(true)
           .statorCurrentLimit(240)
           .supplyCurrentLimit(120)
